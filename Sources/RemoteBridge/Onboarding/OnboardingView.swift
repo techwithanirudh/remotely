@@ -18,16 +18,6 @@ enum Step: Int, CaseIterable {
         }
     }
 
-    /// Whether the step can ever block. Only these reserve room for a skip;
-    /// the rest would leave dead space under the button for a control that
-    /// can never appear.
-    var isGated: Bool {
-        switch self {
-        case .connect, .permission: true
-        default: false
-        }
-    }
-
     /// A TV that never reports CEC must not trap anyone, but skipping
     /// Accessibility leaves an app that cannot do the one thing it exists for.
     var isSkippable: Bool { self != .permission }
@@ -43,7 +33,7 @@ struct OnboardingView: View {
     @ObservedObject var bridge: RemoteBridge
     let onFinish: () -> Void
 
-    static let panelSize = CGSize(width: 330, height: 560)
+    static let panelSize = CGSize(width: 330, height: 505)
 
     @Default(.onboardingStep) private var rawStep
     @Default(.tvBrand) private var brand
@@ -59,12 +49,12 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 header
 
-                // Slack goes above the content rather than being split with the
-                // space below it. Splitting it evenly left a short step with a
-                // large gap over the button as well as under the header.
+                // Balanced, with the panel kept short enough that a sparse step
+                // has little slack to distribute. Pushing it all to one end
+                // just moved the empty space rather than removing it.
                 Spacer(minLength: 12)
                 content.frame(maxWidth: .infinity)
-                Spacer(minLength: 12).frame(maxHeight: 26)
+                Spacer(minLength: 12)
 
                 footer
             }
@@ -137,13 +127,14 @@ struct OnboardingView: View {
                 action: runPrimary
             )
 
-            if step.isGated, step.isSkippable {
+            // Only present while it can actually be used. Reserving the row
+            // on gated steps put the action 24pt higher there than everywhere
+            // else, so the button moved between screens.
+            if step.isSkippable, !canContinue {
                 Button("Skip for now", action: advance)
                     .buttonStyle(.plain)
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
-                    .opacity(canContinue ? 0 : 1)
-                    .disabled(canContinue)
                     .frame(height: 16)
             }
         }
