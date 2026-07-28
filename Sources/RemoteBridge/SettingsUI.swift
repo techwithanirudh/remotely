@@ -109,8 +109,8 @@ private struct SettingsSidebar: View {
             // Clears the traffic lights, which sit in the transparent titlebar.
             StatusPill(status: model.status)
                 .padding(.horizontal, Theme.sidebarInset)
-                .padding(.top, 46)
-                .padding(.bottom, 12)
+                .padding(.top, 40)
+                .padding(.bottom, 10)
 
             SidebarButton(page: .general, selection: $selection)
 
@@ -148,16 +148,9 @@ private struct StatusPill: View {
 
     var body: some View {
         HStack(spacing: 7) {
-            ZStack {
-                Circle()
-                    .fill(tint.opacity(0.16))
-                    .frame(width: 17, height: 17)
-
-                Circle()
-                    .fill(tint)
-                    .frame(width: 6, height: 6)
-                    .shadow(color: tint.opacity(0.55), radius: 3)
-            }
+            Circle()
+                .fill(tint)
+                .frame(width: 7, height: 7)
 
             Text(status.title)
                 .font(.system(size: 11.5, weight: .semibold))
@@ -373,8 +366,8 @@ struct GeneralSettingsView: View {
 
                 SettingsCard {
                     SettingRow(
-                        title: "D-pad movement",
-                        subtitle: "Distance moved for each remote press."
+                        title: "Pointer speed",
+                        subtitle: "How fast the pointer moves while you hold an arrow."
                     ) {
                         HStack(spacing: 9) {
                             Slider(value: $model.pointerSensitivity, in: 0.4...2.0, step: 0.1)
@@ -518,8 +511,38 @@ struct ControlsSettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.bottom, 11)
 
-                SectionLabel(title: "Pointer")
+                SectionLabel(title: "How to use the remote")
                     .padding(.top, 0)
+
+                SettingsCard {
+                    GestureGuideRow(
+                        symbol: "hand.tap",
+                        title: "Tap an arrow",
+                        detail: "Nudges the pointer a few pixels, for hitting a small target."
+                    )
+                    CardDivider()
+                    GestureGuideRow(
+                        symbol: "hand.point.up.left.and.text",
+                        title: "Hold an arrow",
+                        detail: "Glides the pointer, speeding up the longer you hold."
+                    )
+                    CardDivider()
+                    GestureGuideRow(
+                        symbol: "cursorarrow.click",
+                        title: "Press Center",
+                        detail: "Clicks. Press twice to double-click, hold for a right click."
+                    )
+                    CardDivider()
+                    GestureGuideRow(
+                        symbol: "arrow.up.and.down.text.horizontal",
+                        title: "Press Back twice",
+                        detail: "Switches the arrows between moving the pointer and scrolling.",
+                        highlighted: model.scrollMode,
+                        badge: model.scrollMode ? "Scrolling" : nil
+                    )
+                }
+
+                SectionLabel(title: "Pointer")
 
                 SettingsCard {
                     MappingEditorRow(button: .up, model: model)
@@ -550,7 +573,7 @@ struct ControlsSettingsView: View {
                 }
 
                 Label(
-                    "Volume, media and Home never reach the Mac — displays handle those "
+                    "Volume, media and Home never reach the Mac. Displays handle those "
                         + "themselves and never put them on the CEC bus.",
                     systemImage: "info.circle"
                 )
@@ -560,6 +583,45 @@ struct ControlsSettingsView: View {
                 .padding(.top, 10)
             }
         }
+    }
+}
+
+private struct GestureGuideRow: View {
+    let symbol: String
+    let title: String
+    let detail: String
+    var highlighted = false
+    var badge: String?
+
+    var body: some View {
+        HStack(spacing: 11) {
+            Image(systemName: symbol)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(highlighted ? Color.accentColor : .secondary)
+                .frame(width: 22)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                Text(detail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 10)
+
+            if let badge {
+                Text(badge)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8)
+                    .frame(height: 20)
+                    .background(Color.accentColor.opacity(0.14), in: Capsule())
+            }
+        }
+        .padding(.horizontal, 14)
+        .frame(minHeight: 50)
     }
 }
 
@@ -768,45 +830,52 @@ struct AboutSettingsView: View {
     var body: some View {
         PageShell(page: .about) {
             VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 13) {
+                    Image(systemName: "av.remote.fill")
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 46, height: 46)
+                        .background(
+                            Color.accentColor,
+                            in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        )
 
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Remote Bridge")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Version \(version)")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 6)
+
+                Text("Turns your TV remote into a pointer for this Mac, over the "
+                     + "HDMI cable you already have.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, 6)
+
+                SectionLabel(title: "Connection")
 
                 SettingsCard {
-                    SettingRow(title: "Remote Bridge") {
-                        Text("Version \(version)")
+                    SettingRow(title: "Display") {
+                        Text(model.displayName ?? "Not detected yet")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
-                    CardDivider()
-                    SettingRow(
-                        title: "Connected display",
-                        subtitle: model.displayName ?? "No CEC display detected yet"
-                    ) {
-                        Image(systemName: "display")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.top, 14)
-
-                SectionLabel(title: "How it works")
-
-                SettingsCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("A tiny native bridge between HDMI-CEC and macOS.")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("It listens through the Mac’s built-in HDMI-CEC service and translates TV remote buttons into pointer, browser, and media actions—without extra hardware.")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(13)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Text("CoreRC is a private macOS framework and may change in future system updates.")
+                Text("Remote buttons arrive through CoreRC, a private part of macOS. "
+                     + "A system update could change how it behaves.")
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 8)
-                    .padding(.top, 10)
+                    .padding(.top, 12)
             }
         }
     }

@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let lastButtonItem = NSMenuItem(title: "Last button: None", action: nil, keyEquivalent: "")
     private let enabledItem = NSMenuItem(title: "Enable Remote Bridge", action: #selector(toggleEnabled), keyEquivalent: "")
     private var settingsWindowController: SettingsWindowController?
+    private var onboardingWindowController: OnboardingWindowController?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -23,9 +24,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UNUserNotificationCenter.current()
             .requestAuthorization(options: [.alert]) { _, _ in }
 
-        if !UserDefaults.standard.bool(forKey: "hasOpenedPolishedSettings") {
-            UserDefaults.standard.set(true, forKey: "hasOpenedPolishedSettings")
+        if UserDefaults.standard.bool(forKey: Self.onboardingKey) {
             showSettings()
+        } else {
+            showOnboarding()
         }
     }
 
@@ -136,7 +138,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func refreshMenu() {
         menuHeader.update(status: model.status)
-        statusItem.button?.toolTip = "Remote Bridge — \(model.status.title)"
+        statusItem.button?.toolTip = "Remote Bridge: \(model.status.title)"
 
         lastButtonItem.title = "Last button: \(model.lastCommand?.displayName ?? "None")"
         enabledItem.state = model.bridgeEnabled ? .on : .off
@@ -158,6 +160,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func copyLog() {
         model.copyLogs()
+    }
+
+    static let onboardingKey = "hasCompletedOnboarding"
+
+    private func showOnboarding() {
+        let controller = OnboardingWindowController(model: model) { [weak self] in
+            UserDefaults.standard.set(true, forKey: Self.onboardingKey)
+            self?.onboardingWindowController?.close()
+            self?.onboardingWindowController = nil
+            self?.showSettings()
+        }
+        onboardingWindowController = controller
+        NSApplication.shared.setActivationPolicy(.regular)
+        controller.show()
     }
 
     @objc func showSettings() {
@@ -313,5 +329,59 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
+    }
+}
+
+@MainActor
+final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
+    init(model: BridgeModel, onFinish: @escaping () -> Void) {
+        let rootView = OnboardingView(model: model, onFinish: onFinish)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 500),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Welcome to Remote Bridge"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.isReleasedWhenClosed = false
+        window.contentViewController = NSHostingController(rootView: rootView)
+        // Assigning the hosting controller resizes the window to its fitting
+        // size, so restore the intended size before centring.
+        window.setContentSize(NSSize(width: 540, height: 500))
+
+        super.init(window: window)
+        window.delegate = self
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func show() {
+        showWindow(nil)
+        window?.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+
+        // `center()` uses whatever size the window has at call time, which is
+        // the hosting controller's fitting size until layout settles — hence
+        // positioning against the screen once the window is actually up.
+        guard let window, let screen = window.screen ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        let size = window.frame.size
+        window.setFrameOrigin(
+            NSPoint(
+                x: visible.midX - size.width / 2,
+                y: visible.midY - size.height / 2
+            )
+        )
+    }
+
+    /// Dismissing the window counts as finishing; otherwise onboarding would
+    /// reappear on every launch.
+    func windowWillClose(_ notification: Notification) {
+        UserDefaults.standard.set(true, forKey: AppDelegate.onboardingKey)
     }
 }

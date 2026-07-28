@@ -19,8 +19,8 @@ enum Theme {
 
     /// One left rail shared by the traffic lights, the status pill and the rows.
     static let sidebarInset: CGFloat = 14
-    /// Matches where a sidebar row's icon starts: `sidebarInset` + row padding.
-    static let trafficLightInset: CGFloat = 22
+    /// Same rail as the status pill and the card edges below it.
+    static let trafficLightInset: CGFloat = sidebarInset
     static let trafficLightSpacing: CGFloat = 20
     static let sidebarWidth: CGFloat = 220
     static let pageInset: CGFloat = 22

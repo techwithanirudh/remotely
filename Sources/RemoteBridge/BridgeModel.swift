@@ -308,7 +308,7 @@ final class BridgeModel: ObservableObject {
         if accessibilityGranted { return true }
         guard Date().timeIntervalSince(lastPermissionNotice) > 30 else { return false }
         lastPermissionNotice = Date()
-        appendLog("Ignored — Accessibility permission is not granted")
+        appendLog("Ignored, Accessibility permission is not granted")
         notifyPermissionNeeded()
         return false
     }

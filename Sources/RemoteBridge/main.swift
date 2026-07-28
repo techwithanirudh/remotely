@@ -15,7 +15,7 @@ if CommandLine.arguments.contains("--diagnose-cec") {
     client.onRelease = { print("release") }
 
     client.start()
-    print("listening \(Int(seconds))s — press remote buttons now")
+    print("listening \(Int(seconds))s, press remote buttons now")
     RunLoop.main.run(until: Date().addingTimeInterval(seconds))
     client.stop()
 } else {
