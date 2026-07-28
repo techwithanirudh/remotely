@@ -20,6 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observeModel()
         model.start()
 
+        OnboardingProgress.resetIfReinstalled()
+
         if OnboardingProgress.isComplete {
             showSettings()
         } else {

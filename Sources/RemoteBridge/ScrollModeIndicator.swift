@@ -27,12 +27,18 @@ final class ScrollModeIndicator {
         )
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = true
+        // The panel draws no shape of its own: its rounded backing showed
+        // through behind the capsule and read as a second, squarer edge.
+        panel.hasShadow = false
         panel.level = .statusBar
         panel.ignoresMouseEvents = true
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
-        panel.contentViewController = NSHostingController(rootView: ScrollModeChip())
-        panel.setContentSize(NSSize(width: 116, height: 30))
+
+        let host = NSHostingController(rootView: ScrollModeChip())
+        host.view.wantsLayer = true
+        host.view.layer?.backgroundColor = NSColor.clear.cgColor
+        panel.contentViewController = host
+        panel.setContentSize(NSSize(width: 116, height: 34))
         panel.orderFrontRegardless()
         window = panel
 
@@ -74,13 +80,12 @@ private struct ScrollModeChip: View {
                 .font(.system(size: 11.5, weight: .semibold))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 11)
+        .padding(.horizontal, 12)
         .frame(height: 26)
+        // One shape only. The stroke and the panel's own backing were each
+        // adding an edge, so the capsule looked doubled.
         .background(Color.purple, in: Capsule())
-        .overlay {
-            Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1)
-        }
-        .shadow(color: .black.opacity(0.28), radius: 6, y: 2)
+        .shadow(color: .black.opacity(0.3), radius: 5, y: 2)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
