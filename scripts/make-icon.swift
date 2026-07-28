@@ -3,14 +3,20 @@ import AppKit
 
 // Generates the app icon.
 //
-// Built the way Alcove's is: a dark bezel wrapped around an inner panel that
-// carries a vertical gradient, lit from the bottom so the panel reads as
-// glowing rather than painted. The remote glyph sits on top in white.
+// Shaped like every other macOS app icon: one squircle filling the tile, with a
+// ~100pt margin for the shadow, and a glyph large enough to read at dock size.
+// An earlier version wrapped the panel in a thick bezel the way Alcove's does,
+// which shrank the artwork so far that it looked tiny next to Finder and
+// Settings in the dock.
 
 let side: CGFloat = 1024
-let outerInset: CGFloat = 92        // macOS icons float inside their canvas
-let bezelRadius: CGFloat = 232
-let bezelWidth: CGFloat = 58
+let margin: CGFloat = 100
+let cornerRadius: CGFloat = 185     // macOS squircle is ~0.2237 of the tile
+let glyphSize: CGFloat = 470
+
+let tile = NSRect(x: margin, y: margin,
+                  width: side - margin * 2,
+                  height: side - margin * 2)
 
 func squircle(_ rect: NSRect, _ radius: CGFloat) -> NSBezierPath {
     NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius)
@@ -23,52 +29,43 @@ context.setAllowsAntialiasing(true)
 // Without this the canvas comes out opaque black instead of transparent.
 context.clear(CGRect(x: 0, y: 0, width: side, height: side))
 
-let outerRect = NSRect(x: outerInset, y: outerInset,
-                       width: side - outerInset * 2,
-                       height: side - outerInset * 2)
+let shape = squircle(tile, cornerRadius)
 
-// Bezel, with the drop shadow macOS icons carry.
+// Tile, with the drop shadow macOS icons carry.
 context.saveGState()
-context.setShadow(offset: CGSize(width: 0, height: -14), blur: 34,
-                  color: NSColor.black.withAlphaComponent(0.34).cgColor)
-NSColor(calibratedWhite: 0.09, alpha: 1).setFill()
-squircle(outerRect, bezelRadius).fill()
+context.setShadow(offset: CGSize(width: 0, height: -12), blur: 30,
+                  color: NSColor.black.withAlphaComponent(0.30).cgColor)
+NSColor(calibratedWhite: 0.12, alpha: 1).setFill()
+shape.fill()
 context.restoreGState()
 
-// Inner panel.
-let innerRect = outerRect.insetBy(dx: bezelWidth, dy: bezelWidth)
-let innerRadius = bezelRadius - bezelWidth * 0.72
-let panel = squircle(innerRect, innerRadius)
-
+// Graphite ramp, lighter at the top so it catches light like a real object.
 context.saveGState()
-panel.addClip()
-let gradient = NSGradient(colors: [
-    NSColor(srgbRed: 0.09, green: 0.10, blue: 0.13, alpha: 1),   // near-black
-    NSColor(srgbRed: 0.13, green: 0.15, blue: 0.20, alpha: 1),
-    NSColor(srgbRed: 0.20, green: 0.24, blue: 0.32, alpha: 1),
-    NSColor(srgbRed: 0.34, green: 0.41, blue: 0.53, alpha: 1),   // lifted slate
-])
-gradient?.draw(in: innerRect, angle: -90)
+shape.addClip()
+NSGradient(colors: [
+    NSColor(srgbRed: 0.30, green: 0.33, blue: 0.39, alpha: 1),
+    NSColor(srgbRed: 0.17, green: 0.19, blue: 0.23, alpha: 1),
+    NSColor(srgbRed: 0.09, green: 0.10, blue: 0.12, alpha: 1),
+])?.draw(in: tile, angle: -90)
 
-// Bloom along the bottom edge, which is what sells the glow.
-let bloom = NSGradient(colors: [
-    NSColor.white.withAlphaComponent(0.0),
+// Highlight across the top edge.
+NSGradient(colors: [
     NSColor.white.withAlphaComponent(0.16),
-])
-bloom?.draw(in: NSRect(x: innerRect.minX, y: innerRect.minY,
-                       width: innerRect.width, height: innerRect.height * 0.34),
-            angle: -90)
+    NSColor.white.withAlphaComponent(0.0),
+])?.draw(in: NSRect(x: tile.minX, y: tile.maxY - tile.height * 0.42,
+                    width: tile.width, height: tile.height * 0.42),
+         angle: -90)
 context.restoreGState()
 
-// Inner rim highlight.
+// Rim.
 context.saveGState()
-NSColor.white.withAlphaComponent(0.16).setStroke()
-panel.lineWidth = 3
-panel.stroke()
+NSColor.white.withAlphaComponent(0.14).setStroke()
+shape.lineWidth = 2.5
+shape.stroke()
 context.restoreGState()
 
-// Remote glyph in white, centred in the panel.
-let config = NSImage.SymbolConfiguration(pointSize: 300, weight: .medium)
+// Remote glyph, centred and large enough to carry the tile.
+let config = NSImage.SymbolConfiguration(pointSize: glyphSize, weight: .regular)
 if let symbol = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescription: nil)?
     .withSymbolConfiguration(config) {
     let white = NSImage(size: symbol.size)
@@ -79,15 +76,15 @@ if let symbol = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescrip
     white.unlockFocus()
 
     let target = NSRect(
-        x: innerRect.midX - symbol.size.width / 2,
-        y: innerRect.midY - symbol.size.height / 2,
+        x: tile.midX - symbol.size.width / 2,
+        y: tile.midY - symbol.size.height / 2,
         width: symbol.size.width,
         height: symbol.size.height
     )
 
     context.saveGState()
-    context.setShadow(offset: CGSize(width: 0, height: -6), blur: 22,
-                      color: NSColor.black.withAlphaComponent(0.5).cgColor)
+    context.setShadow(offset: CGSize(width: 0, height: -6), blur: 24,
+                      color: NSColor.black.withAlphaComponent(0.45).cgColor)
     white.draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
     context.restoreGState()
 }

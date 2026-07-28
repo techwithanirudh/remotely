@@ -1,90 +1,180 @@
 import SwiftUI
+import AppKit
 
 /// The practice steps.
 ///
-/// One action per screen rather than a single crowded panel: each is a real
-/// SwiftUI control, so the remote drives it exactly as it drives the rest of the
-/// system. Nothing here is simulated, which is the point.
+/// One action per screen, each with a single target. These are real events, so
+/// the trackpad would satisfy every one of them — which would teach the user
+/// nothing. Each target checks the signature Remote Bridge stamps onto the
+/// events it injects and rejects anything that came from the actual mouse.
 
-/// Aim the pointer at a target and hit it.
+/// Watches mouse events and reports whether they came from the remote.
+@MainActor
+private final class PracticeMonitor: ObservableObject {
+    enum Outcome: Equatable {
+        case waiting
+        case wrongSource
+        case satisfied
+    }
+
+    @Published private(set) var outcome: Outcome = .waiting
+
+    private var monitor: Any?
+
+    /// - Parameter accepts: which events count as completing the exercise.
+    func start(matching mask: NSEvent.EventTypeMask, accepts: @escaping (NSEvent) -> Bool) {
+        stop()
+        monitor = NSEvent.addLocalMonitorForEvents(matching: mask) { event in
+            // The monitor already runs on the main thread; NSEvent is not
+            // Sendable, so decide here and hand the result across.
+            if accepts(event) {
+                let fromRemote = RemoteEventSignature.marks(event)
+                MainActor.assumeIsolated {
+                    self.outcome = fromRemote ? .satisfied : .wrongSource
+                }
+            }
+            return event
+        }
+    }
+
+    func stop() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+    }
+}
+
+/// Shared target: a dot that only lights up for remote-driven input.
+private struct PracticeTarget: View {
+    let outcome: PracticeMonitor.Outcome
+    let idleSymbol: String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Circle()
+                .fill(fill)
+                .frame(width: 38, height: 38)
+                .overlay {
+                    Image(systemName: symbol)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(outcome == .waiting ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
+                }
+
+            Text(caption)
+                .font(.system(size: 11))
+                .foregroundStyle(outcome == .wrongSource ? .orange : .secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .cardSurface(cornerRadius: Theme.cardCornerRadius)
+    }
+
+    private var fill: Color {
+        switch outcome {
+        case .waiting: Color.primary.opacity(0.12)
+        case .wrongSource: .orange
+        case .satisfied: .green
+        }
+    }
+
+    private var symbol: String {
+        switch outcome {
+        case .waiting: idleSymbol
+        case .wrongSource: "exclamationmark"
+        case .satisfied: "checkmark"
+        }
+    }
+
+    private var caption: String {
+        switch outcome {
+        case .waiting: "Waiting for the remote"
+        case .wrongSource: "That was your mouse. Try the remote."
+        case .satisfied: "That came from the remote"
+        }
+    }
+}
+
 struct MoveStep: View {
-    @State private var reached = false
+    @StateObject private var monitor = PracticeMonitor()
 
     var body: some View {
         OnboardingStep(
             title: "Hold an arrow to move the pointer",
-            hint: reached
-                ? "That is the whole trick: hold to travel, tap to fine-tune."
-                : "Holding speeds up the longer you hold. A quick tap nudges a few pixels."
+            hint: "Holding speeds up the longer you hold. A quick tap nudges a few pixels."
         ) {
             PermissionDialogMock(symbol: "arrow.up.and.down.and.arrow.left.and.right",
                                  tint: .blue)
         } accessory: {
-            ZStack {
-                RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
-                    .fill(Color.clear)
-
-                Circle()
-                    .fill(reached ? Color.green : Color.primary.opacity(0.13))
-                    .frame(width: 34, height: 34)
-                    .overlay {
-                        Image(systemName: reached ? "checkmark" : "scope")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(reached ? .white : .secondary)
-                    }
-                    .onHover { if $0 { reached = true } }
-            }
-            .frame(height: 74)
-            .frame(maxWidth: .infinity)
-            .cardSurface(cornerRadius: Theme.cardCornerRadius)
+            PracticeTarget(outcome: monitor.outcome, idleSymbol: "scope")
+                .onAppear {
+                    monitor.start(matching: .mouseMoved) { _ in true }
+                }
+                .onDisappear { monitor.stop() }
         }
     }
 }
 
-/// Click three targets with Center.
 struct ClickStep: View {
-    @State private var clicked: Set<Int> = []
+    @StateObject private var monitor = PracticeMonitor()
 
     var body: some View {
         OnboardingStep(
             title: "Press Center to click",
-            hint: clicked.count == 3
-                ? "Press twice quickly to double-click, hold for a right click."
-                : "Move onto a dot, then press Center."
+            hint: "Move onto something, then press Center once."
         ) {
             PermissionDialogMock(symbol: "cursorarrow.click", tint: .purple)
         } accessory: {
-            HStack(spacing: 16) {
-                ForEach(0..<3, id: \.self) { index in
-                    Button {
-                        clicked.insert(index)
-                    } label: {
-                        Circle()
-                            .fill(clicked.contains(index)
-                                  ? Color.green
-                                  : Color.primary.opacity(0.13))
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                if clicked.contains(index) {
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundStyle(.white)
-                                }
-                            }
-                    }
-                    .buttonStyle(.plain)
+            PracticeTarget(outcome: monitor.outcome, idleSymbol: "cursorarrow")
+                .onAppear {
+                    monitor.start(matching: .leftMouseDown) { $0.clickCount == 1 }
                 }
-            }
-            .frame(height: 74)
-            .frame(maxWidth: .infinity)
-            .cardSurface(cornerRadius: Theme.cardCornerRadius)
+                .onDisappear { monitor.stop() }
         }
     }
 }
 
-/// Switch to scroll mode and move a list.
+struct DoubleClickStep: View {
+    @StateObject private var monitor = PracticeMonitor()
+
+    var body: some View {
+        OnboardingStep(
+            title: "Press Center twice to double-click",
+            hint: "Two quick presses. This is what opens files and folders."
+        ) {
+            PermissionDialogMock(symbol: "cursorarrow.rays", tint: .pink)
+        } accessory: {
+            PracticeTarget(outcome: monitor.outcome, idleSymbol: "2.circle")
+                .onAppear {
+                    monitor.start(matching: .leftMouseDown) { $0.clickCount >= 2 }
+                }
+                .onDisappear { monitor.stop() }
+        }
+    }
+}
+
+struct RightClickStep: View {
+    @StateObject private var monitor = PracticeMonitor()
+
+    var body: some View {
+        OnboardingStep(
+            title: "Hold Center for a right click",
+            hint: "Keep Center held for half a second to open a context menu."
+        ) {
+            PermissionDialogMock(symbol: "contextualmenu.and.cursorarrow", tint: .indigo)
+        } accessory: {
+            PracticeTarget(outcome: monitor.outcome, idleSymbol: "hand.point.up.left")
+                .onAppear {
+                    monitor.start(matching: .rightMouseDown) { _ in true }
+                }
+                .onDisappear { monitor.stop() }
+        }
+    }
+}
+
 struct ScrollStep: View {
     @ObservedObject var model: BridgeModel
+    @StateObject private var monitor = PracticeMonitor()
 
     var body: some View {
         OnboardingStep(
@@ -95,19 +185,11 @@ struct ScrollStep: View {
         ) {
             PermissionDialogMock(symbol: "arrow.up.and.down.text.horizontal", tint: .teal)
         } accessory: {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(1...16, id: \.self) { row in
-                        Text("Scrollable line \(row)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    }
+            PracticeTarget(outcome: monitor.outcome, idleSymbol: "arrow.up.arrow.down")
+                .onAppear {
+                    monitor.start(matching: .scrollWheel) { _ in true }
                 }
-                .padding(9)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(height: 74)
-            .cardSurface(cornerRadius: Theme.cardCornerRadius)
+                .onDisappear { monitor.stop() }
         }
     }
 }

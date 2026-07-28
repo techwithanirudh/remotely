@@ -10,6 +10,18 @@ import RemoteCore
 /// small amount per tick and ramps the speed up the longer the key is held.
 /// A quick tap therefore nudges by a few pixels — enough to hit a menu item —
 /// while holding glides across the screen. Fixed per-press jumps cannot do both.
+
+/// Stamped onto every event this app injects, so a listener can tell a remote
+/// press apart from the user's own mouse. CGEvent carries a spare user-data
+/// field for exactly this; timing correlation would only ever be a guess.
+enum RemoteEventSignature {
+    static let value: Int64 = 0x52_45_4D_42  // "REMB"
+
+    static func marks(_ event: NSEvent) -> Bool {
+        event.cgEvent?.getIntegerValueField(.eventSourceUserData) == value
+    }
+}
+
 @MainActor
 final class MacController {
     /// Speed the cursor starts at, in points per second.
@@ -106,12 +118,14 @@ final class MacController {
             x: min(max(0, current.x + vector.dx * distance), bounds.width - 1),
             y: min(max(0, current.y + vector.dy * distance), bounds.height - 1)
         )
-        CGEvent(
+        let move = CGEvent(
             mouseEventSource: nil,
             mouseType: .mouseMoved,
             mouseCursorPosition: target,
             mouseButton: .left
-        )?.post(tap: .cghidEventTap)
+        )
+        move?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
+        move?.post(tap: .cghidEventTap)
     }
 
     private func startScrollTimer(sensitivity: Double) {
@@ -136,6 +150,7 @@ final class MacController {
             wheel2: Int32(-vector.dx * distance),
             wheel3: 0
         )
+        event?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
         event?.post(tap: .cghidEventTap)
     }
 
@@ -153,6 +168,7 @@ final class MacController {
                 mouseButton: button
             )
             event?.setIntegerValueField(.mouseEventClickState, value: clickState)
+            event?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
             event?.post(tap: .cghidEventTap)
         }
     }
@@ -160,9 +176,11 @@ final class MacController {
     private func pressKey(_ keyCode: CGKeyCode, flags: CGEventFlags = []) {
         let down = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true)
         down?.flags = flags
+        down?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
         down?.post(tap: .cghidEventTap)
         let up = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false)
         up?.flags = flags
+        up?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
         up?.post(tap: .cghidEventTap)
     }
 }

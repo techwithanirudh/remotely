@@ -169,18 +169,21 @@ struct MappingEditorRow: View {
             .controlSize(.small)
             .frame(width: 178)
 
-            // Only takes up space when there is something to reset.
-            if !model.isDefaultAction(for: button) {
-                Button {
-                    model.resetAction(for: button)
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 11, weight: .semibold))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Reset to default")
+            // The slot is always present so the pickers stay on one line.
+            // Inserting the button only when needed shunted that row's picker
+            // sideways, which read worse than a little reserved space.
+            Button {
+                model.resetAction(for: button)
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 11, weight: .semibold))
             }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Reset to default")
+            .opacity(model.isDefaultAction(for: button) ? 0 : 1)
+            .disabled(model.isDefaultAction(for: button))
+            .frame(width: 14)
         }
         .padding(.horizontal, 12)
         .frame(height: 43)

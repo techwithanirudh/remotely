@@ -53,6 +53,8 @@ struct OnboardingView: View {
         case .permission: PermissionStep(model: model)
         case .move: MoveStep()
         case .click: ClickStep()
+        case .doubleClick: DoubleClickStep()
+        case .rightClick: RightClickStep()
         case .scroll: ScrollStep(model: model)
         }
     }
@@ -89,20 +91,40 @@ struct OnboardingView: View {
         .frame(height: 22)
     }
 
+    /// A blocked step reports why on the button rather than in a status row
+    /// above it, and offers the action that unblocks it where one exists.
+    private var primaryTitle: String {
+        switch step {
+        case .connect where !canContinue: "Waiting for the remote…"
+        case .permission where !canContinue: "Open System Settings"
+        default: isLast ? "Done" : "Continue"
+        }
+    }
+
+    private func runPrimary() {
+        if step == .permission, !canContinue {
+            model.requestAccessibility()
+            return
+        }
+        advance()
+    }
+
     private var footer: some View {
         VStack(spacing: 8) {
-            OnboardingButton(title: isLast ? "Done" : "Continue", action: advance)
-                .disabled(!canContinue)
-                .opacity(canContinue ? 1 : 0.4)
+            OnboardingButton(
+                title: primaryTitle,
+                waiting: step == .connect && !canContinue,
+                action: runPrimary
+            )
 
-            // Never trap someone whose TV will not report CEC, or who wants to
-            // grant permission later.
-            Button(isLast ? "Skip" : "Skip for now", action: advance)
+            // Never trap someone whose TV will not report CEC. Accessibility
+            // has no skip: without it nothing the app does works.
+            Button("Skip for now", action: advance)
                 .buttonStyle(.plain)
                 .font(.system(size: 11.5))
                 .foregroundStyle(.secondary)
-                .opacity(canContinue ? 0 : 1)
-                .disabled(canContinue)
+                .opacity(canContinue || !step.isSkippable ? 0 : 1)
+                .disabled(canContinue || !step.isSkippable)
                 .frame(height: 16)
         }
     }

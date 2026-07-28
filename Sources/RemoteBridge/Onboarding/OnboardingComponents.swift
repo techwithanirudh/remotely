@@ -125,14 +125,16 @@ struct OnboardingIconRow: View {
 
                 VStack(spacing: 7) {
                     Image(systemName: item.symbol)
-                        .font(.system(size: 19, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(item.tint)
-                        .frame(height: 24)
+                        .frame(height: 22)
 
                     Text(item.label)
-                        .font(.system(size: 11.5))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -195,32 +197,42 @@ struct OnboardingCheck: View {
 }
 
 /// Alcove's full-width, card-styled action button.
+///
+/// Carries its own waiting state: a step that is blocked says so here rather
+/// than adding a separate status row above a greyed-out button, which was
+/// saying the same thing twice.
 struct OnboardingButton: View {
     let title: String
-    var prominent = true
+    var waiting = false
     let action: () -> Void
 
     @State private var hovering = false
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .frame(maxWidth: .infinity)
-                .frame(height: 34)
-                .contentShape(Rectangle())
+            HStack(spacing: 7) {
+                if waiting {
+                    ProgressView().controlSize(.small).scaleEffect(0.75)
+                }
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 34)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(prominent ? Color.primary : Color.secondary)
+        .foregroundStyle(waiting ? Color.secondary : Color.primary)
         .background {
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(prominent ? Theme.cardFill : Color.clear)
+                .fill(Theme.cardFill.opacity(waiting ? 0.5 : 1))
                 .overlay {
                     RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                        .strokeBorder(prominent ? Theme.cardStroke : .clear, lineWidth: 1)
+                        .strokeBorder(Theme.cardStroke, lineWidth: 1)
                 }
-                .brightness(hovering && prominent ? 0.04 : 0)
+                .brightness(hovering && !waiting ? 0.04 : 0)
         }
         .onHover { hovering = $0 }
+        .disabled(waiting)
     }
 }
