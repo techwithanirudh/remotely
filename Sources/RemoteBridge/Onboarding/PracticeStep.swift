@@ -163,7 +163,14 @@ struct RightClickStep: View {
         ) {
             PermissionDialogMock(symbol: "contextualmenu.and.cursorarrow", tint: .indigo)
         } accessory: {
+            // A real context menu, so the gesture is proven end to end rather
+            // than just registering that a right click happened.
             PracticeTarget(outcome: monitor.outcome, idleSymbol: "hand.point.up.left")
+                .contextMenu {
+                    Text("This is a context menu")
+                    Divider()
+                    Button("Your remote opened it") {}
+                }
                 .onAppear {
                     monitor.start(matching: .rightMouseDown) { _ in true }
                 }
