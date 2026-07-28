@@ -27,17 +27,19 @@ struct OnboardingView: View {
             VisualEffectPanel()
 
             VStack(spacing: 0) {
-                Spacer(minLength: 12)
+                header
+
+                Spacer(minLength: 10)
 
                 content
                     .frame(maxWidth: .infinity)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 10)
 
                 footer
             }
             .padding(.horizontal, 22)
-            .padding(.vertical, 20)
+            .padding(.vertical, 18)
         }
         .frame(width: Self.panelSize.width, height: Self.panelSize.height)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -49,39 +51,59 @@ struct OnboardingView: View {
         case .welcome: WelcomeStep()
         case .connect: ConnectStep(model: model, brand: $brand)
         case .permission: PermissionStep(model: model)
-        case .practice: PracticeStep(model: model)
+        case .move: MoveStep()
+        case .click: ClickStep()
+        case .scroll: ScrollStep(model: model)
         }
     }
 
-    private var footer: some View {
-        VStack(spacing: 12) {
-            OnboardingButton(title: isLast ? "Done" : "Continue", action: advance)
-                .disabled(!canContinue)
-                .opacity(canContinue ? 1 : 0.45)
-
-            HStack(spacing: 10) {
-                if step != .welcome {
-                    Button("Back", action: goBack)
-                        .buttonStyle(.plain)
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(.secondary)
-                }
-
+    /// Back and progress live up here so the bottom is just the action, the way
+    /// Alcove's is. Crowding them onto one footer row read as clutter.
+    private var header: some View {
+        ZStack {
+            HStack(spacing: 5) {
                 ForEach(steps, id: \.self) { item in
-                    Circle()
-                        .fill(item == step ? Color.primary.opacity(0.55) : Color.primary.opacity(0.16))
-                        .frame(width: 5, height: 5)
-                }
-
-                // Never trap someone whose TV will not report CEC, or who wants
-                // to grant permission later.
-                if !canContinue {
-                    Button(isLast ? "Skip" : "Skip for now", action: advance)
-                        .buttonStyle(.plain)
-                        .font(.system(size: 11.5))
-                        .foregroundStyle(.secondary)
+                    Capsule()
+                        .fill(item == step
+                              ? Color.primary.opacity(0.45)
+                              : Color.primary.opacity(0.14))
+                        .frame(width: item == step ? 14 : 5, height: 5)
+                        .animation(.easeOut(duration: 0.18), value: step)
                 }
             }
+
+            HStack {
+                if step != .welcome {
+                    Button(action: goBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 22, height: 22)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+        }
+        .frame(height: 22)
+    }
+
+    private var footer: some View {
+        VStack(spacing: 8) {
+            OnboardingButton(title: isLast ? "Done" : "Continue", action: advance)
+                .disabled(!canContinue)
+                .opacity(canContinue ? 1 : 0.4)
+
+            // Never trap someone whose TV will not report CEC, or who wants to
+            // grant permission later.
+            Button(isLast ? "Skip" : "Skip for now", action: advance)
+                .buttonStyle(.plain)
+                .font(.system(size: 11.5))
+                .foregroundStyle(.secondary)
+                .opacity(canContinue ? 0 : 1)
+                .disabled(canContinue)
+                .frame(height: 16)
         }
     }
 
@@ -102,7 +124,10 @@ struct OnboardingView: View {
 private struct VisualEffectPanel: NSViewRepresentable {
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
-        view.material = .underWindowBackground
+        // `.underWindowBackground` has nothing to sit under in a borderless
+        // floating panel and renders flat grey; `.popover` actually blurs
+        // what is behind the window.
+        view.material = .popover
         view.blendingMode = .behindWindow
         view.state = .active
         return view

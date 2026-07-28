@@ -148,15 +148,19 @@ struct OnboardingBullet: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 9) {
+        // Centred on the first line rather than baseline-aligned: a baseline
+        // sits the disc low against its own text.
+        HStack(alignment: .top, spacing: 10) {
             Text("\(number)")
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
-                .frame(width: 17, height: 17)
+                .frame(width: 18, height: 18)
                 .background(Color.accentColor, in: Circle())
+                .frame(height: 17, alignment: .center)
 
             Text(text)
                 .font(.system(size: 12))
+                .frame(height: 17, alignment: .center)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 0)

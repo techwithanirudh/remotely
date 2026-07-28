@@ -43,17 +43,17 @@ let panel = squircle(innerRect, innerRadius)
 context.saveGState()
 panel.addClip()
 let gradient = NSGradient(colors: [
-    NSColor(srgbRed: 0.16, green: 0.11, blue: 0.44, alpha: 1),   // deep indigo
-    NSColor(srgbRed: 0.16, green: 0.35, blue: 0.86, alpha: 1),   // blue
-    NSColor(srgbRed: 0.29, green: 0.75, blue: 0.96, alpha: 1),   // sky
-    NSColor(srgbRed: 0.79, green: 0.97, blue: 1.00, alpha: 1),   // near-white glow
+    NSColor(srgbRed: 0.09, green: 0.10, blue: 0.13, alpha: 1),   // near-black
+    NSColor(srgbRed: 0.13, green: 0.15, blue: 0.20, alpha: 1),
+    NSColor(srgbRed: 0.20, green: 0.24, blue: 0.32, alpha: 1),
+    NSColor(srgbRed: 0.34, green: 0.41, blue: 0.53, alpha: 1),   // lifted slate
 ])
 gradient?.draw(in: innerRect, angle: -90)
 
 // Bloom along the bottom edge, which is what sells the glow.
 let bloom = NSGradient(colors: [
     NSColor.white.withAlphaComponent(0.0),
-    NSColor.white.withAlphaComponent(0.55),
+    NSColor.white.withAlphaComponent(0.16),
 ])
 bloom?.draw(in: NSRect(x: innerRect.minX, y: innerRect.minY,
                        width: innerRect.width, height: innerRect.height * 0.34),
@@ -62,14 +62,12 @@ context.restoreGState()
 
 // Inner rim highlight.
 context.saveGState()
-NSColor.white.withAlphaComponent(0.30).setStroke()
+NSColor.white.withAlphaComponent(0.16).setStroke()
 panel.lineWidth = 3
 panel.stroke()
 context.restoreGState()
 
-// Remote glyph in white, sitting slightly high so it stays on the darker part
-// of the gradient where it has contrast, with a soft shadow to lift it off the
-// bright lower half.
+// Remote glyph in white, centred in the panel.
 let config = NSImage.SymbolConfiguration(pointSize: 300, weight: .medium)
 if let symbol = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescription: nil)?
     .withSymbolConfiguration(config) {
@@ -82,15 +80,14 @@ if let symbol = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescrip
 
     let target = NSRect(
         x: innerRect.midX - symbol.size.width / 2,
-        y: innerRect.midY - symbol.size.height / 2 + innerRect.height * 0.07,
+        y: innerRect.midY - symbol.size.height / 2,
         width: symbol.size.width,
         height: symbol.size.height
     )
 
     context.saveGState()
-    context.setShadow(offset: CGSize(width: 0, height: -8), blur: 26,
-                      color: NSColor(srgbRed: 0.05, green: 0.10, blue: 0.35,
-                                     alpha: 0.45).cgColor)
+    context.setShadow(offset: CGSize(width: 0, height: -6), blur: 22,
+                      color: NSColor.black.withAlphaComponent(0.5).cgColor)
     white.draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
     context.restoreGState()
 }

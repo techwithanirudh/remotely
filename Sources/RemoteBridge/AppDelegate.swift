@@ -321,9 +321,16 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             .compactMap { window.standardWindowButton($0) }
 
         for (index, button) in buttons.enumerated() {
-            var frame = button.frame
-            frame.origin.x = Theme.trafficLightInset + CGFloat(index) * Theme.trafficLightSpacing
-            button.setFrameOrigin(frame.origin)
+            guard let titlebar = button.superview else { continue }
+            // AppKit's y origin is bottom-left, so measure down from the top of
+            // the titlebar view.
+            let centreY = titlebar.bounds.height - Theme.trafficLightTopInset
+            button.setFrameOrigin(
+                NSPoint(
+                    x: Theme.trafficLightInset + CGFloat(index) * Theme.trafficLightSpacing,
+                    y: centreY - button.bounds.height / 2
+                )
+            )
         }
     }
 
