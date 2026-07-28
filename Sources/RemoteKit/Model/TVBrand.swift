@@ -57,16 +57,20 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
+    /// Only pages confirmed to resolve. The rest are deliberately absent
+    /// rather than pointing at a guessed article or a generic support home:
+    /// the menu path above is the part that actually helps, and a dead link
+    /// is worse than none.
     public var supportURL: URL? {
         switch self {
-        case .samsung: URL(string: "https://www.samsung.com/us/support/answer/ANS10006946/")
-        case .lg: URL(string: "https://www.lg.com/us/support/help-library/lg-tv-simplink-CT10000018")
-        case .sony: URL(string: "https://www.sony.com/electronics/support/articles/00021747")
-        case .tclRoku: URL(string: "https://support.roku.com/article/208755668")
-        case .hisense: URL(string: "https://www.hisense-usa.com/support")
-        case .vizio: URL(string: "https://support.vizio.com/s/article/Using-CEC")
-        case .philips: URL(string: "https://www.philips.co.uk/c-f/XC000009262/what-is-easylink-hdmi-cec")
-        case .panasonic: URL(string: "https://www.panasonic.com/global/support.html")
+        case .samsung:
+            URL(string: "https://www.samsung.com/us/support/answer/ANS10006946/")
+        case .lg:
+            URL(string: "https://www.lg.com/us/support/help-library/lg-tv-simplink-CT10000018")
+        case .tclRoku:
+            URL(string: "https://support.roku.com/article/208755668")
+        case .sony, .hisense, .vizio, .philips, .panasonic:
+            nil
         }
     }
 }

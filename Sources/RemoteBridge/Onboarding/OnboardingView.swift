@@ -122,13 +122,17 @@ struct OnboardingView: View {
                 action: runPrimary
             )
 
-            Button("Skip for now", action: advance)
-                .buttonStyle(.plain)
-                .font(.system(size: 11.5))
-                .foregroundStyle(.secondary)
-                .opacity(canContinue || !step.isSkippable ? 0 : 1)
-                .disabled(canContinue || !step.isSkippable)
-                .frame(height: 16)
+            // Reserved only where a skip can appear. A step that can never
+            // show one left dead space under the button.
+            if step.isSkippable {
+                Button("Skip for now", action: advance)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(.secondary)
+                    .opacity(canContinue ? 0 : 1)
+                    .disabled(canContinue)
+                    .frame(height: 16)
+            }
         }
     }
 
