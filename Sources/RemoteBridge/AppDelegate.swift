@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
+import UserNotifications
 import RemoteCore
 
 @MainActor
@@ -19,6 +20,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observeModel()
         model.start()
 
+        UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert]) { _, _ in }
+
         if !UserDefaults.standard.bool(forKey: "hasOpenedPolishedSettings") {
             UserDefaults.standard.set(true, forKey: "hasOpenedPolishedSettings")
             showSettings()
@@ -27,6 +31,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         model.stop()
+    }
+
+    /// Opening the app again while it is already running has no Dock icon to
+    /// bounce, so bring Settings forward instead of doing nothing.
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows: Bool
+    ) -> Bool {
+        showSettings()
+        return true
     }
 
     private func configureStatusItem() {
@@ -108,11 +122,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.$bridgeEnabled
             .sink { [weak self] _ in self?.refreshMenu() }
             .store(in: &cancellables)
+
+        model.$accessibilityGranted
+            .sink { [weak self] _ in self?.refreshMenu() }
+            .store(in: &cancellables)
+
+        // Accessibility can be granted while the app runs, and macOS sends no
+        // notification when it is.
+        Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.model.refreshPermissions() }
+        }
     }
 
     private func refreshMenu() {
-        menuHeader.update(state: model.connectionState)
-        statusItem.button?.toolTip = "Remote Bridge — \(model.connectionState.displayName)"
+        menuHeader.update(status: model.status)
+        statusItem.button?.toolTip = "Remote Bridge — \(model.status.title)"
 
         lastButtonItem.title = "Last button: \(model.lastCommand?.displayName ?? "None")"
         enabledItem.state = model.bridgeEnabled ? .on : .off
@@ -140,6 +164,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if settingsWindowController == nil {
             settingsWindowController = SettingsWindowController(model: model)
         }
+        // A menu bar app is .accessory, which cannot take proper key focus.
+        // Become a regular app while the window is up; closing it reverts.
+        NSApplication.shared.setActivationPolicy(.regular)
         settingsWindowController?.show()
         model.refreshPermissions()
     }
@@ -204,17 +231,17 @@ private final class MenuHeaderView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func update(state: CECClient.State) {
-        statusLabel.stringValue = state.displayName
-        dotView.layer?.backgroundColor = color(for: state).cgColor
+    func update(status: BridgeStatus) {
+        statusLabel.stringValue = status.title
+        dotView.layer?.backgroundColor = color(for: status).cgColor
     }
 
-    private func color(for state: CECClient.State) -> NSColor {
-        switch state {
-        case .running: .systemGreen
-        case .waitingForHDMI: .systemOrange
+    private func color(for status: BridgeStatus) -> NSColor {
+        switch status {
+        case .ready: .systemGreen
+        case .waitingForRemote, .needsPermission: .systemOrange
         case .unsupported, .failed: .systemRed
-        case .stopped: .secondaryLabelColor
+        case .paused: .secondaryLabelColor
         }
     }
 }
@@ -258,6 +285,30 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
+        alignTrafficLights()
+    }
+
+    func windowDidResize(_ notification: Notification) {
+        alignTrafficLights()
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        alignTrafficLights()
+    }
+
+    /// Lines the window buttons up with the sidebar row icons. AppKit parks them
+    /// 7pt from the edge, which reads as misaligned against everything below.
+    /// Only x moves — nudging y is what makes them look wrong.
+    private func alignTrafficLights() {
+        guard let window else { return }
+        let buttons = [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton]
+            .compactMap { window.standardWindowButton($0) }
+
+        for (index, button) in buttons.enumerated() {
+            var frame = button.frame
+            frame.origin.x = Theme.trafficLightInset + CGFloat(index) * Theme.trafficLightSpacing
+            button.setFrameOrigin(frame.origin)
+        }
     }
 
     func windowWillClose(_ notification: Notification) {

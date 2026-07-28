@@ -51,30 +51,14 @@ struct SettingsRootView: View {
 
             HStack(spacing: 0) {
                 SettingsSidebar(selection: $selection, model: model)
-                    .frame(width: 228)
+                    .frame(width: Theme.sidebarWidth)
 
                 Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.white.opacity(0.11), .black.opacity(0.13)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    .fill(Theme.divider)
                     .frame(width: 1)
 
                 ZStack {
                     VisualEffectBackground(material: .contentBackground)
-
-                    LinearGradient(
-                        colors: [
-                            Color.indigo.opacity(0.025),
-                            .clear,
-                            Color.cyan.opacity(0.018),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
 
                     Group {
                         switch selection {
@@ -122,10 +106,11 @@ private struct SettingsSidebar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            StatusPill(state: model.connectionState)
-                .padding(.horizontal, 16)
-                .padding(.top, 48)
-                .padding(.bottom, 15)
+            // Clears the traffic lights, which sit in the transparent titlebar.
+            StatusPill(status: model.status)
+                .padding(.horizontal, Theme.sidebarInset)
+                .padding(.top, 46)
+                .padding(.bottom, 12)
 
             SidebarButton(page: .general, selection: $selection)
 
@@ -145,28 +130,19 @@ private struct SettingsSidebar: View {
             }
             .padding(.bottom, 14)
         }
-        .background {
-            ZStack {
-                VisualEffectBackground(material: .sidebar)
-                LinearGradient(
-                    colors: [.white.opacity(0.045), .clear, .black.opacity(0.025)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
-        }
+        .background(VisualEffectBackground(material: .sidebar))
     }
 }
 
 private struct StatusPill: View {
-    let state: CECClient.State
+    let status: BridgeStatus
 
     private var tint: Color {
-        switch state {
-        case .running: .green
-        case .waitingForHDMI: .orange
+        switch status {
+        case .ready: .green
+        case .waitingForRemote, .needsPermission: .orange
         case .unsupported, .failed: .red
-        case .stopped: .secondary
+        case .paused: .secondary
         }
     }
 
@@ -183,28 +159,20 @@ private struct StatusPill: View {
                     .shadow(color: tint.opacity(0.55), radius: 3)
             }
 
-            Text(state.displayName)
+            Text(status.title)
                 .font(.system(size: 11.5, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.82)
                 .layoutPriority(1)
         }
         .padding(.horizontal, 10)
-        .frame(maxWidth: .infinity)
-        .frame(height: 31)
-        .background(.ultraThinMaterial, in: Capsule())
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 30)
+        .background(Theme.cardFill, in: RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
         .overlay {
-            Capsule()
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.16), .white.opacity(0.035)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                .strokeBorder(Theme.cardStroke, lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
     }
 }
 
@@ -215,10 +183,10 @@ private struct SidebarSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 19)
-                .padding(.top, 16)
+                .padding(.horizontal, Theme.sidebarInset + 8)
+                .padding(.top, 14)
                 .padding(.bottom, 2)
             content
         }
@@ -242,27 +210,15 @@ private struct SidebarButton: View {
                 Spacer()
             }
             .contentShape(Rectangle())
-            .padding(.horizontal, 10)
-            .frame(height: 39)
+            .padding(.horizontal, 8)
+            .frame(height: 34)
             .background {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(selection == page ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(.clear))
+                RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                    .fill(selection == page ? Theme.selectionFill : .clear)
             }
-            .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(
-                        selection == page ? Color.white.opacity(0.09) : .clear,
-                        lineWidth: 1
-                    )
-            }
-            .shadow(
-                color: selection == page ? .black.opacity(0.09) : .clear,
-                radius: 4,
-                y: 2
-            )
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 11)
+        .padding(.horizontal, Theme.sidebarInset)
     }
 }
 
@@ -280,11 +236,6 @@ private struct SymbolTile: View {
                 .foregroundStyle(.white)
         }
         .frame(width: size, height: size)
-        .overlay {
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .strokeBorder(.white.opacity(0.17), lineWidth: 0.7)
-        }
-        .shadow(color: tint.opacity(0.18), radius: 2, y: 1)
     }
 }
 
@@ -333,24 +284,7 @@ private struct SettingsCard<Content: View>: View {
         VStack(spacing: 0) {
             content
         }
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            .white.opacity(0.14),
-                            .white.opacity(0.045),
-                            .black.opacity(0.08),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        }
-        .shadow(color: .black.opacity(0.11), radius: 7, y: 3)
+        .cardSurface()
     }
 }
 
@@ -384,14 +318,8 @@ private struct SettingRow<Control: View>: View {
 private struct CardDivider: View {
     var body: some View {
         Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [.white.opacity(0.045), .primary.opacity(0.11), .white.opacity(0.025)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .frame(height: 0.7)
+            .fill(Theme.divider)
+            .frame(height: 1)
             .padding(.leading, 14)
     }
 }
@@ -449,9 +377,9 @@ struct GeneralSettingsView: View {
                         subtitle: "Distance moved for each remote press."
                     ) {
                         HStack(spacing: 9) {
-                            Slider(value: $model.cursorStep, in: 18...90, step: 2)
+                            Slider(value: $model.pointerSensitivity, in: 0.4...2.0, step: 0.1)
                                 .frame(width: 118)
-                            Text("\(Int(model.cursorStep)) px")
+                            Text(String(format: "%.1f×", model.pointerSensitivity))
                                 .font(.system(size: 11, design: .monospaced))
                                 .foregroundStyle(.secondary)
                                 .frame(width: 42, alignment: .trailing)
@@ -471,49 +399,34 @@ struct ConnectionSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 ConnectionHero(model: model)
 
-                SectionLabel(title: "Signal Path")
-
-                SettingsCard {
-                    TopologyRow(
-                        number: 1,
-                        symbol: "av.remote.fill",
-                        title: "TV remote",
-                        detail: "Paired normally with your display"
-                    )
-                    CardDivider()
-                    TopologyRow(
-                        number: 2,
-                        symbol: "display",
-                        title: model.displayName ?? "Display HDMI input",
-                        detail: "CEC forwards supported buttons"
-                    )
-                    CardDivider()
-                    TopologyRow(
-                        number: 3,
-                        symbol: "macmini",
-                        title: "This Mac",
-                        detail: "HDMI-CEC receiver"
-                    )
-                }
-
-                SectionLabel(title: "Checklist")
+                SectionLabel(title: "Setup")
 
                 SettingsCard {
                     ChecklistRow(
-                        title: "Use the Mac’s built-in HDMI port",
+                        title: "Connect this Mac to your TV with an HDMI cable",
                         complete: model.connectionState == .running
                     )
                     CardDivider()
                     ChecklistRow(
-                        title: "Select that HDMI input on the display",
+                        title: "Switch the TV to that HDMI input",
                         complete: model.connectionState == .running
                     )
                     CardDivider()
                     ChecklistRow(
-                        title: "Enable HDMI-CEC (Anynet+, Bravia Sync, SimpLink…)",
+                        title: "Turn on HDMI-CEC in the TV's settings",
                         complete: model.connectionState == .running
                     )
                 }
+
+                Label(
+                    "TV makers rename HDMI-CEC: Samsung calls it Anynet+, LG SimpLink, "
+                        + "Sony Bravia Sync, Philips EasyLink.",
+                    systemImage: "info.circle"
+                )
+                .font(.system(size: 10.5))
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 8)
+                .padding(.top, 10)
             }
         }
     }
@@ -523,98 +436,46 @@ private struct ConnectionHero: View {
     @ObservedObject var model: BridgeModel
 
     private var tint: Color {
-        switch model.connectionState {
-        case .running: .green
-        case .waitingForHDMI: .orange
-        case .stopped: .gray
+        switch model.status {
+        case .ready: .green
+        case .waitingForRemote, .needsPermission: .orange
+        case .paused: .gray
         case .unsupported, .failed: .red
         }
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle().fill(.white.opacity(0.14))
-                Image(systemName: model.connectionState.symbol)
-                    .font(.system(size: 23, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 48, height: 48)
+        HStack(spacing: 13) {
+            Image(systemName: model.status.symbol)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(model.connectionState.displayName)
-                    .font(.system(size: 16, weight: .bold))
-                Text(model.connectionState.detail)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.status.title)
+                    .font(.system(size: 14, weight: .semibold))
+                Text(model.status.detail)
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.78))
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Spacer()
+            Spacer(minLength: 12)
 
-            Button("Reconnect") {
-                model.reconnect()
+            if model.status == .needsPermission {
+                Button("Allow…") { model.requestAccessibility() }
+                    .controlSize(.small)
+            } else {
+                Button("Reconnect") { model.reconnect() }
+                    .controlSize(.small)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.white.opacity(0.18))
-            .controlSize(.small)
         }
-        .padding(16)
-        .foregroundStyle(.white)
-        .background {
-            LinearGradient(
-                colors: [tint.opacity(0.92), tint.opacity(0.52), .blue.opacity(0.68)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.28), .white.opacity(0.08)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        }
-        .shadow(color: tint.opacity(0.16), radius: 12, y: 5)
+        .padding(14)
+        .cardSurface()
     }
 }
 
-private struct TopologyRow: View {
-    let number: Int
-    let symbol: String
-    let title: String
-    let detail: String
-
-    var body: some View {
-        HStack(spacing: 11) {
-            Text("\(number)")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(.secondary)
-                .frame(width: 20, height: 20)
-                .background(Color.primary.opacity(0.08), in: Circle())
-
-            Image(systemName: symbol)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(.cyan)
-                .frame(width: 22)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.system(size: 13))
-                Text(detail)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 12)
-        .frame(minHeight: 52)
-    }
-}
 
 private struct ChecklistRow: View {
     let title: String
@@ -730,6 +591,19 @@ private struct MappingEditorRow: View {
             .labelsHidden()
             .controlSize(.small)
             .frame(width: 178)
+
+            Button {
+                model.resetAction(for: button)
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Reset to default")
+            .opacity(model.isDefaultAction(for: button) ? 0 : 1)
+            .disabled(model.isDefaultAction(for: button))
+            .frame(width: 16)
         }
         .padding(.horizontal, 12)
         .frame(height: 43)
@@ -747,22 +621,22 @@ struct DiagnosticsSettingsView: View {
                 SectionLabel(title: "System Status")
 
                 SettingsCard {
-                    SettingRow(title: "HDMI-CEC Service") {
+                    SettingRow(title: "Remote signal") {
                         StatusBadge(
-                            text: model.connectionState == .unsupported ? "Unavailable" : "Ready",
-                            color: model.connectionState == .unsupported ? .red : .green
+                            text: model.connectionState == .running ? "Receiving" : "None yet",
+                            color: model.connectionState == .running ? .green : .orange
                         )
                     }
                     CardDivider()
                     SettingRow(title: "Accessibility") {
                         StatusBadge(
-                            text: model.accessibilityGranted ? "Granted" : "Required",
+                            text: model.accessibilityGranted ? "Allowed" : "Required",
                             color: model.accessibilityGranted ? .green : .orange
                         )
                     }
                 }
 
-                SectionLabel(title: "Remote Event Log")
+                SectionLabel(title: "Events")
 
                 VStack(spacing: 0) {
                     HStack {
@@ -808,30 +682,11 @@ struct DiagnosticsSettingsView: View {
                     }
                     .frame(height: 190)
                 }
-                .background(.ultraThinMaterial)
-                .background(Color.black.opacity(0.13))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(Theme.cardFill)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [.white.opacity(0.13), .white.opacity(0.035)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                }
-                .shadow(color: .black.opacity(0.12), radius: 7, y: 3)
-
-                SectionLabel(title: "Action Tests")
-
-                HStack(spacing: 8) {
-                    TestButton(title: "Move", symbol: "arrow.right") { model.test(.moveRight) }
-                    TestButton(title: "Click", symbol: "cursorarrow.click") { model.test(.leftClick) }
-                    TestButton(title: "Right Click", symbol: "contextualmenu.and.cursorarrow") {
-                        model.test(.rightClick)
-                    }
-                    TestButton(title: "Desktop", symbol: "macwindow") { model.test(.showDesktop) }
+                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                        .strokeBorder(Theme.cardStroke)
                 }
             }
         }
@@ -902,38 +757,6 @@ private struct StatusBadge: View {
     }
 }
 
-private struct TestButton: View {
-    let title: String
-    let symbol: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 7) {
-                Image(systemName: symbol)
-                    .font(.system(size: 16, weight: .semibold))
-                Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 58)
-        }
-        .buttonStyle(.plain)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.14), .white.opacity(0.035)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-        }
-        .shadow(color: .black.opacity(0.09), radius: 4, y: 2)
-    }
-}
 
 struct AboutSettingsView: View {
     @ObservedObject var model: BridgeModel
@@ -945,7 +768,7 @@ struct AboutSettingsView: View {
     var body: some View {
         PageShell(page: .about) {
             VStack(alignment: .leading, spacing: 0) {
-                RemoteHeroArtwork()
+
 
                 SettingsCard {
                     SettingRow(title: "Remote Bridge") {
@@ -989,72 +812,3 @@ struct AboutSettingsView: View {
     }
 }
 
-private struct RemoteHeroArtwork: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [.indigo, .blue.opacity(0.88), .cyan.opacity(0.65)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(.white.opacity(0.11))
-                .frame(width: 210)
-                .blur(radius: 1)
-                .offset(x: 155, y: -60)
-
-            HStack(spacing: 28) {
-                stylizedRemote
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("One remote.\nYour whole Mac.")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                    Text("Native HDMI-CEC • Zero extra hardware")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-                .foregroundStyle(.white)
-
-                Spacer()
-            }
-            .padding(.horizontal, 28)
-        }
-        .frame(height: 152)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.28), .white.opacity(0.07)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        }
-        .shadow(color: .blue.opacity(0.18), radius: 14, y: 6)
-    }
-
-    private var stylizedRemote: some View {
-        VStack(spacing: 9) {
-            Circle()
-                .strokeBorder(.white.opacity(0.8), lineWidth: 3)
-                .frame(width: 42, height: 42)
-                .overlay(Circle().fill(.white.opacity(0.16)).frame(width: 16, height: 16))
-            Capsule()
-                .fill(.white.opacity(0.75))
-                .frame(width: 28, height: 5)
-            Image(systemName: "playpause.fill")
-                .font(.system(size: 12, weight: .bold))
-        }
-        .frame(width: 66, height: 118)
-        .background(.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .strokeBorder(.white.opacity(0.2))
-        }
-        .shadow(color: .black.opacity(0.28), radius: 12, y: 8)
-        .foregroundStyle(.white)
-        .rotationEffect(.degrees(-7))
-    }
-}

@@ -3,92 +3,140 @@ import ApplicationServices
 import Carbon.HIToolbox
 import RemoteCore
 
+/// Injects pointer and keyboard events.
+///
+/// Pointer motion follows the model TV virtual-mouse implementations converge
+/// on (MATVT, DPTV-Cursor): a press starts a timer that moves the cursor a very
+/// small amount per tick and ramps the speed up the longer the key is held.
+/// A quick tap therefore nudges by a few pixels — enough to hit a menu item —
+/// while holding glides across the screen. Fixed per-press jumps cannot do both.
 @MainActor
 final class MacController {
-    private var lastMoveAt = Date.distantPast
-    private var repeatedMoves = 0
+    /// Speed the cursor starts at, in points per second.
+    private static let initialSpeed: Double = 95
+    /// How quickly held movement ramps up, in points per second squared.
+    private static let acceleration: Double = 1500
+    private static let maximumSpeed: Double = 2700
+    private static let tickInterval: TimeInterval = 1.0 / 60.0
 
-    /// Pointer glide state. Presses arrive as discrete CEC repeats, so each one
-    /// retargets a spring that the timer chases — otherwise the cursor teleports.
-    private var glideTarget: CGPoint?
-    private var glideTimer: Timer?
+    private var moveVector: CGVector?
+    private var speed: Double = 0
+    private var moveTimer: Timer?
+
+    private var scrollVector: CGVector?
+    private var scrollSpeed: Double = 0
+    private var scrollTimer: Timer?
 
     func requestAccessibilityPermission() -> Bool {
-        let options = [
-            "AXTrustedCheckOptionPrompt": true
-        ] as CFDictionary
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
         return AXIsProcessTrustedWithOptions(options)
     }
 
-    func perform(
-        _ action: MacAction,
-        cursorStep: CGFloat = 42
-    ) {
+    /// Discrete actions. Movement is driven by `beginHold`/`endHold` instead,
+    /// because it needs the key-down duration rather than a one-shot event.
+    func perform(_ action: MacAction, sensitivity: Double = 1) {
         switch action {
-        case .none: break
-        case .moveUp: moveCursor(dx: 0, dy: -1, baseStep: cursorStep)
-        case .moveDown: moveCursor(dx: 0, dy: 1, baseStep: cursorStep)
-        case .moveLeft: moveCursor(dx: -1, dy: 0, baseStep: cursorStep)
-        case .moveRight: moveCursor(dx: 1, dy: 0, baseStep: cursorStep)
+        case .none, .toggleScrollMode: break
         case .leftClick: click(button: .left, clickState: 1)
         case .doubleClick: click(button: .left, clickState: 2)
         case .rightClick: click(button: .right, clickState: 1)
         case .browserBack: pressKey(33, flags: .maskCommand) // Command-[
         case .showDesktop: pressKey(103) // F11
         case .missionControl: pressKey(126, flags: .maskControl) // Control-Up
+        case .moveUp, .moveDown, .moveLeft, .moveRight,
+             .scrollUp, .scrollDown, .scrollLeft, .scrollRight:
+            beginHold(action, sensitivity: sensitivity)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+                self?.endHold()
+            }
         }
     }
 
-    private func moveCursor(dx: CGFloat, dy: CGFloat, baseStep: CGFloat) {
-        let now = Date()
-        if now.timeIntervalSince(lastMoveAt) < 0.38 {
-            repeatedMoves = min(repeatedMoves + 1, 8)
+    /// Starts continuous movement or scrolling for as long as the key is held.
+    func beginHold(_ action: MacAction, sensitivity: Double) {
+        guard let vector = action.vector else { return }
+
+        if action.isScroll {
+            guard scrollVector != vector else { return }
+            scrollVector = vector
+            scrollSpeed = Self.initialSpeed * sensitivity * 0.35
+            startScrollTimer(sensitivity: sensitivity)
         } else {
-            repeatedMoves = 0
+            guard moveVector != vector else { return }
+            moveVector = vector
+            speed = Self.initialSpeed * sensitivity
+            startMoveTimer(sensitivity: sensitivity)
         }
-        lastMoveAt = now
+    }
 
-        let step = baseStep + CGFloat(repeatedMoves) * max(8, baseStep * 0.28)
-        let origin = glideTarget ?? CGEvent(source: nil)?.location ?? .zero
-        glideTarget = CGPoint(
-            x: max(0, min(CGFloat(CGDisplayPixelsWide(CGMainDisplayID())) - 1, origin.x + dx * step)),
-            y: max(0, min(CGFloat(CGDisplayPixelsHigh(CGMainDisplayID())) - 1, origin.y + dy * step))
+    func endHold() {
+        moveTimer?.invalidate()
+        moveTimer = nil
+        moveVector = nil
+        speed = 0
+
+        scrollTimer?.invalidate()
+        scrollTimer = nil
+        scrollVector = nil
+        scrollSpeed = 0
+    }
+
+    private func startMoveTimer(sensitivity: Double) {
+        guard moveTimer == nil else { return }
+        moveTimer = .scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.stepMove(sensitivity: sensitivity) }
+        }
+        stepMove(sensitivity: sensitivity)
+    }
+
+    private func stepMove(sensitivity: Double) {
+        guard let vector = moveVector else { return }
+        let distance = speed * Self.tickInterval
+        speed = min(speed + Self.acceleration * sensitivity * Self.tickInterval,
+                    Self.maximumSpeed * sensitivity)
+
+        let current = CGEvent(source: nil)?.location ?? .zero
+        let bounds = CGRect(
+            x: 0,
+            y: 0,
+            width: CGFloat(CGDisplayPixelsWide(CGMainDisplayID())),
+            height: CGFloat(CGDisplayPixelsHigh(CGMainDisplayID()))
         )
-        startGlide()
-    }
-
-    private func startGlide() {
-        guard glideTimer == nil else { return }
-        glideTimer = .scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.stepGlide() }
-        }
-    }
-
-    private func stepGlide() {
-        guard let target = glideTarget else { return endGlide() }
-        let current = CGEvent(source: nil)?.location ?? target
-        let delta = CGPoint(x: target.x - current.x, y: target.y - current.y)
-
-        guard abs(delta.x) >= 0.6 || abs(delta.y) >= 0.6 else {
-            warp(to: target)
-            return endGlide()
-        }
-        warp(to: CGPoint(x: current.x + delta.x * 0.32, y: current.y + delta.y * 0.32))
-    }
-
-    private func endGlide() {
-        glideTimer?.invalidate()
-        glideTimer = nil
-        glideTarget = nil
-    }
-
-    private func warp(to point: CGPoint) {
+        let target = CGPoint(
+            x: min(max(0, current.x + vector.dx * distance), bounds.width - 1),
+            y: min(max(0, current.y + vector.dy * distance), bounds.height - 1)
+        )
         CGEvent(
             mouseEventSource: nil,
             mouseType: .mouseMoved,
-            mouseCursorPosition: point,
+            mouseCursorPosition: target,
             mouseButton: .left
         )?.post(tap: .cghidEventTap)
+    }
+
+    private func startScrollTimer(sensitivity: Double) {
+        guard scrollTimer == nil else { return }
+        scrollTimer = .scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.stepScroll(sensitivity: sensitivity) }
+        }
+        stepScroll(sensitivity: sensitivity)
+    }
+
+    private func stepScroll(sensitivity: Double) {
+        guard let vector = scrollVector else { return }
+        let distance = scrollSpeed * Self.tickInterval
+        scrollSpeed = min(scrollSpeed + Self.acceleration * 0.35 * sensitivity * Self.tickInterval,
+                          Self.maximumSpeed * 0.35 * sensitivity)
+
+        let event = CGEvent(
+            scrollWheelEvent2Source: nil,
+            units: .pixel,
+            wheelCount: 2,
+            wheel1: Int32(-vector.dy * distance),
+            wheel2: Int32(-vector.dx * distance),
+            wheel3: 0
+        )
+        event?.post(tap: .cghidEventTap)
     }
 
     private func click(button: CGMouseButton, clickState: Int64) {
@@ -117,5 +165,4 @@ final class MacController {
         up?.flags = flags
         up?.post(tap: .cghidEventTap)
     }
-
 }

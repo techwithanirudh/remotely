@@ -62,14 +62,50 @@ enum MacAction: String, CaseIterable, Identifiable {
     case moveDown
     case moveLeft
     case moveRight
+    case scrollUp
+    case scrollDown
+    case scrollLeft
+    case scrollRight
     case leftClick
     case doubleClick
     case rightClick
     case browserBack
     case showDesktop
     case missionControl
+    case toggleScrollMode
 
     var id: Self { self }
+
+    /// Direction in Quartz coordinates, for the actions that are held.
+    var vector: CGVector? {
+        switch self {
+        case .moveUp, .scrollUp: CGVector(dx: 0, dy: -1)
+        case .moveDown, .scrollDown: CGVector(dx: 0, dy: 1)
+        case .moveLeft, .scrollLeft: CGVector(dx: -1, dy: 0)
+        case .moveRight, .scrollRight: CGVector(dx: 1, dy: 0)
+        default: nil
+        }
+    }
+
+    var isScroll: Bool {
+        switch self {
+        case .scrollUp, .scrollDown, .scrollLeft, .scrollRight: true
+        default: false
+        }
+    }
+
+    var isHeld: Bool { vector != nil }
+
+    /// The scrolling counterpart, used while scroll mode is on.
+    var scrollEquivalent: MacAction {
+        switch self {
+        case .moveUp: .scrollUp
+        case .moveDown: .scrollDown
+        case .moveLeft: .scrollLeft
+        case .moveRight: .scrollRight
+        default: self
+        }
+    }
 
     var title: String {
         switch self {
@@ -78,12 +114,17 @@ enum MacAction: String, CaseIterable, Identifiable {
         case .moveDown: "Move Pointer Down"
         case .moveLeft: "Move Pointer Left"
         case .moveRight: "Move Pointer Right"
+        case .scrollUp: "Scroll Up"
+        case .scrollDown: "Scroll Down"
+        case .scrollLeft: "Scroll Left"
+        case .scrollRight: "Scroll Right"
         case .leftClick: "Left Click"
         case .doubleClick: "Double Click"
         case .rightClick: "Right Click"
         case .browserBack: "Browser Back"
         case .showDesktop: "Show Desktop"
         case .missionControl: "Mission Control"
+        case .toggleScrollMode: "Toggle Scrolling"
         }
     }
 
@@ -94,12 +135,17 @@ enum MacAction: String, CaseIterable, Identifiable {
         case .moveDown: "arrow.down"
         case .moveLeft: "arrow.left"
         case .moveRight: "arrow.right"
+        case .scrollUp: "arrow.up.to.line"
+        case .scrollDown: "arrow.down.to.line"
+        case .scrollLeft: "arrow.left.to.line"
+        case .scrollRight: "arrow.right.to.line"
         case .leftClick: "cursorarrow.click"
         case .doubleClick: "cursorarrow.click.2"
         case .rightClick: "contextualmenu.and.cursorarrow"
         case .browserBack: "chevron.backward"
         case .showDesktop: "macwindow"
         case .missionControl: "square.grid.3x2"
+        case .toggleScrollMode: "arrow.up.and.down.text.horizontal"
         }
     }
 }
@@ -115,7 +161,7 @@ extension Dictionary where Key == RemoteButton, Value == MacAction {
             .centerDouble: .doubleClick,
             .centerHold: .rightClick,
             .back: .browserBack,
-            .doubleBack: .showDesktop,
+            .doubleBack: .toggleScrollMode,
         ]
     }
 }

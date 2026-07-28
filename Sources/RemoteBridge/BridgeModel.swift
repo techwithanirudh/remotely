@@ -2,6 +2,7 @@ import AppKit
 import ApplicationServices
 import Combine
 import ServiceManagement
+import UserNotifications
 import RemoteCore
 
 struct BridgeLogEntry: Identifiable, Hashable {
@@ -40,9 +41,13 @@ final class BridgeModel: ObservableObject {
     /// Name reported by the attached display's EDID, once CEC traffic is seen.
     @Published private(set) var displayName: String?
 
-    @Published var cursorStep: Double {
-        didSet { defaults.set(cursorStep, forKey: Keys.cursorStep) }
+    /// Multiplier on the pointer's start speed and acceleration.
+    @Published var pointerSensitivity: Double {
+        didSet { defaults.set(pointerSensitivity, forKey: Keys.pointerSensitivity) }
     }
+
+    /// While on, the D-pad scrolls instead of moving the pointer.
+    @Published private(set) var scrollMode = false
 
     let client = CECClient()
     private let controller = MacController()
@@ -51,29 +56,32 @@ final class BridgeModel: ObservableObject {
     private var clearHighlightWork: DispatchWorkItem?
     private var heldCommand: RemoteCommand?
     private var heldSince = Date.distantPast
+    private var lastRepeatAt = Date.distantPast
     private var lastTapAt = Date.distantPast
+    private var holdWatchdog: Timer?
+    private var lastPermissionNotice = Date.distantPast
 
     private static let holdThreshold: TimeInterval = 0.5
     private static let doubleTapWindow: TimeInterval = 0.38
 
     private enum Keys {
         static let bridgeEnabled = "bridgeEnabled"
-        static let cursorStep = "cursorStep"
-        static let buttonMappings = "buttonMappings.v1"
+        static let pointerSensitivity = "pointerSensitivity"
+        static let buttonMappings = "buttonMappings.v2"
     }
 
     init() {
         defaults.register(defaults: [
             Keys.bridgeEnabled: true,
-            Keys.cursorStep: 42.0,
+            Keys.pointerSensitivity: 1.0,
         ])
         bridgeEnabled = defaults.bool(forKey: Keys.bridgeEnabled)
-        cursorStep = defaults.double(forKey: Keys.cursorStep)
+        pointerSensitivity = defaults.double(forKey: Keys.pointerSensitivity)
         buttonMappings = Self.loadMappings(from: defaults)
 
         client.onStateChange = { [weak self] state in
             self?.connectionState = state
-            self?.appendLog("Connection: \(state.displayName)")
+            self?.appendLog("Connection: \(state)")
         }
         client.onCommand = { [weak self] command in
             self?.receive(command)
@@ -134,7 +142,7 @@ final class BridgeModel: ObservableObject {
 
     func test(_ action: MacAction) {
         appendLog("Test action: \(action.title)")
-        controller.perform(action, cursorStep: cursorStep)
+        controller.perform(action, sensitivity: pointerSensitivity)
     }
 
     func action(for button: RemoteButton) -> MacAction {
@@ -145,6 +153,15 @@ final class BridgeModel: ObservableObject {
         buttonMappings[button] = action
         saveMappings()
         appendLog("\(button.title) mapped to \(action.title)")
+    }
+
+    func isDefaultAction(for button: RemoteButton) -> Bool {
+        action(for: button) == Dictionary.defaultRemoteMappings[button]
+    }
+
+    func resetAction(for button: RemoteButton) {
+        guard let fallback = Dictionary.defaultRemoteMappings[button] else { return }
+        setAction(fallback, for: button)
     }
 
     func resetMappings() {
@@ -174,33 +191,59 @@ final class BridgeModel: ObservableObject {
     private func receive(_ command: RemoteCommand) {
         lastCommand = command
 
+        // Repeats only keep the hold alive; the timer already drives movement.
         guard command != heldCommand else {
-            if command.isDirectional { repeatDirectional(command) }
+            lastRepeatAt = Date()
             return
         }
 
         finishHeldCommand(released: false)
         heldCommand = command
         heldSince = Date()
+        lastRepeatAt = Date()
         appendLog("Button: \(command.displayName)")
 
-        if command.isDirectional { repeatDirectional(command) }
+        if command.isDirectional { beginDirectional(command) }
     }
 
     private func receiveRelease() {
         finishHeldCommand(released: true)
     }
 
-    private func repeatDirectional(_ command: RemoteCommand) {
+    private func beginDirectional(_ command: RemoteCommand) {
         guard let button = RemoteButton(command: command) else { return }
         flash(button)
-        perform(action(for: button))
+        guard permitToAct() else { return }
+        let action = action(for: button)
+        controller.beginHold(scrollMode ? action.scrollEquivalent : action,
+                             sensitivity: pointerSensitivity)
+        startHoldWatchdog()
+    }
+
+    /// A dropped release would otherwise leave the pointer gliding forever, so
+    /// stop once the key's repeats go quiet.
+    private func startHoldWatchdog() {
+        holdWatchdog?.invalidate()
+        holdWatchdog = .scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                guard Date().timeIntervalSince(self.lastRepeatAt) > 0.6 else { return }
+                self.finishHeldCommand(released: false)
+            }
+        }
     }
 
     private func finishHeldCommand(released: Bool) {
         guard let command = heldCommand else { return }
         heldCommand = nil
-        guard released, !command.isDirectional else { return }
+
+        if command.isDirectional {
+            holdWatchdog?.invalidate()
+            holdWatchdog = nil
+            controller.endHold()
+            return
+        }
+        guard released else { return }
 
         let heldLongEnough = Date().timeIntervalSince(heldSince) >= Self.holdThreshold
 
@@ -248,11 +291,44 @@ final class BridgeModel: ObservableObject {
 
     private func trigger(_ button: RemoteButton) {
         flash(button)
-        perform(action(for: button))
+        let action = action(for: button)
+        guard permitToAct() else { return }
+
+        if action == .toggleScrollMode {
+            scrollMode.toggle()
+            appendLog(scrollMode ? "Scrolling on" : "Scrolling off")
+            return
+        }
+        perform(action)
+    }
+
+    /// Without Accessibility every injected event is silently dropped, which
+    /// looks like a dead remote. Say so once rather than every press.
+    private func permitToAct() -> Bool {
+        if accessibilityGranted { return true }
+        guard Date().timeIntervalSince(lastPermissionNotice) > 30 else { return false }
+        lastPermissionNotice = Date()
+        appendLog("Ignored — Accessibility permission is not granted")
+        notifyPermissionNeeded()
+        return false
+    }
+
+    private func notifyPermissionNeeded() {
+        let content = UNMutableNotificationContent()
+        content.title = "Remote Bridge needs permission"
+        content.body = "Allow Accessibility so your TV remote can control this Mac."
+
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(
+                identifier: "accessibility-required",
+                content: content,
+                trigger: nil
+            )
+        )
     }
 
     private func perform(_ action: MacAction) {
-        controller.perform(action, cursorStep: cursorStep)
+        controller.perform(action, sensitivity: pointerSensitivity)
     }
 
     private func flash(_ button: RemoteButton) {
@@ -303,33 +379,64 @@ final class BridgeModel: ObservableObject {
     }
 }
 
-extension CECClient.State {
-    var displayName: String {
+/// What the user actually needs to know, in plain language. A live CEC link is
+/// not enough on its own — without Accessibility the remote still does nothing,
+/// so both are folded into one status rather than reported separately.
+enum BridgeStatus: Equatable {
+    case paused
+    case needsPermission
+    case waitingForRemote
+    case ready
+    case unsupported
+    case failed(String)
+
+    var title: String {
         switch self {
-        case .stopped: "Bridge Off"
-        case .unsupported: "Native CEC Unavailable"
-        case .waitingForHDMI: "Waiting for HDMI"
-        case .running: "Connected"
-        case .failed: "Connection Error"
+        case .paused: "Paused"
+        case .needsPermission: "Needs Permission"
+        case .waitingForRemote: "Waiting for Remote"
+        case .ready: "Ready"
+        case .unsupported: "Not Supported"
+        case .failed: "Something Went Wrong"
         }
     }
 
     var detail: String {
         switch self {
-        case .stopped: "Remote input is paused."
-        case .unsupported: "CoreRC is not available on this version of macOS."
-        case .waitingForHDMI: "Connect the M7 to the Mac mini’s built-in HDMI port."
-        case .running: "The native HDMI-CEC bus is active and listening."
-        case .failed(let message): message
+        case .paused:
+            "Remote control is turned off."
+        case .needsPermission:
+            "Allow Accessibility so the remote can move the pointer."
+        case .waitingForRemote:
+            "Connect this Mac to your TV over HDMI and turn on HDMI-CEC."
+        case .ready:
+            "Your TV remote is controlling this Mac."
+        case .unsupported:
+            "This Mac can't receive TV remote buttons."
+        case .failed(let message):
+            message
         }
     }
 
     var symbol: String {
         switch self {
-        case .stopped: "pause.circle.fill"
+        case .paused: "pause.circle.fill"
+        case .needsPermission: "lock.fill"
+        case .waitingForRemote: "cable.connector"
+        case .ready: "checkmark.circle.fill"
         case .unsupported, .failed: "exclamationmark.triangle.fill"
-        case .waitingForHDMI: "cable.connector"
-        case .running: "checkmark.circle.fill"
+        }
+    }
+}
+
+extension BridgeModel {
+    var status: BridgeStatus {
+        switch connectionState {
+        case .stopped: return .paused
+        case .unsupported: return .unsupported
+        case .failed(let message): return .failed(message)
+        case .waitingForHDMI: return accessibilityGranted ? .waitingForRemote : .needsPermission
+        case .running: return accessibilityGranted ? .ready : .needsPermission
         }
     }
 }
