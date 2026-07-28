@@ -24,7 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UNUserNotificationCenter.current()
             .requestAuthorization(options: [.alert]) { _, _ in }
 
-        if UserDefaults.standard.bool(forKey: Self.onboardingKey) {
+        if OnboardingProgress.isComplete {
             showSettings()
         } else {
             showOnboarding()
@@ -162,11 +162,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.copyLogs()
     }
 
-    static let onboardingKey = "completedOnboarding"
+    static let onboardingKey = OnboardingProgress.completedKey
 
-    private func showOnboarding() {
+    @objc func replayOnboarding() {
+        OnboardingProgress.replay()
+        settingsWindowController?.close()
+        showOnboarding()
+    }
+
+    func showOnboarding() {
         let controller = OnboardingWindowController(model: model) { [weak self] in
-            UserDefaults.standard.set(true, forKey: Self.onboardingKey)
+            OnboardingProgress.markComplete()
             self?.onboardingWindowController?.close()
             self?.onboardingWindowController = nil
             self?.showSettings()
@@ -384,10 +390,10 @@ final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         )
     }
 
-    /// Dismissing counts as finishing; otherwise onboarding returns every launch.
-    func windowWillClose(_ notification: Notification) {
-        UserDefaults.standard.set(true, forKey: AppDelegate.onboardingKey)
-    }
+    // Closing mid-flow deliberately does not mark onboarding complete: quitting
+    // to grant Accessibility is a normal part of getting set up, and treating
+    // that as "finished" was what stopped the flow resuming. Only reaching the
+    // end completes it.
 }
 
 /// A borderless window still has to accept keyboard focus for its buttons.

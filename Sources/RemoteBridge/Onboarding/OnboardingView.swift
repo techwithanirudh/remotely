@@ -15,8 +15,22 @@ struct OnboardingView: View {
 
     static let panelSize = CGSize(width: 330, height: 560)
 
-    @State private var step: OnboardingStepKind = .welcome
-    @State private var brand: TVBrand = .samsung
+    /// Persisted so quitting mid-flow resumes where it left off. Granting
+    /// Accessibility often means relaunching, which would otherwise throw the
+    /// user back to the welcome screen every time.
+    @AppStorage(OnboardingProgress.stepKey) private var storedStep = 0
+    @AppStorage(OnboardingProgress.brandKey) private var storedBrand = TVBrand.samsung.rawValue
+
+    private var step: OnboardingStepKind {
+        OnboardingStepKind(rawValue: storedStep) ?? .welcome
+    }
+
+    private var brand: Binding<TVBrand> {
+        Binding(
+            get: { TVBrand(rawValue: storedBrand) ?? .samsung },
+            set: { storedBrand = $0.rawValue }
+        )
+    }
 
     private var steps: [OnboardingStepKind] { OnboardingStepKind.allCases }
     private var isLast: Bool { step == steps.last }
@@ -49,7 +63,7 @@ struct OnboardingView: View {
     private var content: some View {
         switch step {
         case .welcome: WelcomeStep()
-        case .connect: ConnectStep(model: model, brand: $brand)
+        case .connect: ConnectStep(model: model, brand: brand)
         case .permission: PermissionStep(model: model)
         case .move: MoveStep()
         case .click: ClickStep()
@@ -134,12 +148,12 @@ struct OnboardingView: View {
             onFinish()
             return
         }
-        step = steps[index + 1]
+        storedStep = steps[index + 1].rawValue
     }
 
     private func goBack() {
         guard let index = steps.firstIndex(of: step), index > 0 else { return }
-        step = steps[index - 1]
+        storedStep = steps[index - 1].rawValue
     }
 }
 

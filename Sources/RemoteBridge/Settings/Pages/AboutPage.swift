@@ -50,6 +50,16 @@ struct AboutSettingsView: View {
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
+                    CardDivider()
+                    SettingRow(
+                        title: "Setup guide",
+                        subtitle: "Walk through connecting and practising again."
+                    ) {
+                        Button("Replay") {
+                            (NSApp.delegate as? AppDelegate)?.replayOnboarding()
+                        }
+                        .controlSize(.small)
+                    }
                 }
 
                 Text("Remote buttons arrive through CoreRC, a private part of macOS. "

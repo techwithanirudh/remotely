@@ -154,7 +154,24 @@ struct MappingEditorRow: View {
             Text(button.title)
                 .font(.system(size: 13))
 
-            Spacer()
+            Spacer(minLength: 8)
+
+            // Reset sits before the picker, in a slot that is always reserved.
+            // Trailing it pushed the picker off the edge every other card's
+            // controls line up on, and inserting it only when needed made that
+            // row's picker jump sideways.
+            Button {
+                model.resetAction(for: button)
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .help("Reset to default")
+            .opacity(model.isDefaultAction(for: button) ? 0 : 1)
+            .disabled(model.isDefaultAction(for: button))
+            .frame(width: 14)
 
             Picker("", selection: Binding(
                 get: { model.action(for: button) },
@@ -168,24 +185,8 @@ struct MappingEditorRow: View {
             .labelsHidden()
             .controlSize(.small)
             .frame(width: 178)
-
-            // The slot is always present so the pickers stay on one line.
-            // Inserting the button only when needed shunted that row's picker
-            // sideways, which read worse than a little reserved space.
-            Button {
-                model.resetAction(for: button)
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .font(.system(size: 11, weight: .semibold))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .help("Reset to default")
-            .opacity(model.isDefaultAction(for: button) ? 0 : 1)
-            .disabled(model.isDefaultAction(for: button))
-            .frame(width: 14)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Theme.cardPadding)
         .frame(height: 43)
     }
 }
