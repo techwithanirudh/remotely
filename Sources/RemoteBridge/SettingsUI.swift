@@ -87,7 +87,7 @@ struct SettingsRootView: View {
                         case .diagnostics:
                             DiagnosticsSettingsView(model: model)
                         case .about:
-                            AboutSettingsView()
+                            AboutSettingsView(model: model)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -140,7 +140,7 @@ private struct SettingsSidebar: View {
 
             Spacer()
 
-            SidebarSection(title: "M7 Remote") {
+            SidebarSection(title: "Remote Bridge") {
                 SidebarButton(page: .about, selection: $selection)
             }
             .padding(.bottom, 14)
@@ -668,11 +668,19 @@ struct ControlsSettingsView: View {
                     MappingEditorRow(button: .left, model: model)
                     CardDivider()
                     MappingEditorRow(button: .right, model: model)
-                    CardDivider()
-                    MappingEditorRow(button: .center, model: model)
                 }
 
-                SectionLabel(title: "Navigation")
+                SectionLabel(title: "Center")
+
+                SettingsCard {
+                    MappingEditorRow(button: .center, model: model)
+                    CardDivider()
+                    MappingEditorRow(button: .centerDouble, model: model)
+                    CardDivider()
+                    MappingEditorRow(button: .centerHold, model: model)
+                }
+
+                SectionLabel(title: "Back")
 
                 SettingsCard {
                     MappingEditorRow(button: .back, model: model)
@@ -680,28 +688,9 @@ struct ControlsSettingsView: View {
                     MappingEditorRow(button: .doubleBack, model: model)
                 }
 
-                SectionLabel(title: "Media")
-
-                SettingsCard {
-                    MappingEditorRow(button: .playPause, model: model)
-                    CardDivider()
-                    MappingEditorRow(button: .rewind, model: model)
-                    CardDivider()
-                    MappingEditorRow(button: .fastForward, model: model)
-                }
-
-                SectionLabel(title: "Audio")
-
-                SettingsCard {
-                    MappingEditorRow(button: .volumeUp, model: model)
-                    CardDivider()
-                    MappingEditorRow(button: .volumeDown, model: model)
-                    CardDivider()
-                    MappingEditorRow(button: .mute, model: model)
-                }
-
                 Label(
-                    "Samsung normally keeps Home for the monitor, so it is intentionally omitted.",
+                    "Volume, media and Home never reach the Mac — displays handle those "
+                        + "themselves and never put them on the CEC bus.",
                     systemImage: "info.circle"
                 )
                 .font(.system(size: 10.5))
@@ -753,7 +742,7 @@ struct DiagnosticsSettingsView: View {
     var body: some View {
         PageShell(page: .diagnostics) {
             VStack(alignment: .leading, spacing: 0) {
-                RemoteVisualizerCard(model: model)
+                LiveActivityCard(model: model)
 
                 SectionLabel(title: "System Status")
 
@@ -839,7 +828,9 @@ struct DiagnosticsSettingsView: View {
                 HStack(spacing: 8) {
                     TestButton(title: "Move", symbol: "arrow.right") { model.test(.moveRight) }
                     TestButton(title: "Click", symbol: "cursorarrow.click") { model.test(.leftClick) }
-                    TestButton(title: "Play", symbol: "playpause.fill") { model.test(.playPause) }
+                    TestButton(title: "Right Click", symbol: "contextualmenu.and.cursorarrow") {
+                        model.test(.rightClick)
+                    }
                     TestButton(title: "Desktop", symbol: "macwindow") { model.test(.showDesktop) }
                 }
             }
@@ -847,399 +838,50 @@ struct DiagnosticsSettingsView: View {
     }
 }
 
-private struct RemoteVisualizerCard: View {
+/// Shows the most recent button and what it did. Replaces the old mock remote —
+/// any CEC display can be paired here, so we cannot draw a specific handset.
+private struct LiveActivityCard: View {
     @ObservedObject var model: BridgeModel
 
     var body: some View {
-        HStack(spacing: 22) {
-            MiniRemoteView(model: model)
-
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [.white.opacity(0.03), .white.opacity(0.13), .white.opacity(0.03)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+        SettingsCard {
+            HStack(spacing: 14) {
+                SymbolTile(
+                    symbol: model.lastButton?.symbol ?? "dot.radiowaves.left.and.right",
+                    tint: model.lastButton == nil ? .gray : .accentColor,
+                    size: 38
                 )
-                .frame(width: 1)
-                .padding(.vertical, 12)
 
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 7) {
-                    Circle()
-                        .fill(model.highlightedButton == nil ? Color.secondary : Color.purple)
-                        .frame(width: 7, height: 7)
-                        .shadow(
-                            color: model.highlightedButton == nil
-                                ? .clear
-                                : Color.purple.opacity(0.75),
-                            radius: 5
-                        )
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(model.lastButton?.title ?? "Waiting for a button")
+                        .font(.system(size: 14, weight: .semibold))
 
-                    Text(model.highlightedButton == nil ? "Listening for input" : "Button received")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    if let button = model.lastButton {
+                        Text(model.action(for: button).title)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Press any button on your TV remote.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
-                    Spacer()
+                Spacer()
 
-                    Text("\(model.buttonEventCount) events")
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(model.buttonEventCount)")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .contentTransition(.numericText())
+                    Text("events")
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.tertiary)
                 }
-
-                Spacer()
-
-                Text(model.lastButton?.title ?? "Press a remote button")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .contentTransition(.numericText())
-
-                if let action = model.lastMappedAction {
-                    Label(action.title, systemImage: action.symbol)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.purple)
-                        .padding(.top, 6)
-                } else {
-                    Text("The matching control will glow here.")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 5)
-                }
-
-                Spacer()
-
-                Text("Click the preview remote to test the visualizer without HDMI.")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Button {
-                    model.previewButton(.doubleBack)
-                } label: {
-                    Label("Preview Double Back", systemImage: "arrow.uturn.backward.circle")
-                }
-                .controlSize(.small)
-                .padding(.top, 10)
             }
-            .padding(.vertical, 22)
+            .padding(14)
+            .animation(.snappy(duration: 0.22), value: model.buttonEventCount)
         }
-        .padding(.horizontal, 20)
-        .frame(height: 350)
-        .background(.ultraThinMaterial)
-        .background(Color.black.opacity(0.16))
-        .background {
-            LinearGradient(
-                colors: [
-                    Color.purple.opacity(0.06),
-                    Color.indigo.opacity(0.02),
-                    .clear,
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.17), .white.opacity(0.035)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        }
-        .shadow(color: .black.opacity(0.13), radius: 9, y: 4)
-    }
-}
-
-private struct MiniRemoteView: View {
-    @ObservedObject var model: BridgeModel
-
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                RemoteDecorativeKey(symbol: "power")
-                Spacer()
-                RemoteDecorativeKey(symbol: "123.rectangle")
-                RemoteDecorativeKey(symbol: "mic.fill")
-            }
-
-            DPadPreview(model: model)
-
-            HStack(spacing: 12) {
-                RemotePreviewKey(
-                    button: .back,
-                    symbol: "arrow.uturn.backward",
-                    model: model,
-                    compact: true
-                )
-                RemoteDecorativeKey(symbol: "house.fill", compact: true)
-                RemotePreviewKey(
-                    button: .playPause,
-                    symbol: "playpause.fill",
-                    model: model,
-                    compact: true
-                )
-            }
-
-            HStack(alignment: .top, spacing: 24) {
-                VolumeRockerPreview(model: model)
-                ChannelRockerPreview()
-            }
-
-            HStack(spacing: 5) {
-                RemoteShortcutKey(label: "N", tint: .red)
-                RemoteShortcutKey(label: "TV+", tint: .blue)
-                RemoteShortcutKey(label: "D+", tint: .green)
-                RemoteShortcutKey(label: "prime", tint: .cyan)
-            }
-
-            Text("SAMSUNG")
-                .font(.system(size: 7, weight: .bold, design: .rounded))
-                .tracking(1.1)
-                .foregroundStyle(.white.opacity(0.3))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 14)
-        .frame(width: 146, height: 324)
-        .background(Color.black.opacity(0.76))
-        .background {
-            LinearGradient(
-                colors: [.white.opacity(0.12), .clear, .black.opacity(0.28)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.white.opacity(0.28), .white.opacity(0.045)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        }
-        .shadow(color: .black.opacity(0.38), radius: 16, y: 9)
-    }
-}
-
-private struct RemoteShortcutKey: View {
-    let label: String
-    let tint: Color
-
-    var body: some View {
-        Text(label)
-            .font(.system(size: label == "prime" ? 5.8 : 7, weight: .bold, design: .rounded))
-            .foregroundStyle(tint.opacity(0.92))
-            .frame(width: 25, height: 16)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [.white.opacity(0.09), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .strokeBorder(.white.opacity(0.16), lineWidth: 0.7)
-            }
-            .help("App shortcut handled by the Samsung monitor")
-    }
-}
-
-private struct DPadPreview: View {
-    @ObservedObject var model: BridgeModel
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Color.black.opacity(0.22))
-                .background(.thinMaterial, in: Circle())
-                .overlay {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.white.opacity(0.07), .clear, .black.opacity(0.06)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
-                .overlay(Circle().strokeBorder(.white.opacity(0.2), lineWidth: 0.8))
-
-            RemotePreviewKey(button: .up, symbol: "chevron.up", model: model, compact: true)
-                .offset(y: -36)
-            RemotePreviewKey(button: .down, symbol: "chevron.down", model: model, compact: true)
-                .offset(y: 36)
-            RemotePreviewKey(button: .left, symbol: "chevron.left", model: model, compact: true)
-                .offset(x: -36)
-            RemotePreviewKey(button: .right, symbol: "chevron.right", model: model, compact: true)
-                .offset(x: 36)
-            RemotePreviewKey(button: .center, symbol: "circle.fill", model: model, compact: true)
-        }
-        .frame(width: 108, height: 108)
-    }
-}
-
-private struct RemoteDecorativeKey: View {
-    let symbol: String
-    var compact = false
-
-    var body: some View {
-        Image(systemName: symbol)
-            .font(.system(size: compact ? 10 : 10.5, weight: .semibold))
-            .foregroundStyle(.white.opacity(0.62))
-            .frame(width: compact ? 31 : 28, height: compact ? 27 : 24)
-            .background(.thinMaterial, in: Capsule())
-            .overlay {
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [.white.opacity(0.09), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            }
-            .overlay(Capsule().strokeBorder(.white.opacity(0.16), lineWidth: 0.7))
-            .help("Handled by the Samsung monitor")
-    }
-}
-
-private struct VolumeRockerPreview: View {
-    @ObservedObject var model: BridgeModel
-
-    var body: some View {
-        VStack(spacing: 0) {
-            RockerButton(button: .volumeUp, symbol: "plus", model: model)
-            RockerButton(button: .mute, symbol: "speaker.slash.fill", model: model)
-            RockerButton(button: .volumeDown, symbol: "minus", model: model)
-        }
-        .frame(width: 42, height: 68)
-        .background(.thinMaterial, in: Capsule())
-        .overlay {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [.white.opacity(0.08), .clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-        }
-        .overlay(Capsule().strokeBorder(.white.opacity(0.2), lineWidth: 0.8))
-    }
-}
-
-private struct RockerButton: View {
-    let button: RemoteButton
-    let symbol: String
-    @ObservedObject var model: BridgeModel
-
-    private var isHighlighted: Bool {
-        model.highlightedButton == button
-    }
-
-    var body: some View {
-        Button {
-            model.previewButton(button)
-        } label: {
-            Image(systemName: symbol)
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(isHighlighted ? .white : .white.opacity(0.58))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(isHighlighted ? Color.purple : .clear)
-                .shadow(
-                    color: isHighlighted ? Color.purple.opacity(0.8) : .clear,
-                    radius: 7
-                )
-        }
-        .buttonStyle(.plain)
-        .help("Preview \(button.title)")
-        .animation(.spring(response: 0.2, dampingFraction: 0.65), value: isHighlighted)
-    }
-}
-
-private struct ChannelRockerPreview: View {
-    var body: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "chevron.up")
-            Text("CH")
-                .font(.system(size: 6.5, weight: .bold, design: .rounded))
-            Image(systemName: "chevron.down")
-        }
-        .font(.system(size: 8, weight: .bold))
-        .foregroundStyle(.white.opacity(0.46))
-        .frame(width: 42, height: 68)
-        .background(.thinMaterial, in: Capsule())
-        .overlay {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [.white.opacity(0.08), .clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-        }
-        .overlay(Capsule().strokeBorder(.white.opacity(0.17), lineWidth: 0.8))
-        .help("Channel control stays with the Samsung monitor")
-    }
-}
-
-private struct RemotePreviewKey: View {
-    let button: RemoteButton
-    let symbol: String
-    @ObservedObject var model: BridgeModel
-    var compact = false
-
-    private var isHighlighted: Bool {
-        model.highlightedButton == button ||
-            (button == .back && model.highlightedButton == .doubleBack)
-    }
-
-    var body: some View {
-        Button {
-            model.previewButton(button)
-        } label: {
-            Image(systemName: symbol)
-                .font(.system(size: compact ? 10 : 11, weight: .bold))
-                .foregroundStyle(isHighlighted ? .white : .white.opacity(0.72))
-                .frame(
-                    width: compact ? 32 : (button == .mute ? 28 : 38),
-                    height: compact ? 29 : 27
-                )
-                .background(
-                    isHighlighted
-                        ? AnyShapeStyle(Color.purple.gradient)
-                        : AnyShapeStyle(.thinMaterial),
-                    in: Capsule()
-                )
-                .background(Color.white.opacity(isHighlighted ? 0 : 0.02), in: Capsule())
-                .overlay {
-                    Capsule()
-                        .strokeBorder(
-                            isHighlighted ? Color.white.opacity(0.38) : Color.white.opacity(0.16),
-                            lineWidth: 0.8
-                        )
-                }
-                .shadow(
-                    color: isHighlighted ? Color.purple.opacity(0.8) : .clear,
-                    radius: 8
-                )
-                .scaleEffect(isHighlighted ? 0.9 : 1)
-        }
-        .buttonStyle(.plain)
-        .help("Preview \(button.title)")
-        .animation(.spring(response: 0.2, dampingFraction: 0.62), value: isHighlighted)
+        .padding(.top, 14)
     }
 }
 
@@ -1294,6 +936,8 @@ private struct TestButton: View {
 }
 
 struct AboutSettingsView: View {
+    @ObservedObject var model: BridgeModel
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3"
     }
@@ -1311,11 +955,11 @@ struct AboutSettingsView: View {
                     }
                     CardDivider()
                     SettingRow(
-                        title: "Built for your setup",
-                        subtitle: "Samsung Smart M70D + M4 Mac mini"
+                        title: "Connected display",
+                        subtitle: model.displayName ?? "No CEC display detected yet"
                     ) {
-                        Image(systemName: "heart.fill")
-                            .foregroundStyle(.pink)
+                        Image(systemName: "display")
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .padding(.top, 14)
@@ -1324,9 +968,9 @@ struct AboutSettingsView: View {
 
                 SettingsCard {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("A tiny native bridge between Samsung Anynet+ and macOS.")
+                        Text("A tiny native bridge between HDMI-CEC and macOS.")
                             .font(.system(size: 13, weight: .semibold))
-                        Text("It listens through the M4 Mac mini’s built-in HDMI-CEC service and translates remote buttons into pointer, browser, and media actions—without extra hardware.")
+                        Text("It listens through the Mac’s built-in HDMI-CEC service and translates TV remote buttons into pointer, browser, and media actions—without extra hardware.")
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)

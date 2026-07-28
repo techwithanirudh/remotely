@@ -72,15 +72,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(.separator())
 
-        let test = NSMenuItem(
-            title: "Test Pointer Movement",
-            action: #selector(testMove),
-            keyEquivalent: ""
-        )
-        test.target = self
-        test.image = menuImage("cursorarrow.motionlines")
-        menu.addItem(test)
-
         let copy = NSMenuItem(
             title: "Copy Diagnostic Log",
             action: #selector(copyLog),
@@ -139,10 +130,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func reconnect() {
         model.reconnect()
-    }
-
-    @objc private func testMove() {
-        model.test(.moveRight)
     }
 
     @objc private func copyLog() {

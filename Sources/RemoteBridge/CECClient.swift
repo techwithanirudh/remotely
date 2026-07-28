@@ -21,6 +21,7 @@ final class CECClient: NSObject, @unchecked Sendable {
 
     var onStateChange: ((State) -> Void)?
     var onCommand: ((RemoteCommand) -> Void)?
+    var onRelease: (() -> Void)?
     var onLog: ((String) -> Void)?
     var onDisplayChange: ((String) -> Void)?
 
@@ -101,9 +102,11 @@ final class CECClient: NSObject, @unchecked Sendable {
                 self.lastDisplayName = display
                 self.onDisplayChange?(display)
                 self.onLog?("CEC link up: \(display)")
-            case let .button(command):
+            case let .pressed(command):
                 self.setState(.running)
                 self.onCommand?(command)
+            case .released:
+                self.onRelease?()
             }
         }
     }

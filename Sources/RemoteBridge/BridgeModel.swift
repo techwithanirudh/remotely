@@ -49,6 +49,12 @@ final class BridgeModel: ObservableObject {
     private let defaults = UserDefaults.standard
     private var pendingBack: DispatchWorkItem?
     private var clearHighlightWork: DispatchWorkItem?
+    private var heldCommand: RemoteCommand?
+    private var heldSince = Date.distantPast
+    private var lastTapAt = Date.distantPast
+
+    private static let holdThreshold: TimeInterval = 0.5
+    private static let doubleTapWindow: TimeInterval = 0.38
 
     private enum Keys {
         static let bridgeEnabled = "bridgeEnabled"
@@ -71,6 +77,9 @@ final class BridgeModel: ObservableObject {
         }
         client.onCommand = { [weak self] command in
             self?.receive(command)
+        }
+        client.onRelease = { [weak self] in
+            self?.receiveRelease()
         }
         client.onLog = { [weak self] message in
             self?.appendLog(message)
@@ -160,41 +169,84 @@ final class BridgeModel: ObservableObject {
         logs.removeAll()
     }
 
+    /// A CEC press repeats while the key is held and ends with a single release
+    /// that carries no key code, so hold and double-tap are derived from timing.
     private func receive(_ command: RemoteCommand) {
         lastCommand = command
+
+        guard command != heldCommand else {
+            if command.isDirectional { repeatDirectional(command) }
+            return
+        }
+
+        finishHeldCommand(released: false)
+        heldCommand = command
+        heldSince = Date()
         appendLog("Button: \(command.displayName)")
 
-        if command == .back {
-            if action(for: .doubleBack) == .none {
-                flash(.back)
-                perform(action(for: .back))
-                return
-            }
+        if command.isDirectional { repeatDirectional(command) }
+    }
 
-            if let pendingBack {
-                pendingBack.cancel()
-                self.pendingBack = nil
-                flash(.doubleBack)
-                perform(action(for: .doubleBack))
+    private func receiveRelease() {
+        finishHeldCommand(released: true)
+    }
+
+    private func repeatDirectional(_ command: RemoteCommand) {
+        guard let button = RemoteButton(command: command) else { return }
+        flash(button)
+        perform(action(for: button))
+    }
+
+    private func finishHeldCommand(released: Bool) {
+        guard let command = heldCommand else { return }
+        heldCommand = nil
+        guard released, !command.isDirectional else { return }
+
+        let heldLongEnough = Date().timeIntervalSince(heldSince) >= Self.holdThreshold
+
+        switch command {
+        case .select:
+            if heldLongEnough {
+                trigger(.centerHold)
             } else {
-                flash(.back)
-                let work = DispatchWorkItem { [weak self] in
-                    guard let self else { return }
-                    self.perform(self.action(for: .back))
-                    self.pendingBack = nil
-                }
-                pendingBack = work
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.42, execute: work)
+                trigger(isDoubleTap() ? .centerDouble : .center)
             }
-            return
+        case .back:
+            if isDoubleTap() {
+                pendingBack?.cancel()
+                pendingBack = nil
+                trigger(.doubleBack)
+            } else {
+                scheduleSingleBack()
+            }
+        default:
+            break
         }
+    }
 
-        pendingBack?.cancel()
-        pendingBack = nil
-        guard let button = RemoteButton(command: command) else {
-            appendLog("Home ignored (Samsung normally reserves this button)")
+    /// Discrete actions wait out the double-tap window; clicks do not, because
+    /// a second click simply escalates the first into a real double-click.
+    private func scheduleSingleBack() {
+        guard action(for: .doubleBack) != .none else {
+            trigger(.back)
             return
         }
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.trigger(.back)
+            self.pendingBack = nil
+        }
+        pendingBack = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.doubleTapWindow, execute: work)
+    }
+
+    private func isDoubleTap() -> Bool {
+        let now = Date()
+        defer { lastTapAt = now }
+        return now.timeIntervalSince(lastTapAt) < Self.doubleTapWindow
+    }
+
+    private func trigger(_ button: RemoteButton) {
         flash(button)
         perform(action(for: button))
     }
@@ -278,28 +330,6 @@ extension CECClient.State {
         case .unsupported, .failed: "exclamationmark.triangle.fill"
         case .waitingForHDMI: "cable.connector"
         case .running: "checkmark.circle.fill"
-        }
-    }
-}
-
-extension RemoteCommand {
-    var displayName: String {
-        switch self {
-        case .up: "D-pad Up"
-        case .down: "D-pad Down"
-        case .left: "D-pad Left"
-        case .right: "D-pad Right"
-        case .select: "Center"
-        case .back: "Back"
-        case .home: "Home"
-        case .playPause: "Play / Pause"
-        case .play: "Play"
-        case .pause: "Pause"
-        case .rewind: "Rewind"
-        case .fastForward: "Fast Forward"
-        case .volumeUp: "Volume Up"
-        case .volumeDown: "Volume Down"
-        case .mute: "Mute"
         }
     }
 }

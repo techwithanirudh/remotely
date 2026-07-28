@@ -11,7 +11,9 @@ import Foundation
 /// it while a key is held — which is what drives pointer acceleration.
 public struct CECLogParser: Sendable {
     public enum Event: Equatable, Sendable {
-        case button(RemoteCommand)
+        case pressed(RemoteCommand)
+        /// CEC releases carry no key code — only one key is ever held at a time.
+        case released
         case attached(String)
     }
 
@@ -19,7 +21,10 @@ public struct CECLogParser: Sendable {
 
     public func parse(_ line: String) -> Event? {
         if let code = userControlCode(in: line) {
-            return rawCECKey(code).map(Event.button)
+            return rawCECKey(code).map(Event.pressed)
+        }
+        if line.contains("<User Control Released>") {
+            return .released
         }
         if line.contains("Link: Y"), let display = displayName(in: line) {
             return .attached(display)
@@ -52,16 +57,7 @@ public struct CECLogParser: Sendable {
         case 0x02: return .down
         case 0x03: return .left
         case 0x04: return .right
-        case 0x09: return .home
         case 0x0D: return .back
-        case 0x20: return .playPause
-        case 0x41: return .volumeUp
-        case 0x42: return .volumeDown
-        case 0x43: return .mute
-        case 0x44: return .play
-        case 0x45, 0x46: return .pause
-        case 0x48: return .rewind
-        case 0x49: return .fastForward
         default: return nil
         }
     }
