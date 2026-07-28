@@ -18,6 +18,16 @@ enum Step: Int, CaseIterable {
         }
     }
 
+    /// Whether the step can ever block. Only these reserve room for a skip;
+    /// the rest would leave dead space under the button for a control that
+    /// can never appear.
+    var isGated: Bool {
+        switch self {
+        case .connect, .permission: true
+        default: false
+        }
+    }
+
     /// A TV that never reports CEC must not trap anyone, but skipping
     /// Accessibility leaves an app that cannot do the one thing it exists for.
     var isSkippable: Bool { self != .permission }
@@ -122,9 +132,7 @@ struct OnboardingView: View {
                 action: runPrimary
             )
 
-            // Reserved only where a skip can appear. A step that can never
-            // show one left dead space under the button.
-            if step.isSkippable {
+            if step.isGated, step.isSkippable {
                 Button("Skip for now", action: advance)
                     .buttonStyle(.plain)
                     .font(.system(size: 11.5))
