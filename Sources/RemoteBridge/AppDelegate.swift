@@ -1,7 +1,6 @@
 import AppKit
 import Combine
 import SwiftUI
-import UserNotifications
 import RemoteCore
 
 @MainActor
@@ -11,7 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let menuHeader = MenuHeaderView()
     private let headerItem = NSMenuItem()
     private let lastButtonItem = NSMenuItem(title: "Last button: None", action: nil, keyEquivalent: "")
-    private let enabledItem = NSMenuItem(title: "Enable Remote Bridge", action: #selector(toggleEnabled), keyEquivalent: "")
+    private let enabledItem = NSMenuItem(title: "Enable", action: #selector(toggleEnabled), keyEquivalent: "")
     private var settingsWindowController: SettingsWindowController?
     private var onboardingWindowController: OnboardingWindowController?
     private var cancellables = Set<AnyCancellable>()
@@ -20,9 +19,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         configureStatusItem()
         observeModel()
         model.start()
-
-        UNUserNotificationCenter.current()
-            .requestAuthorization(options: [.alert]) { _, _ in }
 
         if OnboardingProgress.isComplete {
             showSettings()
@@ -77,15 +73,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings.image = menuImage("gearshape")
         menu.addItem(settings)
 
-        let reconnect = NSMenuItem(
-            title: "Reconnect HDMI-CEC",
-            action: #selector(reconnect),
-            keyEquivalent: "r"
-        )
-        reconnect.target = self
-        reconnect.image = menuImage("arrow.clockwise")
-        menu.addItem(reconnect)
-
         menu.addItem(.separator())
 
         let copy = NSMenuItem(
@@ -100,7 +87,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
 
         let quit = NSMenuItem(
-            title: "Quit Remote Bridge",
+            title: "Quit",
             action: #selector(quit),
             keyEquivalent: "q"
         )
@@ -152,10 +139,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleEnabled() {
         model.bridgeEnabled.toggle()
-    }
-
-    @objc private func reconnect() {
-        model.reconnect()
     }
 
     @objc private func copyLog() {

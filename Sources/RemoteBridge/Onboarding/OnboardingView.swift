@@ -70,6 +70,7 @@ struct OnboardingView: View {
         case .doubleClick: DoubleClickStep()
         case .rightClick: RightClickStep()
         case .scroll: ScrollStep(model: model)
+        case .finish: FinishStep(model: model)
         }
     }
 

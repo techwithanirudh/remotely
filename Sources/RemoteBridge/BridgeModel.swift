@@ -2,7 +2,6 @@ import AppKit
 import ApplicationServices
 import Combine
 import ServiceManagement
-import UserNotifications
 import RemoteCore
 
 struct BridgeLogEntry: Identifiable, Hashable {
@@ -47,10 +46,13 @@ final class BridgeModel: ObservableObject {
     }
 
     /// While on, the D-pad scrolls instead of moving the pointer.
-    @Published private(set) var scrollMode = false
+    @Published private(set) var scrollMode = false {
+        didSet { scrollIndicator.setVisible(scrollMode) }
+    }
 
     let client = CECClient()
     private let controller = MacController()
+    private let scrollIndicator = ScrollModeIndicator()
     private let defaults = UserDefaults.standard
     private var pendingBack: DispatchWorkItem?
     private var clearHighlightWork: DispatchWorkItem?
@@ -302,29 +304,15 @@ final class BridgeModel: ObservableObject {
         perform(action)
     }
 
-    /// Without Accessibility every injected event is silently dropped, which
-    /// looks like a dead remote. Say so once rather than every press.
+    /// Without Accessibility every injected event is silently dropped. The
+    /// onboarding flow gates on the permission and the status pill reports it,
+    /// so this only needs to keep the log honest.
     private func permitToAct() -> Bool {
         if accessibilityGranted { return true }
         guard Date().timeIntervalSince(lastPermissionNotice) > 30 else { return false }
         lastPermissionNotice = Date()
         appendLog("Ignored, Accessibility permission is not granted")
-        notifyPermissionNeeded()
         return false
-    }
-
-    private func notifyPermissionNeeded() {
-        let content = UNMutableNotificationContent()
-        content.title = "Remote Bridge needs permission"
-        content.body = "Allow Accessibility so your TV remote can control this Mac."
-
-        UNUserNotificationCenter.current().add(
-            UNNotificationRequest(
-                identifier: "accessibility-required",
-                content: content,
-                trigger: nil
-            )
-        )
     }
 
     private func perform(_ action: MacAction) {

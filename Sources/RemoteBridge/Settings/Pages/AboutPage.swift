@@ -52,7 +52,7 @@ struct AboutSettingsView: View {
                     }
                     CardDivider()
                     SettingRow(
-                        title: "Setup guide",
+                        title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."
                     ) {
                         Button("Replay") {

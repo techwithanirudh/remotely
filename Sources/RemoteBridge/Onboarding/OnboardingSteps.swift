@@ -11,11 +11,12 @@ enum OnboardingStepKind: Int, CaseIterable {
     case doubleClick
     case rightClick
     case scroll
+    case finish
 
     @MainActor
     func isSatisfied(by model: BridgeModel) -> Bool {
         switch self {
-        case .welcome, .move, .click, .doubleClick, .rightClick, .scroll: true
+        case .welcome, .move, .click, .doubleClick, .rightClick, .scroll, .finish: true
         case .connect: model.connectionState == .running
         case .permission: model.accessibilityGranted
         }
