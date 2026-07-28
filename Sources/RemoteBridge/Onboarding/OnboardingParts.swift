@@ -42,8 +42,11 @@ struct StepLayout<Hero: View, Content: View>: View {
     }
 }
 
-/// A stand-in for the system dialog the step is about to trigger. Showing its
-/// shape first is what makes the real prompt recognisable when it appears.
+/// A stand-in for the macOS permission prompt.
+///
+/// Used only by the step that actually triggers one: showing its shape first is
+/// what makes the real prompt recognisable. Elsewhere it was decoration
+/// pretending a dialog was coming.
 struct DialogMock: View {
     let symbol: String
     let tint: Color
@@ -193,5 +196,31 @@ struct PanelButton: View {
         }
         .onHover { isHovering = $0 }
         .disabled(isWaiting)
+    }
+}
+
+
+/// Hero for a step that is teaching a gesture rather than previewing a system
+/// prompt. The dialog mock only earns its place where a real one follows.
+struct GestureHero: View {
+    let symbol: String
+    let tint: Color
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(tint.opacity(0.10))
+                .frame(width: 132, height: 132)
+
+            Circle()
+                .fill(tint.opacity(0.14))
+                .frame(width: 96, height: 96)
+
+            Image(systemName: symbol)
+                .font(.system(size: 40, weight: .medium))
+                .foregroundStyle(tint)
+                .symbolRenderingMode(.hierarchical)
+        }
+        .frame(height: 132)
     }
 }

@@ -57,11 +57,12 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    /// Only pages confirmed to resolve. The rest are deliberately absent
-    /// rather than pointing at a guessed article or a generic support home:
-    /// the menu path above is the part that actually helps, and a dead link
-    /// is worse than none.
-    public var supportURL: URL? {
+    /// The maker's own page, where one has been confirmed to resolve.
+    ///
+    /// Support articles get moved and retired constantly, and several of the
+    /// ones tried here answered 404 or 500. Rather than ship a link that dies,
+    /// the rest fall back to a search, which always lands somewhere current.
+    var verifiedArticle: URL? {
         switch self {
         case .samsung:
             URL(string: "https://www.samsung.com/us/support/answer/ANS10006946/")
@@ -69,8 +70,19 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
             URL(string: "https://www.lg.com/us/support/help-library/lg-tv-simplink-CT10000018")
         case .tclRoku:
             URL(string: "https://support.roku.com/article/208755668")
-        case .sony, .hisense, .vizio, .philips, .panasonic:
+        default:
             nil
         }
+    }
+
+    public var hasVerifiedArticle: Bool { verifiedArticle != nil }
+
+    public var helpURL: URL? {
+        if let verifiedArticle { return verifiedArticle }
+
+        let query = "\(name) \(featureName) HDMI-CEC turn on"
+        var components = URLComponents(string: "https://duckduckgo.com/")
+        components?.queryItems = [URLQueryItem(name: "q", value: query)]
+        return components?.url
     }
 }

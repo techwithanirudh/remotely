@@ -25,6 +25,13 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.contentViewController = NSHostingController(rootView: SettingsView(bridge: bridge))
         window.standardWindowButton(.zoomButton)?.isEnabled = false
 
+        // AppKit's own corner is squarer than Alcove's, and the window is
+        // already transparent, so the content layer carries the shape.
+        window.contentView?.wantsLayer = true
+        window.contentView?.layer?.cornerRadius = Theme.windowRadius
+        window.contentView?.layer?.cornerCurve = .continuous
+        window.contentView?.layer?.masksToBounds = true
+
         super.init(window: window)
         window.delegate = self
     }

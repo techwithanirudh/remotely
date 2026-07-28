@@ -60,7 +60,7 @@ struct AboutPage: View {
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 9)
                     .padding(.top, 12)
             }
         }

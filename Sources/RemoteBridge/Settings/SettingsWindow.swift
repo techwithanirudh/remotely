@@ -42,9 +42,9 @@ struct SettingsView: View {
     @State private var page: SettingsPage = .general
 
     var body: some View {
-        // One material across the whole window with cards floating on it. A
-        // separate opaque content pane made the right half read as flat white
-        // against a translucent sidebar.
+        // One material and one tint across the whole window, split by a
+        // hairline. Washing the content side a second shade made the two halves
+        // read as different surfaces.
         ZStack {
             Vibrancy()
 
@@ -52,10 +52,11 @@ struct SettingsView: View {
                 Sidebar(page: $page, bridge: bridge)
                     .frame(width: Theme.sidebarWidth)
 
-                ZStack {
-                    Theme.contentWash
-                    page(for: page).frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+                Rectangle()
+                    .fill(Theme.divider)
+                    .frame(width: 1)
+
+                page(for: page).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .frame(minWidth: 740, minHeight: 620)
@@ -92,6 +93,7 @@ struct PageShell<Content: View>: View {
             ScrollView {
                 content
                     .padding(.horizontal, Theme.pageInset)
+                    .padding(.top, 2)
                     .padding(.bottom, 32)
             }
         }

@@ -1,7 +1,10 @@
 import SwiftUI
 
-/// Window vibrancy. Follows the window's active state so it dims in the
-/// background like every other Mac window.
+/// Window vibrancy.
+///
+/// Held active rather than following the window, because Alcove's stays glassy
+/// in the background; letting it follow made the whole window flatten out the
+/// moment focus moved away.
 struct Vibrancy: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .underWindowBackground
 
@@ -9,7 +12,7 @@ struct Vibrancy: NSViewRepresentable {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
-        view.state = .followsWindowActiveState
+        view.state = .active
         return view
     }
 

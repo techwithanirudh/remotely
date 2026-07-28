@@ -8,6 +8,8 @@ enum Theme {
     static let cornerRadius: CGFloat = 10
     static let cardRadius: CGFloat = 12
     static let panelRadius: CGFloat = 22
+    /// Alcove rounds its window further than AppKit does by default.
+    static let windowRadius: CGFloat = 16
 
     // MARK: Layout
 
@@ -35,10 +37,6 @@ enum Theme {
 
     static var cardStroke: Color {
         adaptive(light: .init(white: 0, alpha: 0.05), dark: .init(white: 1, alpha: 0.10))
-    }
-
-    static var contentWash: Color {
-        adaptive(light: .init(white: 1, alpha: 0.34), dark: .init(white: 1, alpha: 0.02))
     }
 
     static var cardShadow: Color {

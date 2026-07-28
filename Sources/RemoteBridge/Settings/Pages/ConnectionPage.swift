@@ -127,13 +127,18 @@ struct BrandGuide: View {
         }
     }
 
+    /// Labelled for what it actually is: the maker's page where one is known
+    /// to work, a search otherwise.
     @ViewBuilder
     private var instructions: some View {
-        if let url = brand.supportURL {
+        if let url = brand.helpURL {
             Link(destination: url) {
-                Label("Instructions", systemImage: "arrow.up.right.square")
-                    .font(.system(size: 11, weight: .medium))
-                    .fixedSize()
+                Label(
+                    brand.hasVerifiedArticle ? "Instructions" : "Find instructions",
+                    systemImage: brand.hasVerifiedArticle ? "arrow.up.right.square" : "magnifyingglass"
+                )
+                .font(.system(size: 11, weight: .medium))
+                .fixedSize()
             }
         }
     }

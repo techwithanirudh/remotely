@@ -77,19 +77,27 @@ struct PracticeStep: View {
             case .move: .mouseMoved
             case .click, .doubleClick: .leftMouseDown
             case .rightClick: [.rightMouseDown, .leftMouseDown]
-            case .scroll: .scrollWheel
+            case .scroll: [.scrollWheel, .mouseMoved]
             }
         }
 
         /// nil ignores the event entirely.
-        func judge(_ event: NSEvent, fromRemote: Bool) -> Outcome? {
+        ///
+        /// - Parameter insideTarget: whether the pointer is over the exercise's
+        ///   own control. Movement elsewhere is just travelling towards it.
+        func judge(_ event: NSEvent, fromRemote: Bool, insideTarget: Bool) -> Outcome? {
             guard fromRemote else {
                 return self == .move ? nil : .wrong("That was your mouse, not the remote.")
             }
 
             switch self {
-            case .move, .scroll:
+            case .move:
                 return .passed
+            case .scroll:
+                if event.type == .scrollWheel { return .passed }
+                // Moving the pointer *over the list* means the arrows are still
+                // in pointer mode. Moving anywhere else is just navigating here.
+                return insideTarget ? .wrong("Still moving the pointer. Press Back twice first.") : nil
             case .click:
                 return event.clickCount >= 2
                     ? .wrong("That was a double press. Try one on its own.")
@@ -125,7 +133,7 @@ struct PracticeStep: View {
 
     var body: some View {
         StepLayout(title: exercise.title, hint: hint) {
-            DialogMock(symbol: exercise.symbol, tint: exercise.tint)
+            GestureHero(symbol: exercise.symbol, tint: exercise.tint)
         } content: {
             VStack(spacing: 9) {
                 if exercise == .scroll {
@@ -159,7 +167,9 @@ struct PracticeStep: View {
             }
             .frame(height: 92)
             .card()
-            .overlay(alignment: .bottomTrailing) { verdict.padding(8) }
+            .background(ScrollAreaProbe())
+
+            verdict
         } else {
             Marker(outcome: outcome, idleSymbol: exercise.idleSymbol, prompt: exercise.prompt)
                 // A real menu, so the gesture is proven end to end rather than
@@ -179,19 +189,27 @@ struct PracticeStep: View {
         switch outcome {
         case .passed:
             Label("Scrolled", systemImage: "checkmark.circle.fill")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.green)
         case .wrong(let reason):
-            Text(reason).font(.system(size: 10)).foregroundStyle(.orange)
+            Text(reason)
+                .font(.system(size: 11))
+                .foregroundStyle(.orange)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         case .waiting:
-            EmptyView()
+            Text("Press Back twice, then hold an arrow")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
         }
     }
 
     private func watch() {
         monitor = NSEvent.addLocalMonitorForEvents(matching: exercise.mask) { event in
             let fromRemote = EventSignature.marks(event)
-            if let result = exercise.judge(event, fromRemote: fromRemote) {
+            let inside = MainActor.assumeIsolated { ScrollAreaProbe.contains(NSEvent.mouseLocation) }
+
+            if let result = exercise.judge(event, fromRemote: fromRemote, insideTarget: inside) {
                 MainActor.assumeIsolated {
                     // Passing is final: a stray event afterwards should not
                     // report a failure the user has already got past.
@@ -294,5 +312,40 @@ struct ModeBadge: View {
             in: Capsule()
         )
         .animation(.easeOut(duration: 0.18), value: isScrolling)
+    }
+}
+
+
+/// Reports where the scroll list is on screen, so movement can be judged
+/// against it rather than against the whole window.
+struct ScrollAreaProbe: NSViewRepresentable {
+    @MainActor private static var frame: NSRect = .zero
+
+    @MainActor
+    static func contains(_ point: NSPoint) -> Bool {
+        frame.contains(point)
+    }
+
+    func makeNSView(context: Context) -> NSView { Probe() }
+    func updateNSView(_ view: NSView, context: Context) {}
+
+    private final class Probe: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            publishFrame()
+        }
+
+        override func layout() {
+            super.layout()
+            publishFrame()
+        }
+
+        private func publishFrame() {
+            guard let window else { return }
+            let inWindow = convert(bounds, to: nil)
+            MainActor.assumeIsolated {
+                ScrollAreaProbe.frame = window.convertToScreen(inWindow)
+            }
+        }
     }
 }

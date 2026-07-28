@@ -58,9 +58,14 @@ struct OnboardingView: View {
 
             VStack(spacing: 0) {
                 header
-                Spacer(minLength: 10)
+
+                // Slack goes above the content rather than being split with the
+                // space below it. Splitting it evenly left a short step with a
+                // large gap over the button as well as under the header.
+                Spacer(minLength: 12)
                 content.frame(maxWidth: .infinity)
-                Spacer(minLength: 10)
+                Spacer(minLength: 12).frame(maxHeight: 26)
+
                 footer
             }
             .padding(.horizontal, 22)

@@ -63,8 +63,8 @@ struct ControlsPage: View {
                 )
                 .font(.system(size: 10.5))
                 .foregroundStyle(.tertiary)
-                .padding(.horizontal, 8)
-                .padding(.top, 10)
+                .padding(.horizontal, 9)
+                .padding(.top, 12)
             }
         }
     }

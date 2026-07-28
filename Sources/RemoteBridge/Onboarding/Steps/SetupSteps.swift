@@ -46,7 +46,7 @@ struct ConnectStep: View {
             hint: "Plug in the cable and switch the TV to that input, then turn on "
                 + "HDMI-CEC in its settings."
         ) {
-            DialogMock(symbol: "cable.connector", tint: .cyan, badge: "tv")
+            GestureHero(symbol: "cable.connector", tint: .cyan)
         } content: {
             BrandGuide(brand: $brand, isCompact: true).card(radius: Theme.cornerRadius)
         }
