@@ -52,6 +52,7 @@ final class MacController {
         case .leftClick: click(button: .left, clickState: 1)
         case .doubleClick: click(button: .left, clickState: 2)
         case .rightClick: click(button: .right, clickState: 1)
+        case .escape: pressKey(53)
         case .browserBack: pressKey(33, flags: .maskCommand) // Command-[
         case .showDesktop: pressKey(103) // F11
         case .missionControl: pressKey(126, flags: .maskControl) // Control-Up

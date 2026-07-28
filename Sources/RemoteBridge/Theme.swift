@@ -58,7 +58,7 @@ enum Theme {
     /// Distance from the window's top edge to the buttons' centre. AppKit's
     /// default sits them ~14.5pt down; Alcove's measure ~19.5pt, and leaving
     /// this alone is what kept the padding looking off.
-    static let trafficLightTopInset: CGFloat = 19.5
+    static let trafficLightTopInset: CGFloat = 22
 
     static let pageInset: CGFloat = 18
     static let cardPadding: CGFloat = 13

@@ -36,7 +36,13 @@ final class PracticeMonitor: ObservableObject {
             // decision is made here and only the result crosses over.
             let fromRemote = RemoteEventSignature.marks(event)
             if let result = classify(event, fromRemote) {
-                MainActor.assumeIsolated { self.outcome = result }
+                MainActor.assumeIsolated {
+                    // Passing is final. Otherwise the next stray event after a
+                    // success — a pointer move once scrolling worked, say —
+                    // reported a failure the user had already got past.
+                    guard self.outcome != .satisfied else { return }
+                    self.outcome = result
+                }
             }
             return event
         }

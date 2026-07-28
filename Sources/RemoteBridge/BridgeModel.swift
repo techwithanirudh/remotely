@@ -61,6 +61,8 @@ final class BridgeModel: ObservableObject {
     private var lastRepeatAt = Date.distantPast
     private var lastTapAt = Date.distantPast
     private var holdWatchdog: Timer?
+    private var holdGesture: DispatchWorkItem?
+    private var heldFired = false
     private var lastPermissionNotice = Date.distantPast
 
     private static let holdThreshold: TimeInterval = 0.5
@@ -205,11 +207,31 @@ final class BridgeModel: ObservableObject {
         lastRepeatAt = Date()
         appendLog("Button: \(command.displayName)")
 
-        if command.isDirectional { beginDirectional(command) }
+        if command.isDirectional {
+            beginDirectional(command)
+        } else {
+            armHoldGesture(for: command)
+        }
     }
 
     private func receiveRelease() {
         finishHeldCommand(released: true)
+    }
+
+    /// Fires a hold as soon as it qualifies, rather than waiting for release.
+    /// A right click that only appears once you let go feels broken: every
+    /// other press-and-hold on the system acts while your finger is still down.
+    private func armHoldGesture(for command: RemoteCommand) {
+        holdGesture?.cancel()
+        guard command == .select, action(for: .centerHold) != .none else { return }
+
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.heldCommand == .select else { return }
+            self.heldFired = true
+            self.trigger(.centerHold)
+        }
+        holdGesture = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.holdThreshold, execute: work)
     }
 
     private func beginDirectional(_ command: RemoteCommand) {
@@ -239,23 +261,27 @@ final class BridgeModel: ObservableObject {
         guard let command = heldCommand else { return }
         heldCommand = nil
 
+        holdGesture?.cancel()
+        holdGesture = nil
+
         if command.isDirectional {
             holdWatchdog?.invalidate()
             holdWatchdog = nil
             controller.endHold()
             return
         }
-        guard released else { return }
 
-        let heldLongEnough = Date().timeIntervalSince(heldSince) >= Self.holdThreshold
+        // The hold already fired while the key was down; releasing must not
+        // also register a tap.
+        if heldFired {
+            heldFired = false
+            return
+        }
+        guard released else { return }
 
         switch command {
         case .select:
-            if heldLongEnough {
-                trigger(.centerHold)
-            } else {
-                trigger(isDoubleTap() ? .centerDouble : .center)
-            }
+            trigger(isDoubleTap() ? .centerDouble : .center)
         case .back:
             if isDoubleTap() {
                 pendingBack?.cancel()

@@ -44,67 +44,120 @@ struct FinishStep: View {
     }
 }
 
-/// A short burst of falling confetti.
+/// A confetti cannon.
 ///
-/// Each piece gets a fixed seed so the animation is deterministic per launch
-/// and does not re-randomise on every SwiftUI update.
+/// Pieces fire upward and outward from the bottom of the panel, arc over, then
+/// fall past the edge — the shape a real popper makes. Simply dropping them
+/// from the top read as weather rather than celebration.
+///
+/// Each piece carries a fixed seed so the burst is deterministic instead of
+/// re-randomising on every SwiftUI update.
 private struct Confetti: View {
-    private struct Piece: Identifiable {
+    fileprivate struct Piece: Identifiable {
         let id: Int
-        let x: CGFloat
+        let fromLeft: Bool
+        let spread: CGFloat
+        let rise: CGFloat
         let delay: Double
         let duration: Double
         let tint: Color
         let spin: Double
-        let size: CGFloat
+        let width: CGFloat
+        let height: CGFloat
+        let isCircle: Bool
     }
 
     private static let palette: [Color] = [
-        .pink, .orange, .yellow, .green, .teal, .blue, .purple,
+        .pink, .orange, .yellow, .green, .mint, .teal, .blue, .indigo, .purple, .red,
     ]
 
-    private static let pieces: [Piece] = (0..<48).map { index in
-        var generator = SeededGenerator(seed: UInt64(index &* 2_654_435_761))
+    private static let pieces: [Piece] = (0..<120).map { index in
+        var generator = SeededGenerator(seed: UInt64(index &* 2_654_435_761 &+ 12_345))
         return Piece(
             id: index,
-            x: .random(in: 0...1, using: &generator),
-            delay: .random(in: 0...0.9, using: &generator),
-            duration: .random(in: 1.6...2.9, using: &generator),
+            fromLeft: index.isMultiple(of: 2),
+            spread: .random(in: 60...300, using: &generator),
+            rise: .random(in: 220...480, using: &generator),
+            delay: .random(in: 0...0.5, using: &generator),
+            duration: .random(in: 1.7...2.9, using: &generator),
             tint: palette[index % palette.count],
-            spin: .random(in: -540...540, using: &generator),
-            size: .random(in: 5...9, using: &generator)
+            spin: .random(in: -1080...1080, using: &generator),
+            width: .random(in: 5...10, using: &generator),
+            height: .random(in: 9...16, using: &generator),
+            isCircle: index.isMultiple(of: 5)
         )
     }
 
-    @State private var falling = false
-
     var body: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .top) {
+            ZStack {
                 ForEach(Self.pieces) { piece in
-                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                    piece.shape
                         .fill(piece.tint)
-                        .frame(width: piece.size, height: piece.size * 1.6)
-                        .rotationEffect(.degrees(falling ? piece.spin : 0))
-                        .offset(
-                            x: piece.x * geometry.size.width - geometry.size.width / 2,
-                            y: falling ? geometry.size.height + 40 : -40
-                        )
-                        .opacity(falling ? 0 : 1)
-                        .animation(
-                            .easeIn(duration: piece.duration).delay(piece.delay),
-                            value: falling
-                        )
+                        .frame(width: piece.width,
+                               height: piece.isCircle ? piece.width : piece.height)
+                        .keyframeAnimator(
+                            initialValue: Flight(),
+                            repeating: false
+                        ) { view, flight in
+                            let angle: Double = piece.spin * Double(flight.travel)
+                            let dx: CGFloat = piece.drift * flight.travel
+                            view
+                                .offset(x: dx, y: flight.height)
+                                .rotationEffect(Angle(degrees: angle))
+                                .opacity(flight.opacity)
+                        } keyframes: { _ in
+                            let floor: CGFloat = geometry.size.height / 2
+                            let peak: CGFloat = floor - piece.rise
+                            let exit: CGFloat = floor + 80
+
+                            KeyframeTrack(\.height) {
+                                LinearKeyframe(floor, duration: piece.delay)
+                                // Up and over.
+                                SpringKeyframe(peak,
+                                               duration: piece.duration * 0.45,
+                                               spring: .snappy)
+                                // Then down past the bottom edge.
+                                CubicKeyframe(exit, duration: piece.duration * 0.55)
+                            }
+                            KeyframeTrack(\.travel) {
+                                LinearKeyframe(0, duration: piece.delay)
+                                LinearKeyframe(1, duration: piece.duration)
+                            }
+                            KeyframeTrack(\.opacity) {
+                                LinearKeyframe(0, duration: piece.delay)
+                                LinearKeyframe(1, duration: 0.05)
+                                LinearKeyframe(1, duration: piece.duration * 0.7)
+                                LinearKeyframe(0, duration: piece.duration * 0.3)
+                            }
+                        }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .allowsHitTesting(false)
-        .onAppear { falling = true }
     }
 }
 
-/// Small deterministic generator, so the confetti layout is stable.
+private extension Confetti.Piece {
+    /// Fans outward from whichever side it was fired from.
+    var drift: CGFloat { fromLeft ? -spread : spread }
+
+    var shape: AnyShape {
+        isCircle
+            ? AnyShape(Circle())
+            : AnyShape(RoundedRectangle(cornerRadius: 1.5, style: .continuous))
+    }
+}
+
+/// Animatable state for one piece in flight.
+private struct Flight {
+    var height: CGFloat = 0
+    var travel: CGFloat = 0
+    var opacity: Double = 0
+}
+
+/// Small deterministic generator, so the burst is stable.
 private struct SeededGenerator: RandomNumberGenerator {
     private var state: UInt64
 

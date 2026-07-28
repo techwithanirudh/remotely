@@ -3,6 +3,14 @@ import RemoteCore
 
 struct ConnectionSettingsView: View {
     @ObservedObject var model: BridgeModel
+    @AppStorage(OnboardingProgress.brandKey) private var storedBrand = TVBrand.samsung.rawValue
+
+    private var brand: Binding<TVBrand> {
+        Binding(
+            get: { TVBrand(rawValue: storedBrand) ?? .samsung },
+            set: { storedBrand = $0.rawValue }
+        )
+    }
 
     var body: some View {
         PageShell(page: .connection) {
@@ -28,15 +36,11 @@ struct ConnectionSettingsView: View {
                     )
                 }
 
-                Label(
-                    "TV makers rename HDMI-CEC: Samsung calls it Anynet+, LG SimpLink, "
-                        + "Sony Bravia Sync, Philips EasyLink.",
-                    systemImage: "info.circle"
-                )
-                .font(.system(size: 10.5))
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 8)
-                .padding(.top, 10)
+                SectionLabel(title: "Where to find it")
+
+                SettingsCard {
+                    BrandHelpRow(brand: brand)
+                }
             }
         }
     }
@@ -99,5 +103,50 @@ struct ChecklistRow: View {
         }
         .padding(.horizontal, 12)
         .frame(height: 40)
+    }
+}
+
+
+/// Brand picker, that maker's name for HDMI-CEC, the menu path, and a link out
+/// to their own instructions. Naming only a few brands in a footnote left
+/// everyone else guessing.
+struct BrandHelpRow: View {
+    @Binding var brand: TVBrand
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 9) {
+                Text("My TV is a")
+                    .font(.system(size: 13))
+
+                Picker("", selection: $brand) {
+                    ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
+                }
+                .labelsHidden()
+                .controlSize(.small)
+                .frame(width: 140)
+
+                Spacer(minLength: 8)
+
+                if let url = brand.supportURL {
+                    Link(destination: url) {
+                        Label("Instructions", systemImage: "arrow.up.right.square")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Look for “\(brand.featureName)”")
+                    .font(.system(size: 12, weight: .semibold))
+                Text(brand.path)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+        }
+        .padding(Theme.cardPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

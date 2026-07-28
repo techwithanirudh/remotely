@@ -13,6 +13,7 @@ struct AboutSettingsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Title, version and blurb share one left edge; hanging the
                 // blurb under the icon instead left it out of line with both.
+                SettingsCard {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "av.remote.fill")
                         .font(.system(size: 21, weight: .medium))
@@ -39,8 +40,8 @@ struct AboutSettingsView: View {
 
                     Spacer(minLength: 0)
                 }
-                .padding(.top, 2)
-                .padding(.bottom, 4)
+                .padding(Theme.cardPadding)
+                }
 
                 SectionLabel(title: "Connection")
 

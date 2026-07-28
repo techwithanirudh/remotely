@@ -44,6 +44,20 @@ enum TVBrand: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The maker's own support page for the setting.
+    var supportURL: URL? {
+        switch self {
+        case .samsung: URL(string: "https://www.samsung.com/us/support/answer/ANS10006946/")
+        case .lg: URL(string: "https://www.lg.com/us/support/help-library/lg-tv-simplink-CT10000018")
+        case .sony: URL(string: "https://www.sony.com/electronics/support/articles/00021747")
+        case .tclOrRoku: URL(string: "https://support.roku.com/article/208755668")
+        case .hisense: URL(string: "https://www.hisense-usa.com/support")
+        case .vizio: URL(string: "https://support.vizio.com/s/article/Using-CEC")
+        case .philips: URL(string: "https://www.philips.co.uk/c-f/XC000009262/what-is-easylink-hdmi-cec")
+        case .panasonic: URL(string: "https://www.panasonic.com/global/support.html")
+        }
+    }
+
     var path: String {
         switch self {
         case .samsung:

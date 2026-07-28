@@ -51,7 +51,7 @@ struct SettingsSidebar: View {
             // Clears the traffic lights, which sit in the transparent titlebar.
             StatusPill(status: model.status)
                 .padding(.horizontal, Theme.sidebarInset)
-                .padding(.top, 40)
+                .padding(.top, 44)
                 .padding(.bottom, 10)
 
             SidebarButton(page: .general, selection: $selection)

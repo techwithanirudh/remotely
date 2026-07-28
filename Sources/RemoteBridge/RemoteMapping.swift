@@ -69,6 +69,7 @@ enum MacAction: String, CaseIterable, Identifiable {
     case leftClick
     case doubleClick
     case rightClick
+    case escape
     case browserBack
     case showDesktop
     case missionControl
@@ -121,6 +122,7 @@ enum MacAction: String, CaseIterable, Identifiable {
         case .leftClick: "Left Click"
         case .doubleClick: "Double Click"
         case .rightClick: "Right Click"
+        case .escape: "Escape"
         case .browserBack: "Browser Back"
         case .showDesktop: "Show Desktop"
         case .missionControl: "Mission Control"
@@ -142,6 +144,7 @@ enum MacAction: String, CaseIterable, Identifiable {
         case .leftClick: "cursorarrow.click"
         case .doubleClick: "cursorarrow.click.2"
         case .rightClick: "contextualmenu.and.cursorarrow"
+        case .escape: "escape"
         case .browserBack: "chevron.backward"
         case .showDesktop: "macwindow"
         case .missionControl: "square.grid.3x2"
@@ -160,7 +163,7 @@ extension Dictionary where Key == RemoteButton, Value == MacAction {
             .center: .leftClick,
             .centerDouble: .doubleClick,
             .centerHold: .rightClick,
-            .back: .browserBack,
+            .back: .escape,
             .doubleBack: .toggleScrollMode,
         ]
     }

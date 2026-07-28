@@ -7,27 +7,17 @@ struct ControlsSettingsView: View {
     var body: some View {
         PageShell(page: .controls) {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .center, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Make the remote yours")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("Assign any macOS action to each remote button.")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
+                SettingsCard {
+                    SettingRow(
+                        title: "Make the remote yours",
+                        subtitle: "Assign any macOS action to each remote button."
+                    ) {
+                        Button("Reset Defaults") { model.resetMappings() }
+                            .controlSize(.small)
                     }
-
-                    Spacer()
-
-                    Button("Reset Defaults") {
-                        model.resetMappings()
-                    }
-                    .controlSize(.small)
                 }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 11)
 
                 SectionLabel(title: "How to use the remote")
-                    .padding(.top, 0)
 
                 SettingsCard {
                     GestureGuideRow(

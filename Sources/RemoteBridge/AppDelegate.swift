@@ -255,6 +255,8 @@ private final class MenuHeaderView: NSView {
 
 @MainActor
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    private var hasBeenPlaced = false
+
     init(model: BridgeModel) {
         let rootView = SettingsRootView(model: model)
         let hostingController = NSHostingController(rootView: rootView)
@@ -275,9 +277,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.contentViewController = hostingController
         window.minSize = NSSize(width: 700, height: 590)
-        window.setFrameAutosaveName("RemoteBridgeSettings")
         window.standardWindowButton(.zoomButton)?.isEnabled = false
-        window.center()
 
         super.init(window: window)
         window.delegate = self
@@ -292,7 +292,23 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         showWindow(nil)
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
+        centreIfUnplaced()
         alignTrafficLights()
+    }
+
+    /// Centres the first time the window is shown. `center()` at init runs
+    /// before the hosting controller has sized anything, which is how the
+    /// window ended up parked in a corner.
+    private func centreIfUnplaced() {
+        guard !hasBeenPlaced, let window, let screen = window.screen ?? NSScreen.main else {
+            return
+        }
+        hasBeenPlaced = true
+        let visible = screen.visibleFrame
+        let size = window.frame.size
+        window.setFrameOrigin(
+            NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
+        )
     }
 
     func windowDidResize(_ notification: Notification) {
