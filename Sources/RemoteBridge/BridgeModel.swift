@@ -248,13 +248,15 @@ final class BridgeModel: ObservableObject {
     /// stop once the key's repeats go quiet.
     private func startHoldWatchdog() {
         holdWatchdog?.invalidate()
-        holdWatchdog = .scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
                 guard Date().timeIntervalSince(self.lastRepeatAt) > 0.6 else { return }
                 self.finishHeldCommand(released: false)
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        holdWatchdog = timer
     }
 
     private func finishHeldCommand(released: Bool) {

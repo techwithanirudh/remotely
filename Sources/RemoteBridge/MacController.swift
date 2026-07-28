@@ -96,10 +96,21 @@ final class MacController {
 
     private func startMoveTimer(sensitivity: Double) {
         guard moveTimer == nil else { return }
-        moveTimer = .scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.stepMove(sensitivity: sensitivity) }
-        }
+        moveTimer = Self.makeTimer { [weak self] in self?.stepMove(sensitivity: sensitivity) }
         stepMove(sensitivity: sensitivity)
+    }
+
+    /// Runs in the common modes rather than the default one.
+    ///
+    /// An open menu spins a nested event-tracking run loop, and a timer
+    /// scheduled the ordinary way stops firing for as long as it is up: the
+    /// pointer froze the moment a context menu appeared.
+    private static func makeTimer(_ tick: @escaping @MainActor () -> Void) -> Timer {
+        let timer = Timer(timeInterval: tickInterval, repeats: true) { _ in
+            MainActor.assumeIsolated { tick() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
     }
 
     private func stepMove(sensitivity: Double) {
@@ -131,9 +142,7 @@ final class MacController {
 
     private func startScrollTimer(sensitivity: Double) {
         guard scrollTimer == nil else { return }
-        scrollTimer = .scheduledTimer(withTimeInterval: Self.tickInterval, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.stepScroll(sensitivity: sensitivity) }
-        }
+        scrollTimer = Self.makeTimer { [weak self] in self?.stepScroll(sensitivity: sensitivity) }
         stepScroll(sensitivity: sensitivity)
     }
 

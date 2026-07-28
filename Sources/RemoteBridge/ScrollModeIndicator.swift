@@ -43,9 +43,13 @@ final class ScrollModeIndicator {
         window = panel
 
         reposition()
-        follow = .scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
+        // Common modes, so the chip keeps up with the pointer while a menu is
+        // tracking rather than freezing where it was.
+        let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.reposition() }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        follow = timer
     }
 
     private func hide() {
