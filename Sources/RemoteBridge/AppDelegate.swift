@@ -336,21 +336,23 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     init(model: BridgeModel, onFinish: @escaping () -> Void) {
         let rootView = OnboardingView(model: model, onFinish: onFinish)
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 500),
-            styleMask: [.titled, .closable, .fullSizeContentView],
+
+        // Borderless, the way Alcove's onboarding is: no titlebar and no window
+        // buttons, so nothing in the panel has to line up with them.
+        let window = KeyableBorderlessWindow(
+            contentRect: NSRect(origin: .zero, size: OnboardingView.panelSize),
+            styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.title = "Welcome to Remote Bridge"
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = true
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
+        window.level = .floating
         window.contentViewController = NSHostingController(rootView: rootView)
-        // Assigning the hosting controller resizes the window to its fitting
-        // size, so restore the intended size before centring.
-        window.setContentSize(NSSize(width: 540, height: 500))
+        window.setContentSize(OnboardingView.panelSize)
 
         super.init(window: window)
         window.delegate = self
@@ -365,23 +367,25 @@ final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         window?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
 
-        // `center()` uses whatever size the window has at call time, which is
-        // the hosting controller's fitting size until layout settles — hence
-        // positioning against the screen once the window is actually up.
+        // Position against the screen once the window is up; `center()` uses
+        // whatever size it has at call time, which is stale until layout runs.
         guard let window, let screen = window.screen ?? NSScreen.main else { return }
         let visible = screen.visibleFrame
         let size = window.frame.size
         window.setFrameOrigin(
-            NSPoint(
-                x: visible.midX - size.width / 2,
-                y: visible.midY - size.height / 2
-            )
+            NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
         )
     }
 
-    /// Dismissing the window counts as finishing; otherwise onboarding would
-    /// reappear on every launch.
+    /// Dismissing counts as finishing; otherwise onboarding returns every launch.
     func windowWillClose(_ notification: Notification) {
         UserDefaults.standard.set(true, forKey: AppDelegate.onboardingKey)
     }
 }
+
+/// A borderless window still has to accept keyboard focus for its buttons.
+final class KeyableBorderlessWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+

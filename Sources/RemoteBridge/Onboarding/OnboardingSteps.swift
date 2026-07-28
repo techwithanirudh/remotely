@@ -21,11 +21,19 @@ enum OnboardingStepKind: Int, CaseIterable {
 struct WelcomeStep: View {
     var body: some View {
         OnboardingStep(
-            symbol: "av.remote.fill",
             title: "Control this Mac with your TV remote",
-            detail: "Your remote's arrows move the pointer and Center clicks, over the "
-                + "HDMI cable you already have. No extra hardware, no dongle."
-        )
+            hint: "Over the HDMI cable you already have. No extra hardware, no dongle."
+        ) {
+            PermissionDialogMock(symbol: "av.remote.fill", tint: .accentColor)
+        } accessory: {
+            OnboardingIconRow(items: [
+                .init(symbol: "arrow.up.and.down.and.arrow.left.and.right",
+                      tint: .blue, label: "Move"),
+                .init(symbol: "cursorarrow.click", tint: .purple, label: "Click"),
+                .init(symbol: "arrow.up.and.down.text.horizontal",
+                      tint: .teal, label: "Scroll"),
+            ])
+        }
     }
 }
 
@@ -34,18 +42,15 @@ struct ConnectStep: View {
     @Binding var brand: TVBrand
 
     var body: some View {
-        OnboardingStep(
-            symbol: "cable.connector",
-            title: "Connect over HDMI",
-            detail: "Three things have to be true before your remote reaches this Mac."
-        ) {
-            VStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 9) {
-                    OnboardingBullet(number: 1, text: "Plug this Mac into your TV with an HDMI cable.")
-                    OnboardingBullet(number: 2, text: "Switch the TV to that HDMI input.")
-                    OnboardingBullet(number: 3, text: "Turn on HDMI-CEC in the TV's settings.")
+        OnboardingStep(title: "Connect over HDMI") {
+            PermissionDialogMock(symbol: "cable.connector", tint: .cyan, badge: "tv")
+        } accessory: {
+            VStack(spacing: 13) {
+                VStack(alignment: .leading, spacing: 8) {
+                    OnboardingBullet(number: 1, text: "Plug this Mac into your TV with HDMI.")
+                    OnboardingBullet(number: 2, text: "Switch the TV to that input.")
+                    OnboardingBullet(number: 3, text: "Turn on HDMI-CEC on the TV.")
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
 
                 BrandPathCard(brand: $brand)
 
@@ -64,12 +69,13 @@ struct PermissionStep: View {
 
     var body: some View {
         OnboardingStep(
-            symbol: "lock.fill",
-            title: "Allow Accessibility",
-            detail: "macOS needs your permission before anything can move the pointer. "
-                + "Without it the remote's buttons arrive but nothing happens."
+            title: "Remote Bridge needs your permission to move the pointer",
+            hint: "Choose “Open System Settings”, then switch on Remote Bridge "
+                + "under Accessibility."
         ) {
-            VStack(spacing: 12) {
+            PermissionDialogMock(symbol: "hand.raised.fill", tint: .orange, badge: "gearshape.fill")
+        } accessory: {
+            VStack(spacing: 11) {
                 OnboardingCheck(
                     done: model.accessibilityGranted,
                     doneText: "Permission allowed",
@@ -77,9 +83,10 @@ struct PermissionStep: View {
                 )
 
                 if !model.accessibilityGranted {
-                    Button("Open System Settings…") {
+                    OnboardingButton(title: "Open System Settings") {
                         model.requestAccessibility()
                     }
+                    .frame(width: 200)
                 }
             }
         }
@@ -91,29 +98,28 @@ struct BrandPathCard: View {
     @Binding var brand: TVBrand
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 8) {
                 Text("My TV is a")
-                    .font(.system(size: 12))
+                    .font(.system(size: 11.5))
 
                 Picker("", selection: $brand) {
                     ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
                 }
                 .labelsHidden()
                 .controlSize(.small)
-                .frame(width: 132)
+                .frame(width: 124)
 
-                Spacer()
+                Spacer(minLength: 0)
             }
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Look for “\(brand.featureName)”")
-                    .font(.system(size: 11.5, weight: .semibold))
-                Text(brand.path)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Text("Look for “\(brand.featureName)”")
+                .font(.system(size: 11, weight: .semibold))
+
+            Text(brand.path)
+                .font(.system(size: 10.5))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(11)
         .frame(maxWidth: .infinity, alignment: .leading)

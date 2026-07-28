@@ -12,18 +12,22 @@ struct PracticeStep: View {
 
     var body: some View {
         OnboardingStep(
-            symbol: "hand.tap.fill",
             title: "Try it out",
-            detail: "Drive these with the remote. They are real controls, so whatever "
-                + "works here works everywhere."
+            hint: model.scrollMode
+                ? "Scrolling is on. Press Back twice again to go back to moving."
+                : "Press Back twice to switch the arrows between moving and scrolling."
         ) {
-            VStack(spacing: 10) {
-                OnboardingPanel(
-                    hint: "Hold an arrow to glide, tap to fine-tune, then press Center",
-                    symbol: "cursorarrow.click",
-                    badge: clicked.count == 3 ? "Nice" : nil
-                ) {
-                    HStack(spacing: 14) {
+            PermissionDialogMock(symbol: "hand.tap.fill", tint: .indigo)
+        } accessory: {
+            VStack(spacing: 11) {
+                VStack(spacing: 9) {
+                    Text("Hold an arrow to glide, tap to nudge, press Center to click")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 16) {
                         ForEach(0..<3, id: \.self) { index in
                             Button {
                                 clicked.insert(index)
@@ -32,7 +36,7 @@ struct PracticeStep: View {
                                     .fill(clicked.contains(index)
                                           ? Color.green
                                           : Color.primary.opacity(0.13))
-                                    .frame(width: 32, height: 32)
+                                    .frame(width: 30, height: 30)
                                     .overlay {
                                         if clicked.contains(index) {
                                             Image(systemName: "checkmark")
@@ -43,34 +47,25 @@ struct PracticeStep: View {
                             }
                             .buttonStyle(.plain)
                         }
-
-                        Spacer()
-
-                        Text("\(clicked.count)/3")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(clicked.count == 3 ? .green : .secondary)
                     }
                 }
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .cardSurface(cornerRadius: Theme.cardCornerRadius)
 
-                OnboardingPanel(
-                    hint: "Press Back twice, then hold an arrow to scroll",
-                    symbol: "arrow.up.and.down.text.horizontal",
-                    badge: model.scrollMode ? "Scrolling" : nil
-                ) {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 6) {
-                            ForEach(1...14, id: \.self) { row in
-                                Text("Scrollable line \(row)")
-                                    .font(.system(size: 11.5))
-                                    .foregroundStyle(.secondary)
-                            }
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(1...14, id: \.self) { row in
+                            Text("Scrollable line \(row)")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
                         }
-                        .padding(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(height: 70)
-                    .cardSurface(cornerRadius: 8)
+                    .padding(9)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .frame(height: 68)
+                .cardSurface(cornerRadius: Theme.cardCornerRadius)
             }
         }
     }

@@ -17,6 +17,7 @@ binary_dir=$(swift build --disable-sandbox -c "$configuration" --show-bin-path)
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$binary_dir/RemoteBridge" "$app_dir/Contents/MacOS/RemoteBridge"
 cp "$repo_dir/resources/Info.plist" "$app_dir/Contents/Info.plist"
+cp "$repo_dir/resources/AppIcon.icns" "$app_dir/Contents/Resources/AppIcon.icns"
 xattr -cr "$app_dir"
 codesign --force --deep --sign - "$app_dir"
 
