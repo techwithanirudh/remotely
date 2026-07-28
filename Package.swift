@@ -2,17 +2,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "M7RemoteBridge",
+    name: "RemoteBridge",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "M7RemoteCore", targets: ["M7RemoteCore"]),
-        .executable(name: "M7RemoteBridge", targets: ["M7RemoteBridge"]),
+        .library(name: "RemoteCore", targets: ["RemoteCore"]),
+        .executable(name: "RemoteBridge", targets: ["RemoteBridge"]),
     ],
     targets: [
-        .target(name: "M7RemoteCore"),
+        .target(name: "RemoteCore"),
         .executableTarget(
-            name: "M7RemoteBridge",
-            dependencies: ["M7RemoteCore"]
+            name: "RemoteBridge",
+            dependencies: ["RemoteCore"]
         ),
     ]
 )

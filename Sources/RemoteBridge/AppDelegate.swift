@@ -1,7 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
-import M7RemoteCore
+import RemoteCore
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -32,10 +32,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configureStatusItem() {
         statusItem.button?.image = NSImage(
             systemSymbolName: "av.remote.fill",
-            accessibilityDescription: "M7 Remote Bridge"
+            accessibilityDescription: "Remote Bridge"
         )
         statusItem.button?.image?.isTemplate = true
-        statusItem.button?.toolTip = "M7 Remote Bridge"
+        statusItem.button?.toolTip = "Remote Bridge"
 
         let menu = NSMenu()
         menu.minimumWidth = 272
@@ -93,7 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
 
         let quit = NSMenuItem(
-            title: "Quit M7 Remote Bridge",
+            title: "Quit Remote Bridge",
             action: #selector(quit),
             keyEquivalent: "q"
         )
@@ -121,7 +121,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func refreshMenu() {
         menuHeader.update(state: model.connectionState)
-        statusItem.button?.toolTip = "M7 Remote Bridge — \(model.connectionState.displayName)"
+        statusItem.button?.toolTip = "Remote Bridge — \(model.connectionState.displayName)"
 
         lastButtonItem.title = "Last button: \(model.lastCommand?.displayName ?? "None")"
         enabledItem.state = model.bridgeEnabled ? .on : .off
@@ -165,7 +165,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @MainActor
 private final class MenuHeaderView: NSView {
     private let iconView = NSImageView()
-    private let titleLabel = NSTextField(labelWithString: "M7 Remote Bridge")
+    private let titleLabel = NSTextField(labelWithString: "Remote Bridge")
     private let statusLabel = NSTextField(labelWithString: "Starting…")
     private let dotView = NSView()
 
@@ -174,7 +174,7 @@ private final class MenuHeaderView: NSView {
 
         iconView.image = NSImage(
             systemSymbolName: "av.remote.fill",
-            accessibilityDescription: "M7 Remote Bridge"
+            accessibilityDescription: "Remote Bridge"
         )
         iconView.symbolConfiguration = .init(pointSize: 19, weight: .medium)
         iconView.contentTintColor = .labelColor
@@ -244,7 +244,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "M7 Remote Bridge"
+        window.title = "Remote Bridge"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.isOpaque = false
@@ -254,7 +254,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.contentViewController = hostingController
         window.minSize = NSSize(width: 700, height: 590)
-        window.setFrameAutosaveName("M7RemoteBridgeSettings")
+        window.setFrameAutosaveName("RemoteBridgeSettings")
         window.standardWindowButton(.zoomButton)?.isEnabled = false
         window.center()
 

@@ -1,5 +1,5 @@
 import AppKit
-import M7RemoteCore
+import RemoteCore
 
 if CommandLine.arguments.contains("--dry-run") {
     let parser = CECLineParser()
@@ -13,8 +13,14 @@ if CommandLine.arguments.contains("--dry-run") {
     client.onStateChange = { print("state:", $0) }
     client.onLog = { print($0) }
     client.onCommand = { print("button:", $0.rawValue) }
+    let seconds = CommandLine.arguments
+        .drop(while: { $0 != "--diagnose-cec" })
+        .dropFirst()
+        .first
+        .flatMap(Double.init) ?? 20
     client.start()
-    RunLoop.main.run(until: Date().addingTimeInterval(8))
+    print("listening \(Int(seconds))s — press remote buttons now")
+    RunLoop.main.run(until: Date().addingTimeInterval(seconds))
     client.stop()
 } else {
     let application = NSApplication.shared

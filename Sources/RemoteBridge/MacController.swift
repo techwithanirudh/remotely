@@ -1,7 +1,7 @@
 import AppKit
 import ApplicationServices
 import Carbon.HIToolbox
-import M7RemoteCore
+import RemoteCore
 
 @MainActor
 final class MacController {

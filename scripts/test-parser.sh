@@ -15,7 +15,7 @@ actual=$(printf '%s\n' \
   'TRAFFIC: [ 123] >> 01:44:04' \
   'TRAFFIC: [ 124] >> 01:44:46' \
   'TRAFFIC: [ 125] >> 01:45' \
-  | swift run --disable-sandbox M7RemoteBridge --dry-run 2>/dev/null)
+  | swift run --disable-sandbox RemoteBridge --dry-run 2>/dev/null)
 
 expected=$'up\nselect\nplayPause\nright\npause'
 if [[ "$actual" != "$expected" ]]; then

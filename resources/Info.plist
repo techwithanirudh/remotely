@@ -5,13 +5,13 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>M7RemoteBridge</string>
+    <string>RemoteBridge</string>
     <key>CFBundleIdentifier</key>
-    <string>dev.local.m7-remote-bridge</string>
+    <string>com.anirudh.remotebridge</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>M7 Remote Bridge</string>
+    <string>Remote Bridge</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

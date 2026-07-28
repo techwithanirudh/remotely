@@ -1,5 +1,5 @@
 import SwiftUI
-import M7RemoteCore
+import RemoteCore
 
 enum SettingsPage: String, CaseIterable, Identifiable {
     case general
@@ -457,15 +457,6 @@ struct GeneralSettingsView: View {
                                 .frame(width: 42, alignment: .trailing)
                         }
                     }
-                    CardDivider()
-                    SettingRow(title: "Test pointer movement") {
-                        Button {
-                            model.test(.moveRight)
-                        } label: {
-                            Label("Move Right", systemImage: "arrow.right")
-                        }
-                        .controlSize(.small)
-                    }
                 }
             }
         }
@@ -486,22 +477,22 @@ struct ConnectionSettingsView: View {
                     TopologyRow(
                         number: 1,
                         symbol: "av.remote.fill",
-                        title: "Samsung SolarCell Remote",
-                        detail: "Paired normally with the M70D"
+                        title: "TV remote",
+                        detail: "Paired normally with your display"
                     )
                     CardDivider()
                     TopologyRow(
                         number: 2,
                         symbol: "display",
-                        title: "M70D HDMI 1",
-                        detail: "Anynet+ forwards supported buttons"
+                        title: model.displayName ?? "Display HDMI input",
+                        detail: "CEC forwards supported buttons"
                     )
                     CardDivider()
                     TopologyRow(
                         number: 3,
                         symbol: "macmini",
-                        title: "M4 Mac mini",
-                        detail: "Native CoreRC HDMI-CEC receiver"
+                        title: "This Mac",
+                        detail: "HDMI-CEC receiver"
                     )
                 }
 
@@ -509,17 +500,17 @@ struct ConnectionSettingsView: View {
 
                 SettingsCard {
                     ChecklistRow(
-                        title: "Use the Mac mini’s built-in HDMI port",
+                        title: "Use the Mac’s built-in HDMI port",
                         complete: model.connectionState == .running
                     )
                     CardDivider()
                     ChecklistRow(
-                        title: "Select HDMI 1 on the M7",
+                        title: "Select that HDMI input on the display",
                         complete: model.connectionState == .running
                     )
                     CardDivider()
                     ChecklistRow(
-                        title: "Enable Anynet+ (HDMI-CEC)",
+                        title: "Enable HDMI-CEC (Anynet+, Bravia Sync, SimpLink…)",
                         complete: model.connectionState == .running
                     )
                 }
@@ -1313,7 +1304,7 @@ struct AboutSettingsView: View {
                 RemoteHeroArtwork()
 
                 SettingsCard {
-                    SettingRow(title: "M7 Remote Bridge") {
+                    SettingRow(title: "Remote Bridge") {
                         Text("Version \(version)")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)

@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 import Combine
 import ServiceManagement
-import M7RemoteCore
+import RemoteCore
 
 struct BridgeLogEntry: Identifiable, Hashable {
     let id = UUID()
@@ -36,6 +36,9 @@ final class BridgeModel: ObservableObject {
     }
 
     @Published private(set) var buttonMappings: [RemoteButton: MacAction]
+
+    /// Name reported by the attached display's EDID, once CEC traffic is seen.
+    @Published private(set) var displayName: String?
 
     @Published var cursorStep: Double {
         didSet { defaults.set(cursorStep, forKey: Keys.cursorStep) }
@@ -71,6 +74,9 @@ final class BridgeModel: ObservableObject {
         }
         client.onLog = { [weak self] message in
             self?.appendLog(message)
+        }
+        client.onDisplayChange = { [weak self] name in
+            self?.displayName = name
         }
     }
 

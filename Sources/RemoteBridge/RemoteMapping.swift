@@ -1,5 +1,5 @@
 import Foundation
-import M7RemoteCore
+import RemoteCore
 
 enum RemoteButton: String, CaseIterable, Identifiable {
     case up
