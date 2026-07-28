@@ -1,27 +1,24 @@
 import AppKit
-import RemoteCore
+import RemoteKit
 
-if CommandLine.arguments.contains("--diagnose-cec") {
-    let seconds = CommandLine.arguments
-        .drop(while: { $0 != "--diagnose-cec" })
-        .dropFirst()
-        .first
-        .flatMap(Double.init) ?? 20
+// `--diagnose` prints CEC traffic without needing Accessibility, which is the
+// quickest way to tell a dead link from a missing permission.
+if CommandLine.arguments.contains("--diagnose") {
+    let link = CECLink()
+    link.onStateChange = { print("link:", $0) }
+    link.onPress = { print("press:", $0.title) }
+    link.onRelease = { print("release") }
+    link.onDisplayName = { print("display:", $0) }
+    link.onLog = { print($0) }
+    link.start()
 
-    let client = CECClient()
-    client.onStateChange = { print("state:", $0) }
-    client.onLog = { print($0) }
-    client.onCommand = { print("press:", $0.rawValue) }
-    client.onRelease = { print("release") }
-
-    client.start()
-    print("listening \(Int(seconds))s, press remote buttons now")
-    RunLoop.main.run(until: Date().addingTimeInterval(seconds))
-    client.stop()
+    print("Listening for 8s, press remote buttons now")
+    RunLoop.main.run(until: .now.addingTimeInterval(8))
+    link.stop()
 } else {
-    let application = NSApplication.shared
-    let delegate = AppDelegate()
-    application.delegate = delegate
-    application.setActivationPolicy(.regular)
-    application.run()
+    let app = NSApplication.shared
+    let coordinator = AppCoordinator()
+    app.delegate = coordinator
+    app.setActivationPolicy(.accessory)
+    app.run()
 }

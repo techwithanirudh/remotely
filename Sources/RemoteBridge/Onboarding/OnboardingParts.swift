@@ -1,40 +1,34 @@
 import SwiftUI
 
-/// The shared layout every onboarding step uses.
-///
-/// Modelled on Alcove's: a borderless portrait panel, an illustration up top, a
-/// centred headline, supporting content, then a full-width action. There is no
-/// titlebar, so nothing has to line up with window buttons.
-struct OnboardingStep<Hero: View, Accessory: View>: View {
+/// The shared layout every step uses: illustration, headline, content, hint.
+struct StepLayout<Hero: View, Content: View>: View {
     let title: String
     var hint: String?
     @ViewBuilder var hero: Hero
-    @ViewBuilder var accessory: Accessory
+    @ViewBuilder var content: Content
 
     init(
         title: String,
         hint: String? = nil,
         @ViewBuilder hero: () -> Hero,
-        @ViewBuilder accessory: () -> Accessory = { EmptyView() }
+        @ViewBuilder content: () -> Content = { EmptyView() }
     ) {
         self.title = title
         self.hint = hint
         self.hero = hero()
-        self.accessory = accessory()
+        self.content = content()
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            hero
-                .padding(.bottom, 18)
+            hero.padding(.bottom, 18)
 
             Text(title)
                 .font(.system(size: 15, weight: .semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            accessory
-                .padding(.top, 18)
+            content.padding(.top, 18)
 
             if let hint {
                 Text(hint)
@@ -48,9 +42,9 @@ struct OnboardingStep<Hero: View, Accessory: View>: View {
     }
 }
 
-/// A stand-in for the system dialog the user is about to see. Showing the shape
-/// of it up front is what makes the real prompt recognisable when it appears.
-struct PermissionDialogMock: View {
+/// A stand-in for the system dialog the step is about to trigger. Showing its
+/// shape first is what makes the real prompt recognisable when it appears.
+struct DialogMock: View {
     let symbol: String
     let tint: Color
     var badge: String?
@@ -79,13 +73,13 @@ struct PermissionDialogMock: View {
             .padding(.top, 4)
 
             VStack(spacing: 5) {
-                Capsule().fill(Color.primary.opacity(0.22)).frame(width: 108, height: 5)
-                Capsule().fill(Color.primary.opacity(0.13)).frame(width: 62, height: 5)
+                Capsule().fill(.primary.opacity(0.22)).frame(width: 108, height: 5)
+                Capsule().fill(.primary.opacity(0.13)).frame(width: 62, height: 5)
             }
 
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(Color.primary.opacity(0.10))
+                    .fill(.primary.opacity(0.10))
                     .frame(width: 52, height: 22)
 
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -99,12 +93,12 @@ struct PermissionDialogMock: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .cardSurface(cornerRadius: 14)
+        .card(radius: 14)
     }
 }
 
 /// Row of labelled icons, divided the way Alcove divides its app list.
-struct OnboardingIconRow: View {
+struct IconRow: View {
     struct Item: Identifiable {
         let id = UUID()
         let symbol: String
@@ -118,9 +112,7 @@ struct OnboardingIconRow: View {
         HStack(spacing: 0) {
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 if index > 0 {
-                    Rectangle()
-                        .fill(Theme.divider)
-                        .frame(width: 1, height: 46)
+                    Rectangle().fill(Theme.divider).frame(width: 1, height: 46)
                 }
 
                 VStack(spacing: 7) {
@@ -140,39 +132,12 @@ struct OnboardingIconRow: View {
             }
         }
         .padding(.vertical, 13)
-        .cardSurface(cornerRadius: Theme.cardCornerRadius)
+        .card()
     }
 }
 
-/// A numbered instruction line.
-struct OnboardingBullet: View {
-    let number: Int
-    let text: String
-
-    var body: some View {
-        // Centred on the first line rather than baseline-aligned: a baseline
-        // sits the disc low against its own text.
-        HStack(alignment: .top, spacing: 10) {
-            Text("\(number)")
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(width: 18, height: 18)
-                .background(Color.accentColor, in: Circle())
-                .frame(height: 17, alignment: .center)
-
-            Text(text)
-                .font(.system(size: 12))
-                .frame(height: 17, alignment: .center)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Spacer(minLength: 0)
-        }
-    }
-}
-
-/// Live pass/fail readout, so a step reflects real state instead of asking the
-/// user to take it on faith.
-struct OnboardingCheck: View {
+/// Live pass/fail readout, so a step reflects real state.
+struct StatusLine: View {
     let done: Bool
     let doneText: String
     let waitingText: String
@@ -180,8 +145,7 @@ struct OnboardingCheck: View {
     var body: some View {
         HStack(spacing: 7) {
             if done {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
             } else {
                 ProgressView().controlSize(.small)
             }
@@ -192,47 +156,42 @@ struct OnboardingCheck: View {
         }
         .padding(.horizontal, 12)
         .frame(height: 30)
-        .cardSurface(cornerRadius: Theme.cornerRadius)
+        .card(radius: Theme.cornerRadius)
     }
 }
 
-/// Alcove's full-width, card-styled action button.
-///
-/// Carries its own waiting state: a step that is blocked says so here rather
-/// than adding a separate status row above a greyed-out button, which was
-/// saying the same thing twice.
-struct OnboardingButton: View {
+/// Full-width action, which carries its own waiting state so a blocked step
+/// does not need a separate status row saying the same thing.
+struct PanelButton: View {
     let title: String
-    var waiting = false
+    var isWaiting = false
     let action: () -> Void
 
-    @State private var hovering = false
+    @State private var isHovering = false
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 7) {
-                if waiting {
+                if isWaiting {
                     ProgressView().controlSize(.small).scaleEffect(0.75)
                 }
-                Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                Text(title).font(.system(size: 13, weight: .medium))
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 34)
+            .frame(maxWidth: .infinity, minHeight: 34)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(waiting ? Color.secondary : Color.primary)
+        .foregroundStyle(isWaiting ? Color.secondary : .primary)
         .background {
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(Theme.cardFill.opacity(waiting ? 0.5 : 1))
+                .fill(Theme.cardFill.opacity(isWaiting ? 0.5 : 1))
                 .overlay {
                     RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                         .strokeBorder(Theme.cardStroke, lineWidth: 1)
                 }
-                .brightness(hovering && !waiting ? 0.04 : 0)
+                .brightness(isHovering && !isWaiting ? 0.04 : 0)
         }
-        .onHover { hovering = $0 }
-        .disabled(waiting)
+        .onHover { isHovering = $0 }
+        .disabled(isWaiting)
     }
 }

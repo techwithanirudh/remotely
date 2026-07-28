@@ -1,24 +1,24 @@
+import RemoteKit
 import SwiftUI
-import RemoteCore
 
-struct GeneralSettingsView: View {
-    @ObservedObject var model: BridgeModel
+struct GeneralPage: View {
+    @ObservedObject var bridge: RemoteBridge
 
     var body: some View {
         PageShell(page: .general) {
             VStack(alignment: .leading, spacing: 0) {
-                SettingsCard {
-                    SettingRow(title: "Enable remote bridge") {
-                        Toggle("", isOn: $model.bridgeEnabled)
+                Card {
+                    Row(title: "Enable remote bridge") {
+                        Toggle("", isOn: $bridge.isEnabled)
                             .labelsHidden()
                             .toggleStyle(.switch)
                             .controlSize(.small)
                     }
-                    CardDivider()
-                    SettingRow(title: "Launch at login") {
+                    Divider1px()
+                    Row(title: "Launch at login") {
                         Toggle("", isOn: Binding(
-                            get: { model.launchAtLoginEnabled },
-                            set: { model.setLaunchAtLogin($0) }
+                            get: { bridge.launchesAtLogin },
+                            set: { bridge.setLaunchesAtLogin($0) }
                         ))
                         .labelsHidden()
                         .toggleStyle(.switch)
@@ -28,37 +28,35 @@ struct GeneralSettingsView: View {
 
                 SectionLabel(title: "Permissions")
 
-                SettingsCard {
-                    SettingRow(
+                Card {
+                    Row(
                         title: "Accessibility",
-                        subtitle: model.accessibilityGranted
+                        subtitle: bridge.hasAccessibility
                             ? "Pointer and keyboard control is allowed."
-                            : "Required to move the pointer and send media keys."
+                            : "Required to move the pointer and press keys."
                     ) {
-                        if model.accessibilityGranted {
+                        if bridge.hasAccessibility {
                             Label("Granted", systemImage: "checkmark.circle.fill")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(.green)
                         } else {
-                            Button("Grant Access") {
-                                model.requestAccessibility()
-                            }
-                            .controlSize(.small)
+                            Button("Grant Access") { bridge.requestPermission() }
+                                .controlSize(.small)
                         }
                     }
                 }
 
                 SectionLabel(title: "Pointer")
 
-                SettingsCard {
-                    SettingRow(
+                Card {
+                    Row(
                         title: "Pointer speed",
                         subtitle: "How fast the pointer moves while you hold an arrow."
                     ) {
                         HStack(spacing: 9) {
-                            Slider(value: $model.pointerSensitivity, in: 0.4...2.0, step: 0.1)
+                            Slider(value: $bridge.sensitivity, in: 0.4...2, step: 0.1)
                                 .frame(width: 118)
-                            Text(String(format: "%.1f×", model.pointerSensitivity))
+                            Text(String(format: "%.1f×", bridge.sensitivity))
                                 .font(.system(size: 11, design: .monospaced))
                                 .foregroundStyle(.secondary)
                                 .frame(width: 42, alignment: .trailing)
