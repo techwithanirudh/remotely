@@ -7,7 +7,10 @@ struct VisualEffectBackground: NSViewRepresentable {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
-        view.state = .active
+        // Follows the window, so the material dims when focus moves elsewhere
+        // the way every other Mac window does. Forcing `.active` kept it lit
+        // even when the window was plainly in the background.
+        view.state = .followsWindowActiveState
         view.isEmphasized = true
         return view
     }

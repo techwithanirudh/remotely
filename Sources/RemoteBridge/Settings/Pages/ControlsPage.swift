@@ -175,8 +175,15 @@ struct MappingEditorRow: View {
             .labelsHidden()
             .controlSize(.small)
             .frame(width: 178)
+
+            // Only a shortcut binding has anything left to configure.
+            if model.action(for: button) == .keyboardShortcut {
+                ShortcutRecorder(shortcut: model.binding(for: button).shortcut) {
+                    model.setShortcut($0, for: button)
+                }
+            }
         }
         .padding(.horizontal, Theme.cardPadding)
-        .frame(height: 43)
+        .frame(minHeight: 43)
     }
 }

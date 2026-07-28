@@ -35,7 +35,7 @@ final class BridgeModel: ObservableObject {
         }
     }
 
-    @Published private(set) var buttonMappings: [RemoteButton: MacAction]
+    @Published private(set) var bindings: RemoteBindings
 
     /// Name reported by the attached display's EDID, once CEC traffic is seen.
     @Published private(set) var displayName: String?
@@ -71,7 +71,7 @@ final class BridgeModel: ObservableObject {
     private enum Keys {
         static let bridgeEnabled = "bridgeEnabled"
         static let pointerSensitivity = "pointerSensitivity"
-        static let buttonMappings = "buttonMappings.v2"
+        static let bindings = "buttonBindings.v3"
     }
 
     init() {
@@ -81,7 +81,7 @@ final class BridgeModel: ObservableObject {
         ])
         bridgeEnabled = defaults.bool(forKey: Keys.bridgeEnabled)
         pointerSensitivity = defaults.double(forKey: Keys.pointerSensitivity)
-        buttonMappings = Self.loadMappings(from: defaults)
+        bindings = Self.loadBindings(from: defaults)
 
         client.onStateChange = { [weak self] state in
             self?.connectionState = state
@@ -144,33 +144,41 @@ final class BridgeModel: ObservableObject {
         }
     }
 
-    func test(_ action: MacAction) {
-        appendLog("Test action: \(action.title)")
-        controller.perform(action, sensitivity: pointerSensitivity)
+    func binding(for button: RemoteButton) -> RemoteBinding {
+        bindings[button]
     }
 
     func action(for button: RemoteButton) -> MacAction {
-        buttonMappings[button] ?? .none
+        bindings[button].action
+    }
+
+    func setBinding(_ binding: RemoteBinding, for button: RemoteButton) {
+        bindings[button] = binding
+        saveBindings()
+        appendLog("\(button.title) mapped to \(binding.summary)")
     }
 
     func setAction(_ action: MacAction, for button: RemoteButton) {
-        buttonMappings[button] = action
-        saveMappings()
-        appendLog("\(button.title) mapped to \(action.title)")
+        // Keep any recorded combination, so flipping away and back does not
+        // silently discard it.
+        setBinding(RemoteBinding(action, shortcut: bindings[button].shortcut), for: button)
+    }
+
+    func setShortcut(_ shortcut: KeyboardShortcut, for button: RemoteButton) {
+        setBinding(RemoteBinding(.keyboardShortcut, shortcut: shortcut), for: button)
     }
 
     func isDefaultAction(for button: RemoteButton) -> Bool {
-        action(for: button) == Dictionary.defaultRemoteMappings[button]
+        bindings.isDefault(button)
     }
 
     func resetAction(for button: RemoteButton) {
-        guard let fallback = Dictionary.defaultRemoteMappings[button] else { return }
-        setAction(fallback, for: button)
+        setBinding(RemoteBindings.defaults[button], for: button)
     }
 
     func resetMappings() {
-        buttonMappings = .defaultRemoteMappings
-        saveMappings()
+        bindings = .defaults
+        saveBindings()
         appendLog("Button mappings reset to defaults")
     }
 
@@ -321,15 +329,15 @@ final class BridgeModel: ObservableObject {
 
     private func trigger(_ button: RemoteButton) {
         flash(button)
-        let action = action(for: button)
+        let binding = bindings[button]
         guard permitToAct() else { return }
 
-        if action == .toggleScrollMode {
+        if binding.action == .toggleScrollMode {
             scrollMode.toggle()
             appendLog(scrollMode ? "Scrolling on" : "Scrolling off")
             return
         }
-        perform(action)
+        perform(binding)
     }
 
     /// Without Accessibility every injected event is silently dropped. The
@@ -343,8 +351,10 @@ final class BridgeModel: ObservableObject {
         return false
     }
 
-    private func perform(_ action: MacAction) {
-        controller.perform(action, sensitivity: pointerSensitivity)
+    private func perform(_ binding: RemoteBinding) {
+        controller.perform(binding.action,
+                           shortcut: binding.shortcut,
+                           sensitivity: pointerSensitivity)
     }
 
     private func flash(_ button: RemoteButton) {
@@ -361,30 +371,22 @@ final class BridgeModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.1, execute: work)
     }
 
-    private static func loadMappings(from defaults: UserDefaults) -> [RemoteButton: MacAction] {
-        guard let stored = defaults.dictionary(forKey: Keys.buttonMappings) as? [String: String] else {
-            var mappings = [RemoteButton: MacAction].defaultRemoteMappings
-            if defaults.object(forKey: "doubleBackShowsDesktop") != nil,
-               !defaults.bool(forKey: "doubleBackShowsDesktop") {
-                mappings[.doubleBack] = MacAction.none
-            }
-            return mappings
-        }
-
-        var mappings = [RemoteButton: MacAction].defaultRemoteMappings
-        for (buttonValue, actionValue) in stored {
-            guard let button = RemoteButton(rawValue: buttonValue),
-                  let action = MacAction(rawValue: actionValue) else { continue }
-            mappings[button] = action
-        }
-        return mappings
+    private static func loadBindings(from defaults: UserDefaults) -> RemoteBindings {
+        guard let data = defaults.data(forKey: Keys.bindings),
+              let overrides = try? JSONDecoder().decode(RemoteBindings.self, from: data)
+        else { return .defaults }
+        return .resolving(overrides)
     }
 
-    private func saveMappings() {
-        let stored = Dictionary(
-            uniqueKeysWithValues: buttonMappings.map { ($0.key.rawValue, $0.value.rawValue) }
-        )
-        defaults.set(stored, forKey: Keys.buttonMappings)
+    private func saveBindings() {
+        let overrides = bindings.overrides
+        guard !overrides.bindings.isEmpty,
+              let data = try? JSONEncoder().encode(overrides)
+        else {
+            defaults.removeObject(forKey: Keys.bindings)
+            return
+        }
+        defaults.set(data, forKey: Keys.bindings)
     }
 
     private func appendLog(_ message: String) {

@@ -166,7 +166,7 @@ private struct VisualEffectPanel: NSViewRepresentable {
         // what is behind the window.
         view.material = .popover
         view.blendingMode = .behindWindow
-        view.state = .active
+        view.state = .followsWindowActiveState
         return view
     }
 

@@ -46,14 +46,15 @@ final class MacController {
 
     /// Discrete actions. Movement is driven by `beginHold`/`endHold` instead,
     /// because it needs the key-down duration rather than a one-shot event.
-    func perform(_ action: MacAction, sensitivity: Double = 1) {
+    func perform(_ action: MacAction, shortcut: KeyboardShortcut? = nil, sensitivity: Double = 1) {
         switch action {
         case .none, .toggleScrollMode: break
+        case .keyboardShortcut:
+            if let shortcut { postShortcut(shortcut) }
         case .leftClick: click(button: .left, clickState: 1)
         case .doubleClick: click(button: .left, clickState: 2)
         case .rightClick: click(button: .right, clickState: 1)
         case .escape: pressKey(53)
-        case .browserBack: pressKey(33, flags: .maskCommand) // Command-[
         case .showDesktop: pressKey(103) // F11
         case .missionControl: pressKey(126, flags: .maskControl) // Control-Up
         case .moveUp, .moveDown, .moveLeft, .moveRight,
@@ -181,6 +182,19 @@ final class MacController {
             event?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
             event?.post(tap: .cghidEventTap)
         }
+    }
+
+    /// Posts a recorded combination.
+    ///
+    /// The trailing bare event restores modifier state. Mac Mouse Fix does the
+    /// same, having found that leaving it out makes the system believe
+    /// modifiers are still held and fire the wrong hotkey.
+    private func postShortcut(_ shortcut: KeyboardShortcut) {
+        pressKey(CGKeyCode(shortcut.keyCode), flags: shortcut.eventFlags)
+
+        let restore = CGEvent(source: nil)
+        restore?.setIntegerValueField(.eventSourceUserData, value: RemoteEventSignature.value)
+        restore?.post(tap: .cghidEventTap)
     }
 
     private func pressKey(_ keyCode: CGKeyCode, flags: CGEventFlags = []) {
