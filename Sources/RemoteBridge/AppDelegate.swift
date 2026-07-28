@@ -162,7 +162,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.copyLogs()
     }
 
-    static let onboardingKey = "hasCompletedOnboarding"
+    static let onboardingKey = "completedOnboarding"
 
     private func showOnboarding() {
         let controller = OnboardingWindowController(model: model) { [weak self] in
