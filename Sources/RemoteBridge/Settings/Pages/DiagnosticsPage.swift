@@ -61,14 +61,15 @@ private struct EventLog: View {
 
             Divider()
 
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 6) {
-                    if bridge.log.isEmpty {
-                        Text("Remote events will appear here.")
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.top, 44)
-                    } else {
+            if bridge.log.isEmpty {
+                Text("Remote events will appear here.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(height: 190)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach(bridge.log.suffix(100)) { entry in
                             HStack(alignment: .firstTextBaseline, spacing: 9) {
                                 Text(entry.time)
@@ -81,11 +82,11 @@ private struct EventLog: View {
                             .font(.system(size: 10, design: .monospaced))
                         }
                     }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 190)
             }
-            .frame(height: 190)
         }
         .card()
     }

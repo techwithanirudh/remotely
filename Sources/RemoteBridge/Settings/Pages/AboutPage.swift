@@ -37,7 +37,7 @@ struct AboutPage: View {
                     .padding(Theme.cardPadding)
                 }
 
-                SectionLabel(title: "Connection")
+                Spacer().frame(height: 14)
 
                 Card {
                     Row(title: "Display") {

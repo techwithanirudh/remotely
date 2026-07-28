@@ -107,25 +107,27 @@ struct InfoRow: View {
     var badge: String?
 
     var body: some View {
-        HStack(spacing: 11) {
+        HStack(alignment: .top, spacing: 11) {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(tint)
-                .frame(width: 22)
+                .frame(width: 22, height: 18)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13, weight: .medium))
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(title).font(.system(size: 13, weight: .medium))
+                    if let badge { Pill(text: badge) }
+                    Spacer(minLength: 0)
+                }
+
                 Text(detail)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            Spacer(minLength: 10)
-
-            if let badge { Pill(text: badge) }
         }
         .padding(.horizontal, Theme.cardPadding)
+        .padding(.vertical, 11)
         .frame(minHeight: 50)
     }
 }

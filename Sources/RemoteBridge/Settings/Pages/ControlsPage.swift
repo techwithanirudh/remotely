@@ -108,21 +108,11 @@ private struct BindingRow: View {
             .disabled(bridge.isStandard(button))
             .frame(width: 14)
 
-            Picker("", selection: Binding(
-                get: { binding.action },
-                set: { bridge.setAction($0, for: button) }
-            )) {
-                ForEach(RemoteAction.allCases) { action in
-                    Label(action.title, systemImage: action.symbol).tag(action)
-                }
-            }
-            .labelsHidden()
-            .controlSize(.small)
-            .frame(width: 178)
-
-            if binding.action == .keyboardShortcut {
-                ShortcutRecorder(combo: binding.combo) { bridge.setCombo($0, for: button) }
-            }
+            ActionMenu(
+                binding: binding,
+                onPick: { bridge.setAction($0, for: button) },
+                onRecord: { bridge.setCombo($0, for: button) }
+            )
         }
         .padding(.horizontal, Theme.cardPadding)
         .frame(minHeight: 43)
