@@ -25,15 +25,15 @@ public enum RemoteKey: String, CaseIterable, Sendable {
         }
     }
 
-    /// CoreRC's user-control codes.
-    init?(coreRCCode code: UInt64) {
+    /// The CEC User Control wire codes.
+    init?(cecCode code: UInt8) {
         switch code {
-        case 1: self = .select
-        case 2: self = .up
-        case 3: self = .down
-        case 4: self = .left
-        case 5: self = .right
-        case 13, 14: self = .back
+        case 0x00: self = .select
+        case 0x01: self = .up
+        case 0x02: self = .down
+        case 0x03: self = .left
+        case 0x04: self = .right
+        case 0x0D: self = .back
         default: return nil
         }
     }
