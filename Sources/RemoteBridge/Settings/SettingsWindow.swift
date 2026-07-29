@@ -96,6 +96,22 @@ struct PageShell<Content: View>: View {
                     .padding(.top, 2)
                     .padding(.bottom, 32)
             }
+            // Content fades out under the header rather than being cut off at
+            // it, which is how the system treats content scrolling under a
+            // title. Masking to clear works over vibrancy, where painting a
+            // solid strip would not.
+            .mask(
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [.clear, .black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 16)
+
+                    Color.black
+                }
+            )
         }
     }
 }
@@ -131,17 +147,18 @@ private struct Sidebar: View {
     }
 }
 
-/// Built from the same metrics as a sidebar row, so its dot lands on the rail
-/// the window buttons sit on and its fill lines up with the rows below.
+/// Built from the same metrics as a sidebar row, so it sits on the rail the
+/// window buttons and row icons share.
+///
+/// It carries a full tile rather than a bare dot: an 8pt dot was on the right
+/// rail arithmetically, but next to rows of 22pt tiles its visual weight sat
+/// well inside them and read as off-centre.
 private struct StatusPill: View {
     let status: BridgeStatus
 
     var body: some View {
         HStack(spacing: 10) {
-            Circle()
-                .fill(status.tint)
-                .frame(width: 8, height: 8)
-                .frame(width: 22)
+            IconTile(symbol: status.symbol, tint: status.tint)
 
             Text(status.title)
                 .font(.system(size: 12, weight: .medium))

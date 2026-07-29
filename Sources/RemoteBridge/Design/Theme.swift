@@ -35,15 +35,17 @@ enum Theme {
         adaptive(light: .init(white: 1, alpha: 0.86), dark: .init(white: 1, alpha: 0.085))
     }
 
+    /// Alcove's card edge measures about 9% against its fill; ours was half
+    /// that and the cards read as floating without an outline.
     static var cardStroke: Color {
-        adaptive(light: .init(white: 0, alpha: 0.05), dark: .init(white: 1, alpha: 0.10))
+        adaptive(light: .init(white: 0, alpha: 0.11), dark: .init(white: 1, alpha: 0.17))
     }
 
     static var cardShadow: Color {
         adaptive(light: .init(white: 0, alpha: 0.05), dark: .init(white: 0, alpha: 0.18))
     }
 
-    static var divider: Color { .primary.opacity(0.07) }
+    static var divider: Color { .primary.opacity(0.10) }
     static var selection: Color { .primary.opacity(0.08) }
 
     private static func adaptive(light: NSColor, dark: NSColor) -> Color {
