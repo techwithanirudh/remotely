@@ -1,7 +1,6 @@
 import Combine
 import Defaults
 import Foundation
-import ServiceManagement
 
 /// Ties the CEC link, the gesture rules and input synthesis together.
 @MainActor
@@ -114,20 +113,6 @@ public final class RemoteBridge: ObservableObject {
         bindings = .standard
         Defaults[.bindings] = Bindings()
         append("Bindings reset")
-    }
-
-    // MARK: Login item
-
-    public var launchesAtLogin: Bool { SMAppService.mainApp.status == .enabled }
-
-    public func setLaunchesAtLogin(_ enabled: Bool) {
-        do {
-            try enabled ? SMAppService.mainApp.register() : SMAppService.mainApp.unregister()
-            append("Launch at login \(enabled ? "on" : "off")")
-        } catch {
-            append("Launch at login failed: \(error.localizedDescription)")
-        }
-        objectWillChange.send()
     }
 
     public func clearLog() { log.removeAll() }

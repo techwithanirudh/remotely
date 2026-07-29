@@ -12,6 +12,7 @@ let package = Package(
         // Type-safe UserDefaults. Alcove links the same library.
         .package(url: "https://github.com/sindresorhus/Defaults", from: "9.0.0"),
         .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
+        .package(url: "https://github.com/sindresorhus/LaunchAtLogin-Modern", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -24,6 +25,7 @@ let package = Package(
                 "RemoteKit",
                 "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
+                .product(name: "LaunchAtLogin", package: "LaunchAtLogin-Modern"),
             ]
         ),
         // Command Line Tools ships neither swift-testing nor XCTest, and

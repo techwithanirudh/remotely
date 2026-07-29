@@ -1,5 +1,5 @@
 {
-  "originHash" : "b92023b0d5f6751b76ac0bd6025e0eca41c58b41f8bb62c44daf55cc7e45d3aa",
+  "originHash" : "299c44f6e2f702ef971addf4a8327427c4e25c277aadc0c147d654002c708a4e",
   "pins" : [
     {
       "identity" : "confettiswiftui",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "00a7465a0668a87fa159e779b9d80f1f9652357e",
         "version" : "9.0.9"
+      }
+    },
+    {
+      "identity" : "launchatlogin-modern",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sindresorhus/LaunchAtLogin-Modern",
+      "state" : {
+        "revision" : "a04ec1c363be3627734f6dad757d82f5d4fa8fcc",
+        "version" : "1.1.0"
       }
     },
     {

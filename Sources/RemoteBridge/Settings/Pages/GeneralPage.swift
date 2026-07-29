@@ -1,3 +1,4 @@
+import LaunchAtLogin
 import RemoteKit
 import SwiftUI
 
@@ -16,13 +17,10 @@ struct GeneralPage: View {
                     }
                     Divider1px()
                     Row(title: "Launch at login") {
-                        Toggle("", isOn: Binding(
-                            get: { bridge.launchesAtLogin },
-                            set: { bridge.setLaunchesAtLogin($0) }
-                        ))
-                        .labelsHidden()
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
+                        LaunchAtLogin.Toggle("")
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
                     }
                 }
 
