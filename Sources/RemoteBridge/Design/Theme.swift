@@ -63,11 +63,9 @@ enum Theme {
     static let inactiveDim: Double = 0.6
 
     /// What the window shows once it is not in front: the material's own tint,
-    /// painted flat. Alcove stops blurring rather than letting the glass go
-    /// dark, which is why an unfocused capture of it still reads 232,235,236 in
-    /// light and 85,87,88 in dark.
+    /// painted flat, rather than letting the glass go dark.
     static var inactiveBackground: Color {
-        adaptive(light: .init(white: 232 / 255, alpha: 1), dark: .init(white: 86 / 255, alpha: 1))
+        adaptive(light: .init(white: 250 / 255, alpha: 1), dark: .init(white: 38 / 255, alpha: 1))
     }
 
     static var divider: Color { .primary.opacity(0.10) }

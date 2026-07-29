@@ -1,14 +1,13 @@
 import SwiftUI
 
-/// Window vibrancy, on `.titlebar` — the material Alcove uses. Capturing all
-/// fourteen against a capture of its window picks it out in both appearances:
-/// 233,235,235 against its 232,235,236 in light, 86,88,88 against its 85,87,88
-/// in dark.
+/// Window vibrancy, on `.contentBackground` — the darkest and most
+/// transmissive of the fourteen, and the nearest to Klack, which reads
+/// 45,50,52 in dark where `.titlebar` reads 86.
 ///
-/// Held active. Alcove's glass stays lit in the background — an unfocused
-/// capture of it still reads 85 — and what dims there is the content.
+/// Held active, so the glass stays lit in the background the way Alcove's
+/// does; what dims is the content.
 struct Vibrancy: NSViewRepresentable {
-    var material: NSVisualEffectView.Material = .titlebar
+    var material: NSVisualEffectView.Material = .contentBackground
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
