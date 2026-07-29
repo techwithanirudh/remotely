@@ -116,7 +116,7 @@ struct PageShell<Content: View>: View {
     private var header: some View {
         HStack(spacing: 9) {
             IconTile(symbol: page.symbol, tint: page.tint, size: 23)
-            Text(page.title).font(.system(size: 15, weight: .bold))
+            Text(page.title).font(.system(size: 15, weight: .semibold))
             Spacer()
         }
         .dimsWhenInactive()
