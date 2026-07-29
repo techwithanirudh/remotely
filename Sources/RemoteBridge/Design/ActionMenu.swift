@@ -45,28 +45,59 @@ private struct ShortcutField: View {
 
     var body: some View {
         Button { isArmed ? disarm() : arm() } label: {
-            Text(isArmed ? "Type a shortcut" : combo?.display ?? "Not set")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(label)
-                .frame(minWidth: 74, minHeight: 20)
-                .padding(.horizontal, 8)
-                .background(
-                    isArmed ? Color.accentColor.opacity(0.15) : Theme.selection,
-                    in: RoundedRectangle(cornerRadius: 6, style: .continuous)
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(isArmed ? Color.accentColor.opacity(0.5) : .clear)
-                }
+            content.frame(minWidth: 76, minHeight: 22, alignment: .trailing)
         }
         .buttonStyle(.plain)
         .onAppear { if combo == nil { arm() } }
         .onDisappear(perform: disarm)
     }
 
-    private var label: some ShapeStyle {
-        if isArmed { return AnyShapeStyle(Color.accentColor) }
-        return combo == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary)
+    @ViewBuilder
+    private var content: some View {
+        if isArmed {
+            prompt("Type a shortcut", tint: Color.accentColor)
+        } else if let combo {
+            HStack(spacing: 3) {
+                ForEach(Array(caps(of: combo).enumerated()), id: \.offset) { _, cap in
+                    KeyCap(text: cap)
+                }
+            }
+        } else {
+            prompt("Not set", tint: HierarchicalShapeStyle.secondary)
+        }
+    }
+
+    private func prompt(_ text: String, tint: some ShapeStyle) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 8)
+            .frame(height: 22)
+            .background(
+                isArmed ? Color.accentColor.opacity(0.14) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(isArmed ? Color.accentColor.opacity(0.55) : Theme.cardStroke)
+            }
+    }
+
+    /// Modifier glyphs first, then whatever names the key.
+    private func caps(of combo: KeyCombo) -> [String] {
+        let modifiers: Set<Character> = ["⌃", "⌥", "⇧", "⌘"]
+        var caps: [String] = []
+        var key = ""
+
+        for character in combo.display {
+            if modifiers.contains(character), key.isEmpty {
+                caps.append(String(character))
+            } else {
+                key.append(character)
+            }
+        }
+        if !key.isEmpty { caps.append(key) }
+        return caps
     }
 
     private func arm() {
@@ -88,5 +119,22 @@ private struct ShortcutField: View {
         isArmed = false
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
+    }
+}
+
+/// One key drawn as a cap, the way System Settings shows a shortcut.
+private struct KeyCap: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold))
+            .padding(.horizontal, text.count > 1 ? 6 : 0)
+            .frame(minWidth: 21, minHeight: 21)
+            .background(Theme.cardFill, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .strokeBorder(Theme.cardStroke)
+            }
     }
 }
