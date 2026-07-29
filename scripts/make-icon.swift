@@ -79,22 +79,62 @@ if let symbol = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibili
     symbol.draw(at: .zero, from: .zero, operation: .destinationIn, fraction: 1)
     white.unlockFocus()
 
-    let target = NSRect(
-        x: tile.midX - symbol.size.width / 2,
-        y: tile.midY - symbol.size.height / 2,
-        width: symbol.size.width,
-        height: symbol.size.height
+    // Sized off the glyph's ink rather than its image box, which carries
+    // padding, and scaled so the tilted remote runs corner to corner.
+    let ink = inkBounds(of: white)
+    let angle = tilt * .pi / 180
+    let inset: CGFloat = 46
+    let available = tile.width - inset * 2
+    let spread = CGSize(
+        width: ink.width * cos(angle) + ink.height * sin(angle),
+        height: ink.width * sin(angle) + ink.height * cos(angle)
     )
+    let scale = min(available / spread.width, available / spread.height)
 
-    // Tilted, so it reads as a remote being held rather than a diagram of one.
     context.saveGState()
     context.translateBy(x: tile.midX, y: tile.midY)
-    context.rotate(by: tilt * .pi / 180)
-    context.translateBy(x: -tile.midX, y: -tile.midY)
+    context.rotate(by: -angle)
     context.setShadow(offset: CGSize(width: 0, height: -6), blur: 24,
                       color: NSColor.black.withAlphaComponent(0.45).cgColor)
-    white.draw(in: target, from: .zero, operation: .sourceOver, fraction: 1)
+    white.draw(
+        in: NSRect(
+            x: -ink.midX * scale,
+            y: -ink.midY * scale,
+            width: white.size.width * scale,
+            height: white.size.height * scale
+        ),
+        from: .zero,
+        operation: .sourceOver,
+        fraction: 1
+    )
     context.restoreGState()
+}
+
+/// The drawn extent of an image, in its own coordinates.
+func inkBounds(of image: NSImage) -> NSRect {
+    guard let data = image.tiffRepresentation,
+          let rep = NSBitmapImageRep(data: data)
+    else { return NSRect(origin: .zero, size: image.size) }
+
+    var minX = rep.pixelsWide, maxX = 0
+    var minY = rep.pixelsHigh, maxY = 0
+
+    for y in 0..<rep.pixelsHigh {
+        for x in 0..<rep.pixelsWide where (rep.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.05 {
+            minX = min(minX, x); maxX = max(maxX, x)
+            minY = min(minY, y); maxY = max(maxY, y)
+        }
+    }
+    guard maxX >= minX else { return NSRect(origin: .zero, size: image.size) }
+
+    // Bitmap rows run top down; the image's own coordinates run bottom up.
+    let unit = image.size.width / CGFloat(rep.pixelsWide)
+    return NSRect(
+        x: CGFloat(minX) * unit,
+        y: CGFloat(rep.pixelsHigh - 1 - maxY) * unit,
+        width: CGFloat(maxX - minX + 1) * unit,
+        height: CGFloat(maxY - minY + 1) * unit
+    )
 }
 
 image.unlockFocus()
