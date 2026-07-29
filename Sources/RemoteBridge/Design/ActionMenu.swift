@@ -23,9 +23,8 @@ struct ActionMenu: View {
             }
         }
         .labelsHidden()
-        .controlSize(.small)
         .buttonStyle(.borderless)
-        .frame(width: 162)
+        .fixedSize()
         .onDisappear(perform: disarm)
     }
 

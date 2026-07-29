@@ -66,7 +66,7 @@ struct SettingsView: View {
         // the overlay is laid out inside the safe area, so its lit top edge
         // landed 32pt down and read as a bar across the whole window.
         .overlay(WindowEdgeHighlight())
-        .frame(minWidth: 600, minHeight: 560)
+        .frame(minWidth: 660, minHeight: 600)
         .ignoresSafeArea()
     }
 

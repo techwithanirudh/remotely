@@ -97,7 +97,6 @@ struct BrandGuide: View {
                     ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
                 }
                 .labelsHidden()
-                .controlSize(.small)
                 .buttonStyle(.borderless)
                 .fixedSize()
             }
