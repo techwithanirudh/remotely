@@ -8,7 +8,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     init(bridge: RemoteBridge) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 620, height: 660),
+            contentRect: NSRect(x: 0, y: 0, width: 620, height: 687),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -73,7 +73,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let visible = screen.visibleFrame
         var size = window.frame.size
         if size.width < window.minSize.width || size.height < window.minSize.height {
-            size = NSSize(width: 620, height: 660)
+            size = NSSize(width: 620, height: 687)
             window.setContentSize(size)
         }
         window.setFrameOrigin(

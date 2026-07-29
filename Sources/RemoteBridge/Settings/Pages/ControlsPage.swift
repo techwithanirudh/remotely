@@ -91,7 +91,7 @@ private struct BindingRow: View {
                 .foregroundStyle(.purple)
                 .frame(width: 22)
 
-            Text(button.title).font(.system(size: 13))
+            Text(button.shortTitle).font(.system(size: 13))
 
             Spacer(minLength: 8)
 

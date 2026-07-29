@@ -13,15 +13,29 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
 
     public var title: String {
         switch self {
-        case .up: "D-pad Up"
-        case .down: "D-pad Down"
-        case .left: "D-pad Left"
-        case .right: "D-pad Right"
+        case .up: "Up"
+        case .down: "Down"
+        case .left: "Left"
+        case .right: "Right"
         case .center: "Center"
-        case .centerDouble: "Center, twice"
-        case .centerHold: "Center, held"
+        case .centerDouble: "Center twice"
+        case .centerHold: "Center held"
         case .back: "Back"
-        case .backDouble: "Back, twice"
+        case .backDouble: "Back twice"
+        }
+    }
+
+    /// Short form for the Controls page, where the section heading already
+    /// names the button.
+    public var shortTitle: String {
+        switch self {
+        case .up: "Up"
+        case .down: "Down"
+        case .left: "Left"
+        case .right: "Right"
+        case .center, .back: "Press"
+        case .centerDouble, .backDouble: "Press twice"
+        case .centerHold: "Hold"
         }
     }
 

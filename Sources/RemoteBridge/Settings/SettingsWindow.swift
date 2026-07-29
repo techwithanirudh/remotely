@@ -142,8 +142,14 @@ private struct Sidebar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Clears the window buttons, which sit in the transparent titlebar.
-            StatusPill(status: bridge.status)
-                .padding(.horizontal, Theme.sidebarInset)
+            StatusPill(status: bridge.status) {
+                if bridge.status == .needsPermission {
+                    bridge.requestPermission()
+                } else {
+                    page = .connection
+                }
+            }
+            .padding(.horizontal, Theme.sidebarInset)
                 .padding(.top, 44)
                 .padding(.bottom, 10)
 
@@ -161,7 +167,7 @@ private struct Sidebar: View {
             Spacer()
 
             SidebarItem(page: .about, selection: $page)
-                .padding(.bottom, 14)
+                .padding(.bottom, Theme.sidebarInset)
         }
     }
 }
@@ -174,8 +180,15 @@ private struct Sidebar: View {
 /// well inside them and read as off-centre.
 private struct StatusPill: View {
     let status: BridgeStatus
+    let onTap: () -> Void
 
     var body: some View {
+        Button(action: onTap) { pill }
+            .buttonStyle(.plain)
+            .help(status.detail)
+    }
+
+    private var pill: some View {
         HStack(spacing: 10) {
             IconTile(symbol: status.symbol, tint: status.tint)
 
@@ -187,6 +200,7 @@ private struct StatusPill: View {
             Spacer(minLength: 0)
         }
         .dimsWhenInactive()
+        .contentShape(Rectangle())
         .padding(.horizontal, Theme.rowPadding)
         .frame(height: Theme.rowHeight)
         .background {
@@ -225,7 +239,7 @@ private struct SidebarItem: View {
             HStack(spacing: 10) {
                 IconTile(symbol: page.symbol, tint: page.tint)
                 Text(page.title)
-                    .font(.system(size: 13, weight: selection == page ? .semibold : .medium))
+                    .font(.system(size: 13, weight: selection == page ? .medium : .regular))
                 Spacer()
             }
             .dimsWhenInactive()

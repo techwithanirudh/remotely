@@ -98,6 +98,7 @@ struct BrandGuide: View {
                 }
                 .labelsHidden()
                 .controlSize(.small)
+                .buttonStyle(.borderless)
                 .fixedSize()
             }
             .padding(.horizontal, Theme.cardPadding)

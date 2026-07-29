@@ -27,10 +27,10 @@ public enum BridgeStatus: Equatable, Sendable {
     public var detail: String {
         switch self {
         case .paused: "Remote control is turned off."
-        case .needsPermission: "Allow Accessibility so the remote can move the pointer."
-        case .waitingForRemote: "Connect this Mac to your TV over HDMI and turn on HDMI-CEC."
+        case .needsPermission: "Click to allow Accessibility, so the remote can move the pointer."
+        case .waitingForRemote: "No buttons yet. Check the HDMI cable and that HDMI-CEC is on."
         case .ready: "Your TV remote is controlling this Mac."
-        case .unsupported: "This Mac can't receive TV remote buttons."
+        case .unsupported: "This Mac has no HDMI port that carries remote buttons."
         case .failed(let message): message
         }
     }
@@ -39,7 +39,7 @@ public enum BridgeStatus: Equatable, Sendable {
         switch self {
         case .paused: "pause.circle.fill"
         case .needsPermission: "lock.fill"
-        case .waitingForRemote: "cable.connector"
+        case .waitingForRemote: "dot.radiowaves.left.and.right"
         case .ready: "checkmark.circle.fill"
         case .unsupported, .failed: "exclamationmark.triangle.fill"
         }

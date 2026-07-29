@@ -24,7 +24,8 @@ struct ActionMenu: View {
         }
         .labelsHidden()
         .controlSize(.small)
-        .frame(width: 178)
+        .buttonStyle(.borderless)
+        .frame(width: 162)
         .onDisappear(perform: disarm)
     }
 
