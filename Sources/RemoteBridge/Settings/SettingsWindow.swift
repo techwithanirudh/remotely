@@ -40,7 +40,6 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @ObservedObject var bridge: RemoteBridge
     @State private var page: SettingsPage = .general
-    @Environment(\.controlActiveState) private var activeState
 
     var body: some View {
         // One material and one tint across the whole window, split by a
@@ -52,7 +51,6 @@ struct SettingsView: View {
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)
                     .frame(width: Theme.sidebarWidth)
-                    .opacity(activeState == .inactive ? Theme.inactiveDim : 1)
 
                 Rectangle()
                     .fill(Theme.divider)
@@ -85,7 +83,6 @@ struct SettingsView: View {
 struct PageShell<Content: View>: View {
     let page: SettingsPage
     @ViewBuilder let content: Content
-    @Environment(\.controlActiveState) private var activeState
 
     var body: some View {
         // On macOS 26 the title is a bar, not an inset. Both reserve the space,
@@ -119,7 +116,7 @@ struct PageShell<Content: View>: View {
             Text(page.title).font(.system(size: 15, weight: .bold))
             Spacer()
         }
-        .opacity(activeState == .inactive ? Theme.inactiveDim : 1)
+        .dimsWhenInactive()
         .padding(.horizontal, Theme.pageInset)
         .padding(.top, 15)
         .padding(.bottom, 14)
@@ -186,6 +183,7 @@ private struct StatusPill: View {
 
             Spacer(minLength: 0)
         }
+        .dimsWhenInactive()
         .padding(.horizontal, Theme.rowPadding)
         .frame(height: Theme.rowHeight)
         .background {
@@ -204,6 +202,7 @@ private struct SidebarGroup<Content: View>: View {
             Text(title)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
+                .dimsWhenInactive()
                 .padding(.horizontal, Theme.sidebarInset + Theme.rowPadding)
                 .padding(.top, 14)
                 .padding(.bottom, 2)
@@ -226,6 +225,7 @@ private struct SidebarItem: View {
                     .font(.system(size: 13, weight: selection == page ? .semibold : .medium))
                 Spacer()
             }
+            .dimsWhenInactive()
             .contentShape(Rectangle())
             .padding(.horizontal, Theme.rowPadding)
             .frame(height: Theme.rowHeight)
