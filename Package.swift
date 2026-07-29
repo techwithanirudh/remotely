@@ -11,6 +11,7 @@ let package = Package(
     dependencies: [
         // Type-safe UserDefaults. Alcove links the same library.
         .package(url: "https://github.com/sindresorhus/Defaults", from: "9.0.0"),
+        .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
     ],
     targets: [
         .target(
@@ -21,6 +22,7 @@ let package = Package(
             name: "RemoteBridge",
             dependencies: [
                 "RemoteKit",
+                "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
             ]
         ),
