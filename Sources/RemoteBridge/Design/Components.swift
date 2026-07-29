@@ -1,13 +1,14 @@
 import SwiftUI
 
-/// Window vibrancy, on `.contentBackground` — the darkest and most
-/// transmissive of the fourteen, and the nearest to Klack, which reads
-/// 45,50,52 in dark where `.titlebar` reads 86.
+/// Window vibrancy, on `.underWindowBackground` — the one that actually lets
+/// the desktop through. `.contentBackground` matched Klack's tint but barely
+/// transmits, which is not the same thing: a capture of a lone window reports
+/// a material's tint and says nothing about how much passes through it.
 ///
-/// Held active, so the glass stays lit in the background the way Alcove's
-/// does; what dims is the content.
+/// Held active, so the glass stays lit while the window is in front. Losing
+/// focus paints `Theme.inactiveBackground` flat over the top.
 struct Vibrancy: NSViewRepresentable {
-    var material: NSVisualEffectView.Material = .contentBackground
+    var material: NSVisualEffectView.Material = .underWindowBackground
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
