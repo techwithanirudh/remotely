@@ -1,0 +1,21 @@
+# Written to agree with .swiftlint.yml. Every option here either implements a
+# SwiftLint rule or stays out of its way.
+
+--swiftversion 6.0
+--indent 4
+--maxwidth 100          # line_length warning
+--trailingcommas always # trailing_comma mandatory_comma
+--importgrouping alpha  # sorted_imports
+--self remove
+--semicolons never
+--allman false
+--stripunusedargs closure-only
+--commas always
+--emptybraces no-space
+
+# Left to the author: these rewrite working code more aggressively than the
+# consistency they buy is worth.
+--disable redundantSelf
+--disable redundantReturn
+--disable wrapMultilineStatementBraces
+--disable blankLinesAroundMark
