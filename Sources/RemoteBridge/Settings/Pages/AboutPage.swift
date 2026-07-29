@@ -54,14 +54,6 @@ struct AboutPage: View {
                             .controlSize(.small)
                     }
                 }
-
-                Text("Remote buttons arrive through CoreRC, a private part of macOS. "
-                     + "A system update could change how it behaves.")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 9)
-                    .padding(.top, 12)
             }
         }
     }

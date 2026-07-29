@@ -189,7 +189,7 @@ private struct StatusPill: View {
     }
 
     private var pill: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             IconTile(symbol: status.symbol, tint: status.tint)
 
             Text(status.title)
@@ -236,7 +236,7 @@ private struct SidebarItem: View {
         Button {
             selection = page
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 IconTile(symbol: page.symbol, tint: page.tint)
                 Text(page.title)
                     .font(.system(size: 13, weight: selection == page ? .medium : .regular))
