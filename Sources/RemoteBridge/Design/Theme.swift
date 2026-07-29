@@ -59,8 +59,15 @@ enum Theme {
     }
 
     /// How far the sidebar and page title fade once the window is not in front.
-    /// Alcove's glass stays lit and its content does the dimming instead.
     static let inactiveDim: Double = 0.6
+
+    /// What the window shows once it is not in front: the material's own tint,
+    /// painted flat. Alcove stops blurring rather than letting the glass go
+    /// dark, which is why an unfocused capture of it still reads 232,235,236 in
+    /// light and 85,87,88 in dark.
+    static var inactiveBackground: Color {
+        adaptive(light: .init(white: 232 / 255, alpha: 1), dark: .init(white: 86 / 255, alpha: 1))
+    }
 
     static var divider: Color { .primary.opacity(0.10) }
     static var selection: Color { .primary.opacity(0.08) }

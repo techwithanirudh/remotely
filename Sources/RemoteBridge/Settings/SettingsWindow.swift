@@ -40,6 +40,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @ObservedObject var bridge: RemoteBridge
     @State private var page: SettingsPage = .general
+    @Environment(\.controlActiveState) private var activeState
 
     var body: some View {
         // One material and one tint across the whole window, split by a
@@ -47,6 +48,7 @@ struct SettingsView: View {
         // read as different surfaces.
         ZStack {
             Vibrancy()
+            Theme.inactiveBackground.opacity(activeState == .inactive ? 1 : 0)
 
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)

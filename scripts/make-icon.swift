@@ -12,8 +12,8 @@ import AppKit
 let side: CGFloat = 1024
 let margin: CGFloat = 100
 let cornerRadius: CGFloat = 185     // macOS squircle is ~0.2237 of the tile
-let glyphSize: CGFloat = 430
-let tilt: CGFloat = CommandLine.arguments.count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 18) : 18
+let glyphSize: CGFloat = 505
+let tilt: CGFloat = CommandLine.arguments.count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 26) : 26
 
 let tile = NSRect(x: margin, y: margin,
                   width: side - margin * 2,
@@ -89,7 +89,7 @@ if let symbol = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibili
     // Tilted, so it reads as a remote being held rather than a diagram of one.
     context.saveGState()
     context.translateBy(x: tile.midX, y: tile.midY)
-    context.rotate(by: -tilt * .pi / 180)
+    context.rotate(by: tilt * .pi / 180)
     context.translateBy(x: -tile.midX, y: -tile.midY)
     context.setShadow(offset: CGSize(width: 0, height: -6), blur: 24,
                       color: NSColor.black.withAlphaComponent(0.45).cgColor)
