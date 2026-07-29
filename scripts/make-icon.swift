@@ -13,7 +13,8 @@ let side: CGFloat = 1024
 let margin: CGFloat = 100
 let cornerRadius: CGFloat = 185     // macOS squircle is ~0.2237 of the tile
 let glyphSize: CGFloat = 505
-let tilt: CGFloat = CommandLine.arguments.count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 26) : 26
+let tilt: CGFloat = CommandLine.arguments.count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 45) : 45
+let glyphInset: CGFloat = CommandLine.arguments.count > 3 ? CGFloat(Double(CommandLine.arguments[3]) ?? 80) : 80
 
 let tile = NSRect(x: margin, y: margin,
                   width: side - margin * 2,
@@ -83,8 +84,7 @@ if let symbol = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibili
     // padding, and scaled so the tilted remote runs corner to corner.
     let ink = inkBounds(of: white)
     let angle = tilt * .pi / 180
-    let inset: CGFloat = 46
-    let available = tile.width - inset * 2
+    let available = tile.width - glyphInset * 2
     let spread = CGSize(
         width: ink.width * cos(angle) + ink.height * sin(angle),
         height: ink.width * sin(angle) + ink.height * cos(angle)
