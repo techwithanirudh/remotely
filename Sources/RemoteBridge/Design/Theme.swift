@@ -8,8 +8,8 @@ enum Theme {
     static let cornerRadius: CGFloat = 10
     static let cardRadius: CGFloat = 12
     static let panelRadius: CGFloat = 22
-    /// Alcove rounds its window further than AppKit does by default.
-    static let windowRadius: CGFloat = 16
+    /// Measured off Alcove's corner: about 26pt, well past AppKit's default.
+    static let windowRadius: CGFloat = 26
 
     // MARK: Layout
 

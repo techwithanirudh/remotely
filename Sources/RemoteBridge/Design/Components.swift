@@ -1,15 +1,10 @@
 import SwiftUI
 
-/// Window vibrancy.
+/// Window vibrancy, on `.titlebar` — the material Alcove uses, picked out by
+/// capturing all fourteen and comparing them against a capture of its window.
 ///
-/// Held active rather than following the window, because Alcove's stays glassy
-/// in the background; letting it follow made the whole window flatten out the
-/// moment focus moved away.
-///
-/// The material is `.titlebar`, which is the one Alcove uses. Capturing each of
-/// the fourteen materials and comparing them against a capture of its window
-/// picked it out on its own: it reads 233,235,235 where Alcove reads 232,235,236
-/// and `.underWindowBackground`, which this used before, reads 225,228,228.
+/// It follows the window's active state, so losing focus flattens the glass the
+/// way Alcove's does.
 struct Vibrancy: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .titlebar
 
@@ -17,7 +12,7 @@ struct Vibrancy: NSViewRepresentable {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
-        view.state = .active
+        view.state = .followsWindowActiveState
         return view
     }
 
@@ -52,8 +47,8 @@ struct SectionLabel: View {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.secondary)
             .padding(.leading, 9)
-            .padding(.top, 18)
-            .padding(.bottom, 7)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
     }
 }
 

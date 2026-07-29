@@ -5,7 +5,6 @@ import SwiftUI
 /// Settings window.
 @MainActor
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
-    private var isPlaced = false
 
     init(bridge: RemoteBridge) {
         let window = NSWindow(
@@ -38,15 +37,17 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         super.init(window: window)
         window.delegate = self
+        // Cascading nudged the window down and right of centre on every open.
+        shouldCascadeWindows = false
     }
 
     required init?(coder: NSCoder) { fatalError("not supported") }
 
     func show() {
+        if window?.isVisible != true { centre() }
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        centreOnce()
         alignWindowButtons()
     }
 
@@ -57,14 +58,21 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         NSApp.setActivationPolicy(.accessory)
     }
 
-    /// Centres the first time it is shown. Doing it at init measures a frame
-    /// the hosting controller has not sized yet, which parked it in a corner.
-    private func centreOnce() {
-        guard !isPlaced, let window, let screen = window.screen ?? NSScreen.main else { return }
-        isPlaced = true
+    /// Centred on each open, before it is shown so there is no jump.
+    ///
+    /// Layout is forced first: the hosting controller sizes the window late, and
+    /// centring a frame still reading as empty put its corner on the middle of
+    /// the screen rather than the window.
+    private func centre() {
+        guard let window, let screen = window.screen ?? NSScreen.main else { return }
+        window.layoutIfNeeded()
 
         let visible = screen.visibleFrame
-        let size = window.frame.size
+        var size = window.frame.size
+        if size.width < window.minSize.width || size.height < window.minSize.height {
+            size = NSSize(width: 740, height: 660)
+            window.setContentSize(size)
+        }
         window.setFrameOrigin(
             NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
         )

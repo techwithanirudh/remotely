@@ -39,17 +39,16 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
         bridge.stop()
     }
 
-    /// A menu bar app has no Dock icon to bounce, so opening it again should
-    /// bring Settings forward rather than doing nothing.
+    /// Opening a menu bar app again has to bring something forward. While setup
+    /// is unfinished that is the guide, not the window behind it.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        showSettings()
+        Defaults[.onboardingDone] ? showSettings() : showOnboarding()
         return true
     }
 
     func replayOnboarding() {
         Defaults[.onboardingDone] = false
         Defaults[.onboardingStep] = 0
-        settings?.close()
         showOnboarding()
     }
 }
@@ -89,16 +88,21 @@ private extension AppCoordinator {
         bridge.refreshPermission()
     }
 
+    /// Reuses the open guide. Building a second one left two panels on screen,
+    /// each on its own step.
     func showOnboarding() {
-        let controller = OnboardingWindowController(bridge: bridge) { [weak self] in
-            Defaults[.onboardingDone] = true
-            self?.onboarding?.close()
-            self?.onboarding = nil
-            self?.showSettings()
+        settings?.close()
+
+        if onboarding == nil {
+            onboarding = OnboardingWindowController(bridge: bridge) { [weak self] in
+                Defaults[.onboardingDone] = true
+                self?.onboarding?.close()
+                self?.onboarding = nil
+                self?.showSettings()
+            }
         }
-        onboarding = controller
         NSApp.setActivationPolicy(.regular)
-        controller.show()
+        onboarding?.show()
     }
 
     func copyLog() {

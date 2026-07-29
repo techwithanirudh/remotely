@@ -31,8 +31,11 @@ struct ActionMenu: View {
 
 /// Captures the next combination pressed.
 ///
-/// While armed it swallows the keystroke, so recording Command-W does not close
-/// the window. Escape cancels rather than being captured.
+/// Choosing Keyboard Shortcut arms it straight away, the way Mac Mouse Fix does:
+/// there is nothing else to do at that point, so a separate Record button was
+/// only ever a second click. Clicking an existing shortcut re-arms it. While
+/// armed it swallows the keystroke, so recording Command-W does not close the
+/// window, and Escape cancels.
 private struct ShortcutField: View {
     let combo: KeyCombo?
     let onRecord: (KeyCombo) -> Void
@@ -42,9 +45,9 @@ private struct ShortcutField: View {
 
     var body: some View {
         Button { isArmed ? disarm() : arm() } label: {
-            Text(isArmed ? "Press keys…" : combo?.display ?? "Record")
+            Text(isArmed ? "Type a shortcut" : combo?.display ?? "Not set")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(isArmed ? Color.accentColor : .primary)
+                .foregroundStyle(label)
                 .frame(minWidth: 74, minHeight: 20)
                 .padding(.horizontal, 8)
                 .background(
@@ -57,8 +60,13 @@ private struct ShortcutField: View {
                 }
         }
         .buttonStyle(.plain)
-        .help(isArmed ? "Press a key combination" : "Click to record a shortcut")
+        .onAppear { if combo == nil { arm() } }
         .onDisappear(perform: disarm)
+    }
+
+    private var label: some ShapeStyle {
+        if isArmed { return AnyShapeStyle(Color.accentColor) }
+        return combo == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary)
     }
 
     private func arm() {

@@ -330,34 +330,31 @@ struct ModeBadge: View {
 
 /// Reports where the step's target sits on screen, so input can be judged
 /// against it rather than against the whole panel.
+///
+/// Measured when asked rather than cached. The panel lays out at the origin and
+/// is centred afterwards, so a frame recorded during layout described a patch of
+/// screen the card had since left, and presses well outside the card counted.
 struct ScrollAreaProbe: NSViewRepresentable {
-    @MainActor private static var frame: NSRect = .zero
+    @MainActor private static weak var current: Probe?
 
     @MainActor
     static func contains(_ point: NSPoint) -> Bool {
-        frame.contains(point)
+        current?.screenFrame.contains(point) ?? false
     }
 
     func makeNSView(context: Context) -> NSView { Probe() }
     func updateNSView(_ view: NSView, context: Context) {}
 
     private final class Probe: NSView {
+        var screenFrame: NSRect {
+            guard let window else { return .zero }
+            return window.convertToScreen(convert(bounds, to: nil))
+        }
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            publishFrame()
-        }
-
-        override func layout() {
-            super.layout()
-            publishFrame()
-        }
-
-        private func publishFrame() {
-            guard let window else { return }
-            let inWindow = convert(bounds, to: nil)
-            MainActor.assumeIsolated {
-                ScrollAreaProbe.frame = window.convertToScreen(inWindow)
-            }
+            guard window != nil else { return }
+            MainActor.assumeIsolated { ScrollAreaProbe.current = self }
         }
     }
 }

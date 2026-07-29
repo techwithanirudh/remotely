@@ -69,8 +69,11 @@ private struct EventLog: View {
                     .frame(height: 190)
             } else {
                 ScrollView {
+                    // Newest first: the last thing that happened is what anyone
+                    // reads this for, and it was at the bottom of a scroll view
+                    // that does not follow it.
                     LazyVStack(alignment: .leading, spacing: 6) {
-                        ForEach(bridge.log.suffix(100)) { entry in
+                        ForEach(bridge.log.suffix(100).reversed()) { entry in
                             HStack(alignment: .firstTextBaseline, spacing: 9) {
                                 Text(entry.time)
                                     .foregroundStyle(.tertiary)
