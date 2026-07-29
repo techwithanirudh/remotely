@@ -5,7 +5,8 @@ import SwiftUI
 /// The spacing values are measured from Alcove's window rather than guessed;
 /// matching it by eye is what kept the window buttons looking misaligned.
 enum Theme {
-    static let cornerRadius: CGFloat = 10
+    /// Sidebar rows and the status pill: about a third of the 38pt row.
+    static let cornerRadius: CGFloat = 13
     static let cardRadius: CGFloat = 12
     static let panelRadius: CGFloat = 22
     /// Measured off Alcove's corner: about 26pt, well past AppKit's default.
