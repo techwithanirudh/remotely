@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// A confetti cannon.
+/// Confetti falling from above.
 ///
-/// Pieces fire up and out from the bottom, arc over, then fall past the edge —
-/// the shape a popper makes. Dropping them from the top read as weather.
-/// Each piece carries a fixed seed, so the burst is stable rather than
+/// Each piece carries a fixed seed, so the fall is stable rather than
 /// re-randomising on every SwiftUI update.
 struct Confetti: View {
     var body: some View {
@@ -21,8 +19,10 @@ struct Confetti: View {
 
     fileprivate struct Piece: Identifiable {
         let id: Int
+        /// Where across the width the piece falls, as a fraction from the centre.
+        let lane: CGFloat
         let drift: CGFloat
-        let rise: CGFloat
+        let start: CGFloat
         let delay: Double
         let duration: Double
         let tint: Color
@@ -38,13 +38,16 @@ struct Confetti: View {
 
     fileprivate static let pieces: [Piece] = (0..<120).map { index in
         var random = Seeded(seed: UInt64(index &* 2_654_435_761 &+ 12_345))
-        let spread = CGFloat.random(in: 60...300, using: &random)
+        let sway = CGFloat.random(in: 18...90, using: &random)
         return Piece(
             id: index,
-            drift: index.isMultiple(of: 2) ? -spread : spread,
-            rise: .random(in: 220...480, using: &random),
-            delay: .random(in: 0...0.5, using: &random),
-            duration: .random(in: 1.7...2.9, using: &random),
+            lane: .random(in: -0.48...0.48, using: &random),
+            drift: index.isMultiple(of: 2) ? -sway : sway,
+            // Staggered above the top edge, so the fall arrives as a shower
+            // rather than one line of pieces crossing together.
+            start: .random(in: 40...260, using: &random),
+            delay: .random(in: 0...0.8, using: &random),
+            duration: .random(in: 2.1...3.4, using: &random),
             tint: palette[index % palette.count],
             spin: .random(in: -1080...1080, using: &random),
             width: .random(in: 5...10, using: &random),
@@ -68,18 +71,16 @@ private struct Flake: View {
             .frame(width: piece.width, height: piece.isRound ? piece.width : piece.height)
             .keyframeAnimator(initialValue: Flight(), trigger: launched) { view, flight in
                 view
-                    .offset(x: piece.drift * flight.progress, y: flight.height)
+                    .offset(x: piece.lane * size.width + piece.drift * flight.progress, y: flight.height)
                     .rotationEffect(.degrees(piece.spin * Double(flight.progress)))
                     .opacity(flight.opacity)
             } keyframes: { _ in
-                let floor = size.height / 2
-                let peak = floor - piece.rise
-                let exit = floor + 80
+                let ceiling = -size.height / 2 - piece.start
+                let exit = size.height / 2 + 40
 
                 KeyframeTrack(\.height) {
-                    LinearKeyframe(floor, duration: piece.delay)
-                    SpringKeyframe(peak, duration: piece.duration * 0.45, spring: .snappy)
-                    CubicKeyframe(exit, duration: piece.duration * 0.55)
+                    LinearKeyframe(ceiling, duration: piece.delay)
+                    LinearKeyframe(exit, duration: piece.duration)
                 }
                 KeyframeTrack(\.progress) {
                     LinearKeyframe(0, duration: piece.delay)
@@ -87,9 +88,9 @@ private struct Flake: View {
                 }
                 KeyframeTrack(\.opacity) {
                     LinearKeyframe(0, duration: piece.delay)
-                    LinearKeyframe(1, duration: 0.05)
-                    LinearKeyframe(1, duration: piece.duration * 0.7)
-                    LinearKeyframe(0, duration: piece.duration * 0.3)
+                    LinearKeyframe(1, duration: 0.12)
+                    LinearKeyframe(1, duration: piece.duration * 0.78)
+                    LinearKeyframe(0, duration: piece.duration * 0.1)
                 }
             }
             .onAppear { launched = true }
