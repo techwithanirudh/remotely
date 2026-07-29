@@ -47,8 +47,9 @@ struct SettingsView: View {
         // hairline. Washing the content side a second shade made the two halves
         // read as different surfaces.
         ZStack {
-            Vibrancy()
-            Theme.inactiveBackground.opacity(activeState == .inactive ? 1 : 0)
+            // Transmissive while the window is in front, flat behind: the
+            // material carries both states rather than a colour painted over.
+            Vibrancy(material: activeState == .inactive ? .contentBackground : .underWindowBackground)
 
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)
@@ -65,7 +66,7 @@ struct SettingsView: View {
         // the overlay is laid out inside the safe area, so its lit top edge
         // landed 32pt down and read as a bar across the whole window.
         .overlay(WindowEdgeHighlight())
-        .frame(minWidth: 740, minHeight: 620)
+        .frame(minWidth: 600, minHeight: 560)
         .ignoresSafeArea()
     }
 

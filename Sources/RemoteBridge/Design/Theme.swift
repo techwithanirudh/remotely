@@ -62,12 +62,6 @@ enum Theme {
     /// How far the sidebar and page title fade once the window is not in front.
     static let inactiveDim: Double = 0.6
 
-    /// What the window shows once it is not in front: the material's own tint,
-    /// painted flat, rather than letting the glass go dark.
-    static var inactiveBackground: Color {
-        adaptive(light: .init(white: 250 / 255, alpha: 1), dark: .init(white: 38 / 255, alpha: 1))
-    }
-
     static var divider: Color { .primary.opacity(0.10) }
     static var selection: Color { .primary.opacity(0.08) }
 

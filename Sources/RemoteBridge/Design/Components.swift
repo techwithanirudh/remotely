@@ -1,12 +1,11 @@
 import SwiftUI
 
-/// Window vibrancy, on `.underWindowBackground` — the one that actually lets
-/// the desktop through. `.contentBackground` matched Klack's tint but barely
-/// transmits, which is not the same thing: a capture of a lone window reports
-/// a material's tint and says nothing about how much passes through it.
+/// Window vibrancy. The caller picks the material: `.underWindowBackground`
+/// lets the desktop through, `.contentBackground` barely transmits, which is
+/// what the window wants once it is no longer in front.
 ///
-/// Held active, so the glass stays lit while the window is in front. Losing
-/// focus paints `Theme.inactiveBackground` flat over the top.
+/// Held active, because following the window's state flattens the glass to the
+/// window background rather than to a material.
 struct Vibrancy: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .underWindowBackground
 
