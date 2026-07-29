@@ -45,9 +45,9 @@ public final class InputSynthesizer {
         case .keyboardShortcut:
             if let combo = binding.combo { post(combo) }
         case .showDesktop:
-            press(key: 103)
+            post(.showDesktop)
         case .missionControl:
-            press(key: 126, flags: .maskControl)
+            post(.missionControl)
         case .moveUp, .moveDown, .moveLeft, .moveRight,
              .scrollUp, .scrollDown, .scrollLeft, .scrollRight:
             nudge(binding.action)
@@ -143,6 +143,12 @@ private extension InputSynthesizer {
     /// system can believe modifiers are still held and fire the wrong hotkey.
     func post(_ combo: KeyCombo) {
         press(key: CGKeyCode(combo.keyCode), flags: combo.flags)
+        send(CGEvent(source: nil))
+    }
+
+    func post(_ hotKey: SymbolicHotKey) {
+        guard let shortcut = hotKey.shortcut else { return }
+        press(key: shortcut.key, flags: shortcut.flags)
         send(CGEvent(source: nil))
     }
 

@@ -29,20 +29,32 @@ enum Theme {
 
     // MARK: Colour
 
-    /// Cards float on the window's vibrancy, so they have to be nearly opaque
-    /// to separate from it. A faint wash disappeared against the material.
+    /// Alcove's cards lift the window's own tint by about 5%, not the 10% ours
+    /// were using. What separates a card there is its edge, not a brighter
+    /// fill, and matching the fill without matching the edge is what made ours
+    /// read as slabs of white laid on the material.
     static var cardFill: Color {
-        adaptive(light: .init(white: 1, alpha: 0.86), dark: .init(white: 1, alpha: 0.085))
+        adaptive(light: .init(white: 1, alpha: 0.52), dark: .init(white: 1, alpha: 0.085))
     }
 
-    /// Alcove's card edge measures about 9% against its fill; ours was half
-    /// that and the cards read as floating without an outline.
+    /// Sampled from Alcove: its card edge reads 197 where the fill reads 245,
+    /// which is black at about 16%. Ours matched the divider instead, so the
+    /// cards had no more outline than the rules inside them.
     static var cardStroke: Color {
-        adaptive(light: .init(white: 0, alpha: 0.11), dark: .init(white: 1, alpha: 0.17))
+        adaptive(light: .init(white: 0, alpha: 0.16), dark: .init(white: 1, alpha: 0.17))
     }
 
+    /// Alcove's cards darken the ground by about 2% for a pixel and a half
+    /// outside the edge, so the shadow is tight rather than soft.
     static var cardShadow: Color {
         adaptive(light: .init(white: 0, alpha: 0.05), dark: .init(white: 0, alpha: 0.18))
+    }
+
+    /// The lit top edge Alcove's window carries. It measures 55% white on the
+    /// topmost pixel and is gone entirely by 50pt down, so it is a top edge
+    /// rather than a ring.
+    static var windowHighlight: Color {
+        adaptive(light: .init(white: 1, alpha: 0.6), dark: .init(white: 1, alpha: 0.14))
     }
 
     static var divider: Color { .primary.opacity(0.10) }
@@ -64,6 +76,25 @@ extension View {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .strokeBorder(Theme.cardStroke, lineWidth: 1)
             }
-            .shadow(color: Theme.cardShadow, radius: 3, y: 1)
+            .shadow(color: Theme.cardShadow, radius: 2, y: 1)
+    }
+}
+
+/// The hairline that lights the top of the window and fades out as it turns the
+/// corner. Drawn inside the window's own radius so the two curves agree.
+struct WindowEdgeHighlight: View {
+    var radius: CGFloat = Theme.windowRadius
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: radius, style: .continuous)
+            .strokeBorder(
+                LinearGradient(
+                    colors: [Theme.windowHighlight, .clear],
+                    startPoint: .top,
+                    endPoint: UnitPoint(x: 0.5, y: 0.07)
+                ),
+                lineWidth: 0.5
+            )
+            .allowsHitTesting(false)
     }
 }

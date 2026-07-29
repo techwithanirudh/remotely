@@ -5,8 +5,13 @@ import SwiftUI
 /// Held active rather than following the window, because Alcove's stays glassy
 /// in the background; letting it follow made the whole window flatten out the
 /// moment focus moved away.
+///
+/// The material is `.titlebar`, which is the one Alcove uses. Capturing each of
+/// the fourteen materials and comparing them against a capture of its window
+/// picked it out on its own: it reads 233,235,235 where Alcove reads 232,235,236
+/// and `.underWindowBackground`, which this used before, reads 225,228,228.
 struct Vibrancy: NSViewRepresentable {
-    var material: NSVisualEffectView.Material = .underWindowBackground
+    var material: NSVisualEffectView.Material = .titlebar
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()

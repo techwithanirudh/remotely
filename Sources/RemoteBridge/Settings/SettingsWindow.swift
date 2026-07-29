@@ -61,6 +61,7 @@ struct SettingsView: View {
         }
         .frame(minWidth: 740, minHeight: 620)
         .ignoresSafeArea()
+        .overlay(WindowEdgeHighlight())
     }
 
     @ViewBuilder
@@ -81,37 +82,48 @@ struct PageShell<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 9) {
-                IconTile(symbol: page.symbol, tint: page.tint, size: 23)
-                Text(page.title).font(.system(size: 15, weight: .bold))
+        // On macOS 26 the title is a bar, not an inset. Both reserve the space,
+        // but only `safeAreaBar` extends the scroll view's edge effect into it,
+        // which is what blurs content as it passes under the title. An inset
+        // left the effect sitting at the top of the content instead, cutting
+        // across the page. Before macOS 26 there is no such effect at all, so
+        // content is faded out with a mask: masking to clear works over
+        // vibrancy, where painting a solid strip would not.
+        if #available(macOS 26.0, *) {
+            scroll
+                .safeAreaBar(edge: .top, spacing: 0) { header }
+                .scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            VStack(spacing: 0) {
+                header
+                scroll.mask(
+                    VStack(spacing: 0) {
+                        LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                            .frame(height: 16)
+                        Color.black
+                    }
+                )
             }
-            .padding(.horizontal, Theme.pageInset)
-            .padding(.top, 15)
-            .padding(.bottom, 14)
+        }
+    }
 
-            ScrollView {
-                content
-                    .padding(.horizontal, Theme.pageInset)
-                    .padding(.top, 2)
-                    .padding(.bottom, 32)
-            }
-            // Content fades out under the header rather than being cut off at
-            // it, which is how the system treats content scrolling under a
-            // title. Masking to clear works over vibrancy, where painting a
-            // solid strip would not.
-            .mask(
-                VStack(spacing: 0) {
-                    LinearGradient(
-                        colors: [.clear, .black],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 16)
+    private var header: some View {
+        HStack(spacing: 9) {
+            IconTile(symbol: page.symbol, tint: page.tint, size: 23)
+            Text(page.title).font(.system(size: 15, weight: .bold))
+            Spacer()
+        }
+        .padding(.horizontal, Theme.pageInset)
+        .padding(.top, 15)
+        .padding(.bottom, 14)
+    }
 
-                    Color.black
-                }
-            )
+    private var scroll: some View {
+        ScrollView {
+            content
+                .padding(.horizontal, Theme.pageInset)
+                .padding(.top, 2)
+                .padding(.bottom, 32)
         }
     }
 }

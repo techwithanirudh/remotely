@@ -190,9 +190,17 @@ private extension RemoteBridge {
         }
     }
 
+    /// An arrow key is held rather than tapped, but any action can be bound to
+    /// one. Only the actions that move something can be glided; the rest fire
+    /// once, as the key goes down, or pressing an arrow bound to Show Desktop
+    /// would do nothing at all.
     func beginHold(_ button: RemoteButton) {
-        guard permitted() else { return }
         let action = bindings[button].action
+        guard action.isContinuous else {
+            trigger(button)
+            return
+        }
+        guard permitted() else { return }
         input.hold(isScrolling ? action.scrolling : action, sensitivity: sensitivity)
     }
 
