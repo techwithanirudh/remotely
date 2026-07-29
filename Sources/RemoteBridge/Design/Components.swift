@@ -47,8 +47,8 @@ struct SectionLabel: View {
             .font(.system(size: 13, weight: .semibold))
             .foregroundStyle(.secondary)
             .padding(.leading, 9)
-            .padding(.top, 20)
-            .padding(.bottom, 12)
+            .padding(.top, 15)
+            .padding(.bottom, 9)
     }
 }
 

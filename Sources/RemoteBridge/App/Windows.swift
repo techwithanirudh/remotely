@@ -24,6 +24,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.backgroundColor = .clear
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
+        // Restoration put the window back where it was last quit, which beat
+        // the centring and drifted a little further each launch.
+        window.isRestorable = false
         window.minSize = NSSize(width: 700, height: 590)
         window.contentViewController = NSHostingController(rootView: SettingsView(bridge: bridge))
         window.standardWindowButton(.zoomButton)?.isEnabled = false
