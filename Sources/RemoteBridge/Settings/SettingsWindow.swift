@@ -59,9 +59,12 @@ struct SettingsView: View {
                 page(for: page).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        // The highlight goes on before the safe area is ignored. Applied after,
+        // the overlay is laid out inside the safe area, so its lit top edge
+        // landed 32pt down and read as a bar across the whole window.
+        .overlay(WindowEdgeHighlight())
         .frame(minWidth: 740, minHeight: 620)
         .ignoresSafeArea()
-        .overlay(WindowEdgeHighlight())
     }
 
     @ViewBuilder

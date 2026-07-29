@@ -90,7 +90,7 @@ struct BrandGuide: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Text("My TV").font(.system(size: 13))
+                Text("Display").font(.system(size: 13))
                 Spacer(minLength: 8)
 
                 Picker("", selection: $brand) {

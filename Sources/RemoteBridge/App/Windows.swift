@@ -17,6 +17,10 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.title = "Remote Bridge"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
+        // Automatic draws a rule under the titlebar once anything scrolls, which
+        // landed as a bar across the whole window, sidebar included. The page
+        // title carries that boundary itself.
+        window.titlebarSeparatorStyle = .none
         window.isOpaque = false
         window.backgroundColor = .clear
         window.isMovableByWindowBackground = true

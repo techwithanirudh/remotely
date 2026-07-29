@@ -18,7 +18,7 @@ final class StatusItemController {
     ) {
         toggle = NSMenuItem(title: "Enable", action: nil, keyEquivalent: "")
 
-        item.button?.image = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescription: "Remote Bridge")
+        item.button?.image = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: "Remote Bridge")
         item.button?.image?.isTemplate = true
 
         let menu = NSMenu()
@@ -98,7 +98,7 @@ private final class MenuHeader: NSView {
         super.init(frame: NSRect(x: 0, y: 0, width: 272, height: 59))
 
         let icon = NSImageView()
-        icon.image = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescription: nil)
+        icon.image = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: nil)
         icon.symbolConfiguration = .init(pointSize: 19, weight: .medium)
         icon.contentTintColor = .labelColor
 

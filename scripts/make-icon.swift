@@ -64,9 +64,11 @@ shape.lineWidth = 2.5
 shape.stroke()
 context.restoreGState()
 
-// Remote glyph, centred and large enough to carry the tile.
+// Remote glyph, centred and large enough to carry the tile. `av.remote.fill`
+// was tried first and its grid of buttons turned to mush at dock size; the
+// Apple TV remote is two shapes and survives being small.
 let config = NSImage.SymbolConfiguration(pointSize: glyphSize, weight: .regular)
-if let symbol = NSImage(systemSymbolName: "av.remote.fill", accessibilityDescription: nil)?
+if let symbol = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: nil)?
     .withSymbolConfiguration(config) {
     let white = NSImage(size: symbol.size)
     white.lockFocus()
