@@ -93,20 +93,31 @@ struct PracticeStep: View {
             switch self {
             case .move:
                 return .passed
+
             case .scroll:
                 if event.type == .scrollWheel { return .passed }
-                // Moving the pointer *over the list* means the arrows are still
-                // in pointer mode. Moving anywhere else is just navigating here.
-                return insideTarget ? .wrong("Still moving the pointer. Press Back twice first.") : nil
+                // Moving over the list means the arrows are still in pointer
+                // mode. Moving anywhere else is just travelling here.
+                return insideTarget
+                    ? .wrong("Still moving the pointer. Press Back twice first.")
+                    : nil
+
+            // A press away from the target is aimed at something else, so it is
+            // neither a pass nor a mistake.
             case .click:
+                guard insideTarget else { return nil }
                 return event.clickCount >= 2
                     ? .wrong("That was a double press. Try one on its own.")
                     : .passed
+
             case .doubleClick:
+                guard insideTarget else { return nil }
                 return event.clickCount >= 2
                     ? .passed
                     : .wrong("Only one press registered. Press again faster.")
+
             case .rightClick:
+                guard insideTarget else { return nil }
                 return event.type == .rightMouseDown
                     ? .passed
                     : .wrong("That was a normal click. Hold Center longer.")
@@ -172,6 +183,7 @@ struct PracticeStep: View {
             verdict
         } else {
             Marker(outcome: outcome, idleSymbol: exercise.idleSymbol, prompt: exercise.prompt)
+                .background(ScrollAreaProbe())
                 // A real menu, so the gesture is proven end to end rather than
                 // just registering that a right click happened.
                 .contextMenu {
@@ -316,8 +328,8 @@ struct ModeBadge: View {
 }
 
 
-/// Reports where the scroll list is on screen, so movement can be judged
-/// against it rather than against the whole window.
+/// Reports where the step's target sits on screen, so input can be judged
+/// against it rather than against the whole panel.
 struct ScrollAreaProbe: NSViewRepresentable {
     @MainActor private static var frame: NSRect = .zero
 

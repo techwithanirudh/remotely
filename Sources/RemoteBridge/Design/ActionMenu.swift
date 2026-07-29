@@ -2,70 +2,67 @@ import AppKit
 import RemoteKit
 import SwiftUI
 
-/// Picks what a button does.
+/// Picks what a button does, with the shortcut recorder beside it.
 ///
-/// Modelled on Mac Mouse Fix: "Keyboard Shortcut…" lives in the menu itself and
-/// the recorded combination becomes the shown value, rather than a separate
-/// record control sitting beside the picker. One control, and the row reads as
-/// the answer to "what does this button do".
+/// A Menu with grouped sections was tried here and half its items did not
+/// register, so this stays on Picker, which does.
 struct ActionMenu: View {
     let binding: ButtonBinding
     let onPick: (RemoteAction) -> Void
     let onRecord: (KeyCombo) -> Void
 
-    @State private var isRecording = false
-    @State private var monitor: Any?
-
-    private static let grouped: [[RemoteAction]] = [
-        [.none],
-        [.moveUp, .moveDown, .moveLeft, .moveRight],
-        [.scrollUp, .scrollDown, .scrollLeft, .scrollRight, .toggleScrolling],
-        [.leftClick, .doubleClick, .rightClick],
-        [.escape, .showDesktop, .missionControl],
-    ]
-
     var body: some View {
-        Menu {
-            ForEach(Array(Self.grouped.enumerated()), id: \.offset) { _, group in
-                Section {
-                    ForEach(group) { action in
-                        Button {
-                            onPick(action)
-                        } label: {
-                            Label(action.title, systemImage: action.symbol)
-                        }
-                    }
+        HStack(spacing: 8) {
+            Picker("", selection: Binding(get: { binding.action }, set: onPick)) {
+                ForEach(RemoteAction.allCases) { action in
+                    Label(action.title, systemImage: action.symbol).tag(action)
                 }
             }
+            .labelsHidden()
+            .controlSize(.small)
+            .frame(width: 178)
 
-            Section {
-                Button("Keyboard Shortcut…") { arm() }
+            if binding.action == .keyboardShortcut {
+                ShortcutField(combo: binding.combo, onRecord: onRecord)
             }
-        } label: {
-            HStack(spacing: 5) {
-                Image(systemName: isRecording ? "record.circle" : binding.action.symbol)
-                    .font(.system(size: 11, weight: .medium))
-                Text(label)
-                    .font(.system(size: 12, weight: isRecording ? .semibold : .regular))
-                    .lineLimit(1)
-            }
-            .foregroundStyle(isRecording ? Color.accentColor : .primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .menuStyle(.borderlessButton)
-        .controlSize(.small)
-        .frame(width: 186)
+    }
+}
+
+/// Captures the next combination pressed.
+///
+/// While armed it swallows the keystroke, so recording Command-W does not close
+/// the window. Escape cancels rather than being captured.
+private struct ShortcutField: View {
+    let combo: KeyCombo?
+    let onRecord: (KeyCombo) -> Void
+
+    @State private var isArmed = false
+    @State private var monitor: Any?
+
+    var body: some View {
+        Button { isArmed ? disarm() : arm() } label: {
+            Text(isArmed ? "Press keys…" : combo?.display ?? "Record")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(isArmed ? Color.accentColor : .primary)
+                .frame(minWidth: 74, minHeight: 20)
+                .padding(.horizontal, 8)
+                .background(
+                    isArmed ? Color.accentColor.opacity(0.15) : Theme.selection,
+                    in: RoundedRectangle(cornerRadius: 6, style: .continuous)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(isArmed ? Color.accentColor.opacity(0.5) : .clear)
+                }
+        }
+        .buttonStyle(.plain)
+        .help(isArmed ? "Press a key combination" : "Click to record a shortcut")
         .onDisappear(perform: disarm)
     }
 
-    private var label: String {
-        isRecording ? "Press keys…" : binding.summary
-    }
-
-    /// Swallows the keystroke while armed, so recording Command-W does not
-    /// close the window. Escape cancels rather than being captured.
     private func arm() {
-        isRecording = true
+        isArmed = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
             guard event.type == .keyDown else { return nil }
 
@@ -80,7 +77,7 @@ struct ActionMenu: View {
     }
 
     private func disarm() {
-        isRecording = false
+        isArmed = false
         if let monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
     }

@@ -125,10 +125,8 @@ private struct Sidebar: View {
 
             Spacer()
 
-            SidebarGroup(title: "Remote Bridge") {
-                SidebarItem(page: .about, selection: $page)
-            }
-            .padding(.bottom, 14)
+            SidebarItem(page: .about, selection: $page)
+                .padding(.bottom, 14)
         }
     }
 }

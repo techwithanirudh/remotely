@@ -101,7 +101,9 @@ final class OnboardingWindowController: NSWindowController {
         window.backgroundColor = .clear
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.level = .floating
+        // Normal level: floating put the panel above the Accessibility prompt,
+        // so the dialog the step is asking for opened behind it.
+        window.level = .normal
         window.contentViewController = NSHostingController(
             rootView: OnboardingView(bridge: bridge, onFinish: onFinish)
         )
