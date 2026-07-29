@@ -79,7 +79,14 @@ private extension AppCoordinator {
 
     func showSettings() {
         if settings == nil {
-            settings = SettingsWindowController(bridge: bridge)
+            let controller = SettingsWindowController(bridge: bridge)
+            controller.onClose = { [weak self] in
+                // The guide may have just replaced it, and going accessory
+                // would hide that too.
+                guard self?.onboarding?.window?.isVisible != true else { return }
+                NSApp.setActivationPolicy(.accessory)
+            }
+            settings = controller
         }
         // A menu bar app is .accessory, which cannot take proper key focus.
         NSApp.setActivationPolicy(.regular)
@@ -90,8 +97,6 @@ private extension AppCoordinator {
     /// Reuses the open guide. Building a second one left two panels on screen,
     /// each on its own step.
     func showOnboarding() {
-        settings?.close()
-
         if onboarding == nil {
             onboarding = OnboardingWindowController(bridge: bridge) { [weak self] in
                 Defaults[.onboardingDone] = true
@@ -102,6 +107,7 @@ private extension AppCoordinator {
         }
         NSApp.setActivationPolicy(.regular)
         onboarding?.show()
+        settings?.close()
     }
 
     func copyLog() {

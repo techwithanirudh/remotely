@@ -5,6 +5,9 @@ import SwiftUI
 /// Settings window.
 @MainActor
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    /// Closing does not always mean the app is done showing windows, so who
+    /// drops back to an accessory app is the caller's decision.
+    var onClose: (() -> Void)?
 
     init(bridge: RemoteBridge) {
         let window = NSWindow(
@@ -58,7 +61,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     func windowDidBecomeKey(_ notification: Notification) { alignWindowButtons() }
 
     func windowWillClose(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        onClose?()
     }
 
     /// Centered on each open, before it is shown so there is no jump.
