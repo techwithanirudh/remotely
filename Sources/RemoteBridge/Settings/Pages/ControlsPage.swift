@@ -85,11 +85,11 @@ private struct BindingRow: View {
     private var binding: ButtonBinding { bridge.binding(for: button) }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Theme.iconGap) {
             Image(systemName: button.symbol)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.purple)
-                .frame(width: 22)
+                .frame(width: 20)
 
             Text(button.shortTitle).font(.system(size: 13))
 

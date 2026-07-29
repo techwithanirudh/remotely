@@ -19,6 +19,8 @@ enum Theme {
     static let sidebarInset: CGFloat = 11
     /// Padding inside a row, which puts its icon on the window-button rail.
     static let rowPadding: CGFloat = 8
+    /// Distance from a leading icon to the label beside it.
+    static let iconGap: CGFloat = 8
     /// Alcove's sidebar rows measure 38pt, not the 34 this used to assume.
     static let rowHeight: CGFloat = 38
     static let pageInset: CGFloat = 18

@@ -119,23 +119,19 @@ struct OnboardingView: View {
         }
     }
 
+    /// Skip sits beside the action rather than under it, so a gated step is
+    /// the same height as every other one and nothing shifts between screens.
     private var footer: some View {
-        VStack(spacing: 8) {
+        HStack(spacing: 8) {
             PanelButton(
                 title: primaryTitle,
                 isWaiting: step == .connect && !canContinue,
                 action: runPrimary
             )
 
-            // Only present while it can actually be used. Reserving the row
-            // on gated steps put the action 24pt higher there than everywhere
-            // else, so the button moved between screens.
             if step.isSkippable, !canContinue {
-                Button("Skip for now", action: advance)
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(.secondary)
-                    .frame(height: 16)
+                PanelButton(title: "Skip", action: advance)
+                    .fixedSize(horizontal: true, vertical: false)
             }
         }
     }

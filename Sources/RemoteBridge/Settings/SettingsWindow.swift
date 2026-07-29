@@ -114,7 +114,7 @@ struct PageShell<Content: View>: View {
     }
 
     private var header: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: Theme.iconGap) {
             IconTile(symbol: page.symbol, tint: page.tint, size: 23)
             Text(page.title).font(.system(size: 15, weight: .semibold))
             Spacer()
@@ -189,7 +189,7 @@ private struct StatusPill: View {
     }
 
     private var pill: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.iconGap) {
             IconTile(symbol: status.symbol, tint: status.tint)
 
             Text(status.title)
@@ -236,7 +236,7 @@ private struct SidebarItem: View {
         Button {
             selection = page
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.iconGap) {
                 IconTile(symbol: page.symbol, tint: page.tint)
                 Text(page.title)
                     .font(.system(size: 13, weight: selection == page ? .medium : .regular))

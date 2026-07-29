@@ -124,11 +124,11 @@ struct InfoRow: View {
     var badge: String?
 
     var body: some View {
-        HStack(alignment: .top, spacing: 11) {
+        HStack(alignment: .top, spacing: Theme.iconGap) {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(tint)
-                .frame(width: 22, height: 18)
+                .frame(width: 20, height: 18)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {

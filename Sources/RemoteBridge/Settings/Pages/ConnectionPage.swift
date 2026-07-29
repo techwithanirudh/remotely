@@ -64,7 +64,7 @@ private struct Checklist: View {
     let done: Bool
 
     var body: some View {
-        HStack(spacing: 11) {
+        HStack(spacing: Theme.iconGap) {
             Image(systemName: done ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 14))
                 .foregroundStyle(done ? .green : .secondary)
@@ -130,7 +130,7 @@ struct BrandGuide: View {
     /// to work, a search otherwise.
     private func instructions(_ url: URL) -> some View {
         Link(destination: url) {
-            HStack(spacing: 9) {
+            HStack(spacing: Theme.iconGap) {
                 Image(systemName: brand.hasVerifiedArticle ? "book.fill" : "magnifyingglass")
                     .font(.system(size: 11))
                     .frame(width: 14)
