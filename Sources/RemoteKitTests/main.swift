@@ -86,18 +86,18 @@ Expect.suite("Gesture rules") {
 // MARK: Bindings
 
 Expect.suite("Bindings") {
-    Expect.that(Bindings.standard.customised.byButton.isEmpty,
+    Expect.that(Bindings.standard.customized.byButton.isEmpty,
                 "untouched bindings persist nothing")
 
     var bindings = Bindings.standard
     bindings[.up] = ButtonBinding(.moveLeft)
-    Expect.equal(Array(bindings.customised.byButton.keys), [.up],
+    Expect.equal(Array(bindings.customized.byButton.keys), [.up],
                  "only changed buttons are persisted")
 
-    let resolved = Bindings.resolving(bindings.customised)
-    Expect.equal(resolved[.up], ButtonBinding(.moveLeft), "a customised button survives a round trip")
+    let resolved = Bindings.resolving(bindings.customized)
+    Expect.equal(resolved[.up], ButtonBinding(.moveLeft), "a customized button survives a round trip")
     Expect.equal(resolved[.back], Bindings.standard[.back],
-                 "changing a default still reaches someone who customised a different button")
+                 "changing a default still reaches someone who customized a different button")
 
     Expect.that(!ButtonBinding(.keyboardShortcut).isComplete,
                 "a shortcut binding is incomplete until something is recorded")
@@ -109,7 +109,7 @@ Expect.suite("Bindings") {
         var withCombo = Bindings.standard
         withCombo[.back] = ButtonBinding(.keyboardShortcut,
                                    combo: KeyCombo(keyCode: 13, modifiers: [.maskCommand, .maskShift]))
-        let data = try! JSONEncoder().encode(withCombo.customised)
+        let data = try! JSONEncoder().encode(withCombo.customized)
         let decoded = try! JSONDecoder().decode(Bindings.self, from: data)
         Expect.equal(Bindings.resolving(decoded)[.back], withCombo[.back],
                      "bindings round-trip through Codable")
@@ -243,4 +243,4 @@ Expect.suite("System shortcuts") {
     }
 }
 
-exit(Expect.summarise())
+exit(Expect.summarize())

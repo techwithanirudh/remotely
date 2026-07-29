@@ -48,7 +48,7 @@ struct SettingsView: View {
         // read as different surfaces.
         ZStack {
             // Transmissive while the window is in front, flat behind: the
-            // material carries both states rather than a colour painted over.
+            // material carries both states rather than a color painted over.
             Vibrancy(material: activeState == .inactive ? .contentBackground : .underWindowBackground)
 
             HStack(spacing: 0) {
@@ -177,7 +177,7 @@ private struct Sidebar: View {
 ///
 /// It carries a full tile rather than a bare dot: an 8pt dot was on the right
 /// rail arithmetically, but next to rows of 22pt tiles its visual weight sat
-/// well inside them and read as off-centre.
+/// well inside them and read as off-center.
 private struct StatusPill: View {
     let status: BridgeStatus
     let onTap: () -> Void

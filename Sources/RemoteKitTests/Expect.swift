@@ -48,7 +48,7 @@ enum Expect {
     }
 
     /// Returns the process exit code.
-    static func summarise() -> Int32 {
+    static func summarize() -> Int32 {
         print("\n\(checks - failures.count)/\(checks) checks passed")
         guard failures.isEmpty else {
             print("\nFailures:")

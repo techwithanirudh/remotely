@@ -89,7 +89,7 @@ public final class RemoteBridge: ObservableObject {
 
     public func setBinding(_ binding: ButtonBinding, for button: RemoteButton) {
         bindings[button] = binding
-        Defaults[.bindings] = bindings.customised
+        Defaults[.bindings] = bindings.customized
         append("\(button.title) → \(binding.summary)")
     }
 
@@ -139,7 +139,7 @@ private extension RemoteBridge {
 
     func apply(_ state: CECLink.State) {
         linkState = state
-        append("Link: \(state)")
+        append(state.description)
         updateStatus()
     }
 
@@ -149,7 +149,7 @@ private extension RemoteBridge {
 
     func handle(press key: RemoteKey) {
         lastKey = key
-        if reader.heldKey != key { append("Press: \(key.title)") }
+        if reader.heldKey != key { append("Pressed \(key.title)") }
         run(reader.press(key, at: clock))
     }
 
@@ -220,7 +220,7 @@ private extension RemoteBridge {
     /// gates on it and the status reports it, so this only keeps the log honest.
     func permitted() -> Bool {
         guard hasAccessibility else {
-            append("Ignored, no Accessibility permission")
+            append("Ignored, no Accessibility permission yet")
             return false
         }
         return true

@@ -40,14 +40,14 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         super.init(window: window)
         window.delegate = self
-        // Cascading nudged the window down and right of centre on every open.
+        // Cascading nudged the window down and right of center on every open.
         shouldCascadeWindows = false
     }
 
     required init?(coder: NSCoder) { fatalError("not supported") }
 
     func show() {
-        if window?.isVisible != true { centre() }
+        if window?.isVisible != true { center() }
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -61,12 +61,12 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         NSApp.setActivationPolicy(.accessory)
     }
 
-    /// Centred on each open, before it is shown so there is no jump.
+    /// Centered on each open, before it is shown so there is no jump.
     ///
     /// Layout is forced first: the hosting controller sizes the window late, and
     /// centring a frame still reading as empty put its corner on the middle of
     /// the screen rather than the window.
-    private func centre() {
+    private func center() {
         guard let window, let screen = window.screen ?? NSScreen.main else { return }
         window.layoutIfNeeded()
 
@@ -90,11 +90,11 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         for (index, button) in buttons.enumerated() {
             guard let titlebar = button.superview else { continue }
-            let centreY = titlebar.bounds.height - Theme.trafficLightTop
+            let centerY = titlebar.bounds.height - Theme.trafficLightTop
             button.setFrameOrigin(
                 NSPoint(
                     x: Theme.trafficLightInset + CGFloat(index) * Theme.trafficLightSpacing,
-                    y: centreY - button.bounds.height / 2
+                    y: centerY - button.bounds.height / 2
                 )
             )
         }

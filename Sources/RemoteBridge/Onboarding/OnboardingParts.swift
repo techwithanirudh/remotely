@@ -45,7 +45,7 @@ struct StepLayout<Hero: View, Content: View>: View {
 /// A stand-in for the macOS permission prompt.
 ///
 /// Used only by the step that actually triggers one: showing its shape first is
-/// what makes the real prompt recognisable. Elsewhere it was decoration
+/// what makes the real prompt recognizable. Elsewhere it was decoration
 /// pretending a dialog was coming.
 struct DialogMock: View {
     let symbol: String

@@ -24,7 +24,7 @@ public struct ButtonBinding: Codable, Hashable, Sendable {
 /// Every button's binding.
 ///
 /// Only what differs from `.standard` is persisted, so changing a default still
-/// reaches anyone who has customised something else.
+/// reaches anyone who has customized something else.
 public struct Bindings: Codable, Hashable, Sendable {
     public private(set) var byButton: [RemoteButton: ButtonBinding]
 
@@ -53,14 +53,14 @@ public struct Bindings: Codable, Hashable, Sendable {
         self[button] == Self.standard[button]
     }
 
-    public var customised: Bindings {
+    public var customized: Bindings {
         Bindings(byButton.filter { Self.standard.byButton[$0.key] != $0.value })
     }
 
     /// Defaults with the user's changes applied on top.
-    public static func resolving(_ customised: Bindings) -> Bindings {
+    public static func resolving(_ customized: Bindings) -> Bindings {
         var result = standard
-        for (button, binding) in customised.byButton {
+        for (button, binding) in customized.byButton {
             result.byButton[button] = binding
         }
         return result

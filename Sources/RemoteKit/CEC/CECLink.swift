@@ -12,12 +12,22 @@ import Foundation
 /// readable without any entitlement, so that is the transport used here.
 @MainActor
 public final class CECLink {
-    public enum State: Equatable, Sendable {
+    public enum State: Equatable, Sendable, CustomStringConvertible {
         case stopped
         case unsupported
         case waitingForDisplay
         case listening
         case failed(String)
+
+        public var description: String {
+            switch self {
+            case .stopped: "Stopped"
+            case .unsupported: "Not supported on this Mac"
+            case .waitingForDisplay: "Waiting for a display"
+            case .listening: "Listening"
+            case .failed(let reason): "Failed, \(reason)"
+            }
+        }
     }
 
     public var onStateChange: ((State) -> Void)?
@@ -107,7 +117,7 @@ private extension CECLink {
             guard displayName != display else { return }
             displayName = display
             onDisplayName?(display)
-            onLog?("Link up: \(display)")
+            onLog?("Connected to \(display)")
 
         case .pressed(let key):
             transition(to: .listening)

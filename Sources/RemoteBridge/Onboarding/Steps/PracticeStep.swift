@@ -332,7 +332,7 @@ struct ModeBadge: View {
 /// against it rather than against the whole panel.
 ///
 /// Measured when asked rather than cached. The panel lays out at the origin and
-/// is centred afterwards, so a frame recorded during layout described a patch of
+/// is centered afterwards, so a frame recorded during layout described a patch of
 /// screen the card had since left, and presses well outside the card counted.
 struct ScrollAreaProbe: NSViewRepresentable {
     @MainActor private static weak var current: Probe?
