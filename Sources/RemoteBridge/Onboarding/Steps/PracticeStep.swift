@@ -86,15 +86,12 @@ struct PracticeStep: View {
         /// - Parameter insideTarget: whether the pointer is over the exercise's
         ///   own control. Movement elsewhere is just travelling towards it.
         func judge(_ event: NSEvent, fromRemote: Bool, insideTarget: Bool) -> Outcome? {
-            guard fromRemote else {
-                return self == .move ? nil : .wrong("That was your mouse, not the remote.")
-            }
-
             switch self {
             case .move:
-                return .passed
+                return fromRemote ? .passed : nil
 
             case .scroll:
+                guard fromRemote else { return .wrong(Self.wrongSource) }
                 if event.type == .scrollWheel { return .passed }
                 // Moving over the list means the arrows are still in pointer
                 // mode. Moving anywhere else is just travelling here.
@@ -102,23 +99,29 @@ struct PracticeStep: View {
                     ? .wrong("Still moving the pointer. Press Back twice first.")
                     : nil
 
-            // A press away from the target is aimed at something else, so it is
-            // neither a pass nor a mistake.
-            case .click:
+            // Anything aimed away from the target belongs to whatever else is
+            // on screen, whichever device sent it.
+            case .click, .doubleClick, .rightClick:
                 guard insideTarget else { return nil }
-                return event.clickCount >= 2
+                guard fromRemote else { return .wrong(Self.wrongSource) }
+                return verdict(for: event)
+            }
+        }
+
+        private static let wrongSource = "That was your mouse, not the remote."
+
+        private func verdict(for event: NSEvent) -> Outcome {
+            switch self {
+            case .click:
+                event.clickCount >= 2
                     ? .wrong("That was a double press. Try one on its own.")
                     : .passed
-
             case .doubleClick:
-                guard insideTarget else { return nil }
-                return event.clickCount >= 2
+                event.clickCount >= 2
                     ? .passed
                     : .wrong("Only one press registered. Press again faster.")
-
-            case .rightClick:
-                guard insideTarget else { return nil }
-                return event.type == .rightMouseDown
+            default:
+                event.type == .rightMouseDown
                     ? .passed
                     : .wrong("That was a normal click. Hold Center longer.")
             }
