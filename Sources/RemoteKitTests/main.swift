@@ -53,7 +53,7 @@ Expect.suite("Gesture rules") {
     do {
         var reader = GestureReader()
         _ = reader.press(.back, at: 0)
-        Expect.equal(reader.release(at: 0.05), [.triggerDeferred(.back, after: 0.38)],
+        Expect.equal(reader.release(at: 0.05), [.triggerDeferred(.back, after: 0.30)],
                      "a single Back waits out the double-tap window")
     }
 

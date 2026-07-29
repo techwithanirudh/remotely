@@ -16,7 +16,7 @@ public struct GestureReader: Sendable {
 
         public init(
             holdThreshold: TimeInterval = 0.5,
-            doubleTapWindow: TimeInterval = 0.38,
+            doubleTapWindow: TimeInterval = 0.30,
             repeatTimeout: TimeInterval = 0.6
         ) {
             self.holdThreshold = holdThreshold
