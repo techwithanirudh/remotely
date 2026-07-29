@@ -79,67 +79,77 @@ private struct Checklist: View {
 /// Brand picker, that maker's name for HDMI-CEC, the menu path, and a link to
 /// their own instructions. Naming a few brands in a footnote left every other
 /// owner guessing.
+///
+/// Three divided rows rather than a stack of left-aligned pieces. The picker
+/// and the link each used to float in the middle of their own line, which read
+/// as three unrelated fragments, and the link had to be moved for the narrower
+/// onboarding panel. As rows, one layout fits both widths.
 struct BrandGuide: View {
     @Binding var brand: TVBrand
-    /// The onboarding panel is too narrow to keep the link on the picker's
-    /// row; it collapsed into a column of single letters there.
-    var isCompact = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            if isCompact {
-                picker
-                instructions
-            } else {
-                HStack(spacing: 9) {
-                    picker
-                    Spacer(minLength: 8)
-                    instructions
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("My TV").font(.system(size: 13))
+                Spacer(minLength: 8)
+
+                Picker("", selection: $brand) {
+                    ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
                 }
+                .labelsHidden()
+                .controlSize(.small)
+                .fixedSize()
             }
+            .padding(.horizontal, Theme.cardPadding)
+            .frame(height: 42)
+
+            Divider1px()
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("Look for “\(brand.featureName)”")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
+
                 Text(brand.menuPath)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
             }
-        }
-        .padding(Theme.cardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Theme.cardPadding)
+            .padding(.vertical, 10)
 
-    private var picker: some View {
-        HStack(spacing: 9) {
-            Text("My TV is a").font(.system(size: 12.5))
-
-            Picker("", selection: $brand) {
-                ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
+            if let url = brand.helpURL {
+                Divider1px()
+                instructions(url)
             }
-            .labelsHidden()
-            .controlSize(.small)
-            .frame(width: 132)
-
-            if isCompact { Spacer(minLength: 0) }
         }
     }
 
     /// Labelled for what it actually is: the maker's page where one is known
     /// to work, a search otherwise.
-    @ViewBuilder
-    private var instructions: some View {
-        if let url = brand.helpURL {
-            Link(destination: url) {
-                Label(
-                    brand.hasVerifiedArticle ? "Instructions" : "Find instructions",
-                    systemImage: brand.hasVerifiedArticle ? "arrow.up.right.square" : "magnifyingglass"
-                )
-                .font(.system(size: 11, weight: .medium))
-                .fixedSize()
+    private func instructions(_ url: URL) -> some View {
+        Link(destination: url) {
+            HStack(spacing: 9) {
+                Image(systemName: brand.hasVerifiedArticle ? "book.fill" : "magnifyingglass")
+                    .font(.system(size: 11))
+                    .frame(width: 14)
+
+                Text(brand.hasVerifiedArticle
+                     ? "\(brand.name) instructions"
+                     : "Search for instructions")
+                    .font(.system(size: 12.5))
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
+            .contentShape(Rectangle())
+            .padding(.horizontal, Theme.cardPadding)
+            .frame(height: 40)
         }
+        .buttonStyle(.plain)
     }
 }

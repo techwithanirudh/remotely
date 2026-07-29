@@ -19,7 +19,7 @@ final class ScrollModeOverlay {
         guard panel == nil else { return }
 
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 116, height: 34),
+            contentRect: NSRect(origin: .zero, size: Chip.panelSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -37,7 +37,7 @@ final class ScrollModeOverlay {
         host.view.wantsLayer = true
         host.view.layer?.backgroundColor = NSColor.clear.cgColor
         panel.contentViewController = host
-        panel.setContentSize(NSSize(width: 116, height: 34))
+        panel.setContentSize(Chip.panelSize)
         panel.orderFrontRegardless()
         self.panel = panel
 
@@ -57,33 +57,57 @@ final class ScrollModeOverlay {
         panel = nil
     }
 
-    /// Sits below-right of the cursor, flipping when it would run off screen.
+    /// Tucked in under the cursor's tip, flipping when it would run off screen.
+    ///
+    /// The panel is larger than the chip so the shadow has somewhere to fall,
+    /// so the placement works from the chip's own edges rather than the frame's.
     private func reposition() {
         guard let panel else { return }
         let mouse = NSEvent.mouseLocation
         let size = panel.frame.size
         let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
         let bounds = screen?.visibleFrame ?? .zero
+        // Close enough to read as attached to the pointer, clear enough not to
+        // sit under the arrow itself, which is about 20pt tall.
+        let gap: CGFloat = 10
 
-        var origin = NSPoint(x: mouse.x + 18, y: mouse.y - size.height - 12)
-        if origin.x + size.width > bounds.maxX { origin.x = mouse.x - size.width - 18 }
-        if origin.y < bounds.minY { origin.y = mouse.y + 18 }
+        var origin = NSPoint(
+            x: mouse.x + gap - Chip.margin,
+            y: mouse.y - gap - size.height + Chip.margin
+        )
+        if mouse.x + gap + Chip.size.width > bounds.maxX {
+            origin.x = mouse.x - gap - Chip.size.width - Chip.margin
+        }
+        if mouse.y - gap - Chip.size.height < bounds.minY {
+            origin.y = mouse.y + gap - Chip.margin
+        }
         panel.setFrameOrigin(origin)
     }
 }
 
 private struct Chip: View {
+    /// Room inside the panel for the shadow to fall. A borderless panel clips
+    /// to its own bounds, and a chip sized to the frame had its shadow sliced
+    /// off square along the bottom.
+    static let margin: CGFloat = 9
+    static let size = CGSize(width: 92, height: 22)
+    static var panelSize: NSSize {
+        NSSize(width: size.width + margin * 2, height: size.height + margin * 2)
+    }
+
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 5) {
             Image(systemName: "arrow.up.and.down.text.horizontal")
-                .font(.system(size: 11, weight: .semibold))
-            Text("Scrolling").font(.system(size: 11.5, weight: .semibold))
+                .font(.system(size: 9.5, weight: .semibold))
+            Text("Scrolling").font(.system(size: 10.5, weight: .semibold))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 12)
-        .frame(height: 26)
-        .background(Color.purple, in: Capsule())
-        .shadow(color: .black.opacity(0.3), radius: 5, y: 2)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: Self.size.width, height: Self.size.height)
+        .background(Color.purple.gradient, in: Capsule())
+        // A hairline of the tint's own light along the top, which is what keeps
+        // the capsule from reading as a flat sticker over bright wallpaper.
+        .overlay(Capsule().strokeBorder(.white.opacity(0.22), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.26), radius: 4, y: 1.5)
+        .padding(Self.margin)
     }
 }

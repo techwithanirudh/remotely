@@ -48,7 +48,7 @@ struct ConnectStep: View {
         ) {
             GestureHero(symbol: "cable.connector", tint: .cyan)
         } content: {
-            BrandGuide(brand: $brand, isCompact: true).card(radius: Theme.cornerRadius)
+            BrandGuide(brand: $brand).card(radius: Theme.cornerRadius)
         }
     }
 }
