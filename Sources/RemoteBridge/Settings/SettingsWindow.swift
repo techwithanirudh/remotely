@@ -40,6 +40,7 @@ enum SettingsPage: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @ObservedObject var bridge: RemoteBridge
     @State private var page: SettingsPage = .general
+    @Environment(\.controlActiveState) private var activeState
 
     var body: some View {
         // One material and one tint across the whole window, split by a
@@ -51,6 +52,7 @@ struct SettingsView: View {
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)
                     .frame(width: Theme.sidebarWidth)
+                    .opacity(activeState == .inactive ? Theme.inactiveDim : 1)
 
                 Rectangle()
                     .fill(Theme.divider)
@@ -83,6 +85,7 @@ struct SettingsView: View {
 struct PageShell<Content: View>: View {
     let page: SettingsPage
     @ViewBuilder let content: Content
+    @Environment(\.controlActiveState) private var activeState
 
     var body: some View {
         // On macOS 26 the title is a bar, not an inset. Both reserve the space,
@@ -116,6 +119,7 @@ struct PageShell<Content: View>: View {
             Text(page.title).font(.system(size: 15, weight: .bold))
             Spacer()
         }
+        .opacity(activeState == .inactive ? Theme.inactiveDim : 1)
         .padding(.horizontal, Theme.pageInset)
         .padding(.top, 15)
         .padding(.bottom, 14)

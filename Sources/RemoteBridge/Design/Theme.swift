@@ -35,14 +35,14 @@ enum Theme {
     /// fill, and matching the fill without matching the edge is what made ours
     /// read as slabs of white laid on the material.
     static var cardFill: Color {
-        adaptive(light: .init(white: 1, alpha: 0.52), dark: .init(white: 1, alpha: 0.085))
+        adaptive(light: .init(white: 1, alpha: 0.52), dark: .init(white: 1, alpha: 0.055))
     }
 
     /// Sampled from Alcove: its card edge reads 197 where the fill reads 245,
     /// which is black at about 16%. Ours matched the divider instead, so the
     /// cards had no more outline than the rules inside them.
     static var cardStroke: Color {
-        adaptive(light: .init(white: 0, alpha: 0.16), dark: .init(white: 1, alpha: 0.17))
+        adaptive(light: .init(white: 0, alpha: 0.16), dark: .init(white: 1, alpha: 0.10))
     }
 
     /// Alcove's cards darken the ground by about 2% for a pixel and a half
@@ -57,6 +57,10 @@ enum Theme {
     static var windowHighlight: Color {
         adaptive(light: .init(white: 1, alpha: 0.6), dark: .init(white: 1, alpha: 0.14))
     }
+
+    /// How far the sidebar and page title fade once the window is not in front.
+    /// Alcove's glass stays lit and its content does the dimming instead.
+    static let inactiveDim: Double = 0.6
 
     static var divider: Color { .primary.opacity(0.10) }
     static var selection: Color { .primary.opacity(0.08) }

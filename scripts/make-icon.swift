@@ -12,7 +12,7 @@ import AppKit
 let side: CGFloat = 1024
 let margin: CGFloat = 100
 let cornerRadius: CGFloat = 185     // macOS squircle is ~0.2237 of the tile
-let glyphSize: CGFloat = 470
+let glyphSize: CGFloat = 430
 
 let tile = NSRect(x: margin, y: margin,
                   width: side - margin * 2,
@@ -35,17 +35,18 @@ let shape = squircle(tile, cornerRadius)
 context.saveGState()
 context.setShadow(offset: CGSize(width: 0, height: -12), blur: 30,
                   color: NSColor.black.withAlphaComponent(0.30).cgColor)
-NSColor(calibratedWhite: 0.12, alpha: 1).setFill()
+NSColor(srgbRed: 0.30, green: 0.18, blue: 0.66, alpha: 1).setFill()
 shape.fill()
 context.restoreGState()
 
-// Graphite ramp, lighter at the top so it catches light like a real object.
+// Violet ramp, lighter at the top so it catches light like a real object.
+// Graphite read as another dark square in a dock full of colour.
 context.saveGState()
 shape.addClip()
 NSGradient(colors: [
-    NSColor(srgbRed: 0.30, green: 0.33, blue: 0.39, alpha: 1),
-    NSColor(srgbRed: 0.17, green: 0.19, blue: 0.23, alpha: 1),
-    NSColor(srgbRed: 0.09, green: 0.10, blue: 0.12, alpha: 1),
+    NSColor(srgbRed: 0.60, green: 0.46, blue: 0.98, alpha: 1),
+    NSColor(srgbRed: 0.44, green: 0.29, blue: 0.87, alpha: 1),
+    NSColor(srgbRed: 0.25, green: 0.13, blue: 0.55, alpha: 1),
 ])?.draw(in: tile, angle: -90)
 
 // Highlight across the top edge.

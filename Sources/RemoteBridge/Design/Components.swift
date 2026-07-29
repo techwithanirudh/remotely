@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// Window vibrancy, on `.titlebar` — the material Alcove uses, picked out by
-/// capturing all fourteen and comparing them against a capture of its window.
+/// Window vibrancy, on `.titlebar` — the material Alcove uses. Capturing all
+/// fourteen against a capture of its window picks it out in both appearances:
+/// 233,235,235 against its 232,235,236 in light, 86,88,88 against its 85,87,88
+/// in dark.
 ///
-/// It follows the window's active state, so losing focus flattens the glass the
-/// way Alcove's does.
+/// Held active. Alcove's glass stays lit in the background — an unfocused
+/// capture of it still reads 85 — and what dims there is the content.
 struct Vibrancy: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .titlebar
 
@@ -12,7 +14,7 @@ struct Vibrancy: NSViewRepresentable {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
-        view.state = .followsWindowActiveState
+        view.state = .active
         return view
     }
 

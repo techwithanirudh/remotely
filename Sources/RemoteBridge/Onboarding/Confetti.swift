@@ -58,11 +58,15 @@ private struct Flake: View {
     let piece: Confetti.Piece
     let size: CGSize
 
+    /// Driven by a trigger rather than `repeating: false`, which never ran the
+    /// animation: the pieces sat at their initial value, invisible.
+    @State private var launched = false
+
     var body: some View {
         shape
             .fill(piece.tint)
             .frame(width: piece.width, height: piece.isRound ? piece.width : piece.height)
-            .keyframeAnimator(initialValue: Flight(), repeating: false) { view, flight in
+            .keyframeAnimator(initialValue: Flight(), trigger: launched) { view, flight in
                 view
                     .offset(x: piece.drift * flight.progress, y: flight.height)
                     .rotationEffect(.degrees(piece.spin * Double(flight.progress)))
@@ -88,6 +92,7 @@ private struct Flake: View {
                     LinearKeyframe(0, duration: piece.duration * 0.3)
                 }
             }
+            .onAppear { launched = true }
     }
 
     private var shape: AnyShape {
