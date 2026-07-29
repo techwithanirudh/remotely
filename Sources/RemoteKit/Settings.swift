@@ -12,8 +12,6 @@ extension Defaults.Keys {
 
     public static let onboardingDone = Key<Bool>("onboardingDone", default: false)
     public static let onboardingStep = Key<Int>("onboardingStep", default: 0)
-    /// Identifies the installed build, so a reinstall can restart setup.
-    public static let installedBuild = Key<String>("installedBuild", default: "")
 }
 
 extension Bindings: Defaults.Serializable {}

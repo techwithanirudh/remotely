@@ -31,7 +31,6 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
         observe()
         bridge.start()
 
-        requestPermissionIfReinstalled()
         Defaults[.onboardingDone] ? showSettings() : showOnboarding()
     }
 
@@ -110,21 +109,4 @@ private extension AppCoordinator {
         NSPasteboard.general.setString(bridge.logText(), forType: .string)
     }
 
-    /// Replacing the bundle revokes Accessibility, because the ad-hoc signature
-    /// changes with every build. This used to restart onboarding, which meant
-    /// practising the gestures over again to arrive back at a permission
-    /// prompt; asking for the permission is the part that was needed.
-    func requestPermissionIfReinstalled() {
-        guard let path = Bundle.main.executablePath,
-              let attributes = try? FileManager.default.attributesOfItem(atPath: path),
-              let modified = attributes[.modificationDate] as? Date
-        else { return }
-
-        let build = String(Int(modified.timeIntervalSince1970))
-        guard Defaults[.installedBuild] != build else { return }
-        Defaults[.installedBuild] = build
-
-        guard Defaults[.onboardingDone], !bridge.hasAccessibility else { return }
-        bridge.requestPermission()
-    }
 }
