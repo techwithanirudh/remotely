@@ -82,3 +82,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+The icon click is rendered from the `mechanical` pack of
+[@web-kits/audio](https://github.com/raphaelsalaja/audio) by Raphael Salaja, MIT.

@@ -18,6 +18,7 @@ mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources" "$app_dir/Conte
 cp "$binary_dir/Remotely" "$app_dir/Contents/MacOS/Remotely"
 cp "$repo_dir/Resources/Info.plist" "$app_dir/Contents/Info.plist"
 cp "$repo_dir/Resources/AppIcon.icns" "$app_dir/Contents/Resources/AppIcon.icns"
+cp "$repo_dir/Resources/Click.wav" "$app_dir/Contents/Resources/Click.wav"
 
 # SwiftPM links Sparkle but will not embed it, and the updater cannot run from
 # the build directory once the app is installed elsewhere.

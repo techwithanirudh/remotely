@@ -9,11 +9,9 @@
     <key>CFBundleIdentifier</key>
     <string>com.anirudh.remotely</string>
     <key>SUFeedURL</key>
-    <string>https://techwithanirudh.github.io/remotely/appcast.xml</string>
-    <!-- Replaced by the EdDSA public key from `generate_keys`. Sparkle refuses
-         every update while this is a placeholder, which is the safe default. -->
+    <string>https://remotely.techwithanirudh.com/appcast.xml</string>
     <key>SUPublicEDKey</key>
-    <string></string>
+    <string>jJP59+JLsgZWqKDiRqa+ljhjSVfbHrmCOgNNBvS7Uho=</string>
     <key>SUEnableAutomaticChecks</key>
     <true/>
     <key>SUAutomaticallyUpdate</key>
