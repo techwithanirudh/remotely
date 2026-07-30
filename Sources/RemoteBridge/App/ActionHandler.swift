@@ -1,3 +1,5 @@
+import Foundation
+
 final class ActionHandler: NSObject {
     private let action: () -> Void
 

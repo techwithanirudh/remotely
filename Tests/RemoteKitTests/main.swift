@@ -10,6 +10,7 @@ actionsTests()
 navigationTests()
 inputEventsTests()
 cecLogTests()
+sessionReplayTests()
 cecLinkTests()
 systemShortcutsTests()
 

@@ -1,0 +1,36 @@
+2026-07-30 13:59:40.326 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 13:59:42.055 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:44.796 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 13:59:46.449 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:48.595 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 13:59:49.750 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:50.377 Df corercd[460:41d02] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 13:59:50.449 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:50.711 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 13:59:50.783 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:51.691 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 13:59:51.762 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 13:59:56.776 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 13:59:58.371 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:00.537 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 14:00:01.613 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:03.576 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 14:00:04.451 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:05.093 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:05.164 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:05.996 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:06.068 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:06.836 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:06.906 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:07.896 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:07.967 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:09.294 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 2c
+2026-07-30 14:00:10.471 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:11.239 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:11.310 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:11.416 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:11.486 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:12.676 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:12.747 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>
+2026-07-30 14:00:12.873 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Pressed> 0d
+2026-07-30 14:00:12.944 Df corercd[460:41ec7] [corercd:CoreRCBus] RX: TV -> Playback Device 1: <User Control Released>

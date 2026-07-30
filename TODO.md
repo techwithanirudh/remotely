@@ -5,12 +5,11 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
-- [ ] Back-held never fires on the M70D. Two "Pressed Back" lines land inside
-      one second while repeats arrive every 0.2-0.3s, well inside the 0.6s
-      repeat timeout, so a `<User Control Released>` must be interleaved between
-      repeats and clearing `heldKey`. Capture the raw log holding Back to
-      confirm, then make a release provisional for non-directional keys so an
-      immediate repeat resumes the same hold.
+- [ ] Confirm 0x2C is Back-held and not a separate button, by holding other
+      buttons and checking no other long-duration code appears.
+- [ ] Capture arrows too. This remote sends no repeats at all, so check whether
+      the glide is driven by press-to-release only, and fix the `CECLogParser`
+      comment and AGENTS.md, both of which claim repeats drive it.
 - [ ] Test light, dark, and a red backdrop, focused and unfocused, for the
       window background.
 - [ ] Test on the Shal Mac Neo and with the Samsung TV remote.
