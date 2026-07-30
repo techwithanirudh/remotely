@@ -86,7 +86,7 @@ jobs:
       - run: swift run RemotelyKitTests
         if: needs.changes.outputs.code == 'true'
 
-  lint:
+  format:
     needs: changes
     runs-on: macos-26
     steps:
@@ -97,26 +97,42 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         if: needs.changes.outputs.code == 'true'
 
-      # Release binaries rather than `brew install`: neither tool has a
+      # A release binary rather than `brew install`: SwiftFormat has no
       # versioned formula, so an unpinned install turns an upstream rule change
       # into a red build here for reasons unrelated to the commit.
-      - name: Install linters
+      - name: Install SwiftFormat
         if: needs.changes.outputs.code == 'true'
         run: |
           set -euo pipefail
-          curl -fsSL -o swiftlint.zip \
-            "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip"
           curl -fsSL -o swiftformat.zip \
             "https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT/swiftformat.zip"
-          unzip -qo swiftlint.zip -d /usr/local/bin
           unzip -qo swiftformat.zip -d /usr/local/bin
-          chmod +x /usr/local/bin/swiftlint /usr/local/bin/swiftformat
-          swiftlint version && swiftformat --version
+          chmod +x /usr/local/bin/swiftformat
+          swiftformat --version
 
       - run: swiftformat --lint .
         if: needs.changes.outputs.code == 'true'
-      - run: swiftlint lint --strict
+
+  # SwiftLint needs no Xcode for its non-analyzer rules, and a Linux runner is
+  # a tenth the cost of a macOS one. The image is pinned by digest as well as
+  # tag, so a re-pushed tag cannot change what runs.
+  swiftlint:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed."
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         if: needs.changes.outputs.code == 'true'
+
+      - name: Run SwiftLint
+        if: needs.changes.outputs.code == 'true'
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            ghcr.io/realm/swiftlint:0.65.0@sha256:a482729f4b58741875af1566f23397f3f6db300372756fc31606d0a4527fab9e \
+            swiftlint lint --strict
 
   analyze:
     needs: changes

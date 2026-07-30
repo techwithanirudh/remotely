@@ -1,0 +1,53 @@
+name: CodeQL
+
+# SwiftLint enforces style and the analyzer finds dead code. Neither does
+# dataflow, which is what this is for. Free on a public repository.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, offset from the hour to miss GitHub's cron pileup.
+    - cron: "31 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze Swift
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+        continue-on-error: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        with:
+          languages: swift
+          build-mode: manual
+
+      # CodeQL traces this build to construct its database. Tests are not run;
+      # compilation is all the extractor needs.
+      - name: Build
+        run: swift build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4
+        with:
+          category: "/language:swift"
