@@ -13,7 +13,6 @@ public enum EventSignature {
     }
 }
 
-/// Turns actions into system input.
 @MainActor
 public final class InputSynthesizer {
     private var pointer: ContinuousMotion?
@@ -23,7 +22,9 @@ public final class InputSynthesizer {
     /// reports which app took a posted event, so the choice has to say so.
     public private(set) var lastNavigation = ""
 
-    public init() {}
+    public init() {
+        NavigationTarget.start()
+    }
 
     public static var hasAccessibility: Bool { AXIsProcessTrusted() }
 
@@ -32,16 +33,18 @@ public final class InputSynthesizer {
         AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
     }
 
-    /// One-shot actions. Continuous ones go through `hold`/`release`, which need
-    /// the key-down duration rather than a single event.
     public func perform(_ binding: ButtonBinding) {
+        perform(binding, targetApp: nil)
+    }
+
+    package func perform(_ binding: ButtonBinding, targetApp: String?) {
         lastNavigation = ""
         switch binding.action {
         case .none, .toggleScrolling:
             break
         case .leftClick, .doubleClick, .rightClick,
              .middleClick, .browserBack, .browserForward:
-            click(binding.action)
+            click(binding.action, targetApp: targetApp)
         case .escape:
             press(key: 53)
         case .keyboardShortcut:
@@ -89,6 +92,16 @@ public final class InputSynthesizer {
 private extension InputSynthesizer {
     /// A tap still travels a little, by running the curve for a moment.
     func nudge(_ action: RemoteAction) {
+        if action.isScroll, let direction = action.direction {
+            let horizontal = direction.dx != 0
+            postScroll(
+                direction,
+                distance: horizontal ? 120 : 3,
+                units: horizontal ? .pixel : .line
+            )
+            return
+        }
+
         hold(action, sensitivity: 1)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
             self?.release()
@@ -116,37 +129,53 @@ private extension InputSynthesizer {
         send(event)
     }
 
-    func postScroll(_ direction: CGVector, distance: Double) {
-        let event = CGEvent(
-            scrollWheelEvent2Source: nil,
-            units: .pixel,
-            wheelCount: 2,
-            wheel1: Int32(-direction.dy * distance),
-            wheel2: Int32(-direction.dx * distance),
-            wheel3: 0
+    func postScroll(
+        _ direction: CGVector,
+        distance: Double,
+        units: CGScrollEventUnit = .pixel
+    ) {
+        send(
+            InputEventFactory.scroll(direction: direction, distance: distance, units: units),
+            tap: .cgSessionEventTap
         )
-        send(event)
     }
 
-    func click(_ action: RemoteAction) {
+    func click(_ action: RemoteAction, targetApp: String?) {
         switch action {
         case .leftClick: click(.left, clicks: 1)
         case .doubleClick: click(.left, clicks: 2)
         case .rightClick: click(.right, clicks: 1)
         case .middleClick: click(.center, clicks: 1)
-        case .browserBack: navigate(back: true)
-        default: navigate(back: false)
+        case .browserBack: navigate(back: true, targetApp: targetApp)
+        default: navigate(back: false, targetApp: targetApp)
         }
     }
 
-    func navigate(back: Bool) {
-        let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
-        let method = NavigationMethod(frontmostApp: app)
+    func navigate(back: Bool, targetApp: String?) {
+        let app = targetApp ?? NavigationTarget.bundleID
+        let method = NavigationMethod(targetApp: app)
         lastNavigation = "\(back ? "Back" : "Forward") to \(app) by \(method.title)"
 
+        if method != .mouseButton, NavigationTarget.activateIfNeeded(app) {
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .milliseconds(100))
+                self?.deliverNavigation(method, back: back)
+            }
+        } else {
+            deliverNavigation(method, back: back)
+        }
+    }
+
+    func deliverNavigation(_ method: NavigationMethod, back: Bool) {
         switch method {
         case .swipe:
             NavigationSwipe.post(back ? .left : .right)
+        case .mouseButton:
+            click(
+                CGMouseButton(rawValue: back ? 3 : 4) ?? .center,
+                clicks: 1,
+                tap: .cgSessionEventTap
+            )
         case .commandBracket:
             press(key: back ? 33 : 30, flags: .maskCommand)
         case .optionCommandBracket:
@@ -156,23 +185,18 @@ private extension InputSynthesizer {
         }
     }
 
-    func click(_ button: CGMouseButton, clicks: Int64) {
+    func click(
+        _ button: CGMouseButton,
+        clicks: Int64,
+        tap: CGEventTapLocation = .cghidEventTap
+    ) {
         let at = CGEvent(source: nil)?.location ?? .zero
-        let types: [CGEventType] = switch button {
-        case .left: [.leftMouseDown, .leftMouseUp]
-        case .right: [.rightMouseDown, .rightMouseUp]
-        default: [.otherMouseDown, .otherMouseUp]
-        }
-
-        for type in types {
-            let event = CGEvent(
-                mouseEventSource: nil,
-                mouseType: type,
-                mouseCursorPosition: at,
-                mouseButton: button
-            )
-            event?.setIntegerValueField(.mouseEventClickState, value: clicks)
-            send(event)
+        for event in InputEventFactory.mouseClick(
+            button: button,
+            location: at,
+            clicks: clicks
+        ) {
+            send(event, tap: tap)
         }
     }
 
@@ -181,30 +205,29 @@ private extension InputSynthesizer {
     /// system can believe modifiers are still held and fire the wrong hotkey.
     func post(_ combo: KeyCombo) {
         press(key: CGKeyCode(combo.keyCode), flags: combo.flags)
-        send(CGEvent(source: nil))
+        send(CGEvent(source: nil), tap: .cgSessionEventTap)
     }
 
     func post(_ hotKey: SymbolicHotKey) {
         guard let shortcut = hotKey.shortcut else { return }
         press(key: shortcut.key, flags: shortcut.flags)
-        send(CGEvent(source: nil))
+        send(CGEvent(source: nil), tap: .cgSessionEventTap)
     }
 
     func press(key: CGKeyCode, flags: CGEventFlags = []) {
         for isDown in [true, false] {
             let event = CGEvent(keyboardEventSource: nil, virtualKey: key, keyDown: isDown)
             event?.flags = flags
-            send(event)
+            send(event, tap: .cgSessionEventTap)
         }
     }
 
-    func send(_ event: CGEvent?) {
+    func send(_ event: CGEvent?, tap: CGEventTapLocation = .cghidEventTap) {
         event?.setIntegerValueField(.eventSourceUserData, value: EventSignature.value)
-        event?.post(tap: .cghidEventTap)
+        event?.post(tap: tap)
     }
 }
 
-/// Drives one direction until released.
 @MainActor
 private final class ContinuousMotion {
     let direction: CGVector

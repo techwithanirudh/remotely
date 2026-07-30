@@ -9,6 +9,7 @@ glideCurveTests()
 statusTests()
 actionsTests()
 navigationTests()
+inputEventsTests()
 cecLogTests()
 systemShortcutsTests()
 

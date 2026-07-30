@@ -1,4 +1,3 @@
-/// An action plus whatever payload that action needs.
 public struct ButtonBinding: Codable, Hashable, Sendable {
     public var action: RemoteAction
     public var combo: KeyCombo?
@@ -8,7 +7,6 @@ public struct ButtonBinding: Codable, Hashable, Sendable {
         self.combo = combo
     }
 
-    /// A shortcut binding does nothing until something has been recorded.
     public var isComplete: Bool {
         action != .keyboardShortcut || combo != nil
     }
@@ -19,8 +17,6 @@ public struct ButtonBinding: Codable, Hashable, Sendable {
     }
 }
 
-/// Every button's binding.
-///
 /// Only what differs from `.standard` is persisted, so changing a default still
 /// reaches anyone who has customized something else.
 public struct Bindings: Codable, Hashable, Sendable {
@@ -40,6 +36,7 @@ public struct Bindings: Codable, Hashable, Sendable {
         .centerHold: ButtonBinding(.rightClick),
         .back: ButtonBinding(.escape),
         .backDouble: ButtonBinding(.toggleScrolling),
+        .backHold: ButtonBinding(.none),
     ])
 
     public subscript(button: RemoteButton) -> ButtonBinding {
@@ -55,7 +52,6 @@ public struct Bindings: Codable, Hashable, Sendable {
         Bindings(byButton.filter { Self.standard.byButton[$0.key] != $0.value })
     }
 
-    /// Defaults with the user's changes applied on top.
     public static func resolving(_ customized: Bindings) -> Bindings {
         var result = standard
         for (button, binding) in customized.byButton {

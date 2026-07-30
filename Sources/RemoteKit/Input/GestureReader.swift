@@ -1,11 +1,8 @@
 import Foundation
 
-/// Turns CEC presses into buttons.
-///
 /// A press repeats while the key is held and ends with a single release that
-/// carries no key code, so taps, double taps and holds all have to come out of
-/// timing. Kept free of timers and system calls so the rules can be tested
-/// directly: callers drive it with `press`, `release` and `elapse`.
+/// carries no key code. Timing must distinguish taps, double taps and holds, so
+/// callers drive this pure state machine with `press`, `release` and `elapse`.
 public struct GestureReader: Sendable {
     public struct Config: Sendable {
         public var holdThreshold: TimeInterval
@@ -82,7 +79,11 @@ public struct GestureReader: Sendable {
 
         if !key.isDirectional, !holdFired, time - pressedAt >= config.holdThreshold {
             holdFired = true
-            return [.trigger(.centerHold)].filter { _ in key == .select }
+            switch key {
+            case .select: return [.trigger(.centerHold)]
+            case .back: return [.trigger(.backHold)]
+            default: return []
+            }
         }
 
         if time - lastRepeatAt > config.repeatTimeout {

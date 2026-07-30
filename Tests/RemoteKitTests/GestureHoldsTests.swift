@@ -17,6 +17,18 @@ func gestureHoldsTests() {
         do {
             var reader = GestureReader()
             _ = reader.press(.back, at: 0)
+            Expect.equal(
+                reader.elapse(to: 0.6),
+                [.trigger(.backHold)],
+                "holding Back has its own binding"
+            )
+            Expect.equal(reader.release(at: 0.7), [],
+                         "releasing a held Back does not also fire its press")
+        }
+
+        do {
+            var reader = GestureReader()
+            _ = reader.press(.back, at: 0)
             Expect.equal(reader.release(at: 0.05), [.triggerDeferred(.back, after: 0.30)],
                          "a single Back waits out the double-tap window")
         }

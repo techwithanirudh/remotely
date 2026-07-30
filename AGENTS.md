@@ -39,14 +39,15 @@ does. Never restate what the next line does.
 `NavigationMethod` and `NavigationSwipe` follow Mac Mouse Fix's per-app Back
 and Forward table and its gesture event. Their source is Objective-C wired into
 five of their own classes, so this is a port rather than a copy, and the MMF
-License attaches its conditions to publishing — worth re-reading before this
-app ever ships.
+License attaches its conditions to publishing. Re-read it before this app ever
+ships.
 
-Their two fallbacks are not used. A mouse button is right for a mouse that has
-one and is ignored everywhere else; the swipe is a plain CGEvent carrying
-undocumented gesture fields, which every other global listener sees too.
-Command-bracket is the default here, and the swipe is kept only for the two
-apps their table says need it.
+Keep their compatibility strategy intact: non-Apple apps default to mouse
+buttons 4 and 5 at the session event tap, Apple apps default to navigation
+swipes, and named exceptions use their menu shortcuts. Finder is a measured
+exception on this Mac and uses Command-bracket. Do not collapse the table to a
+single shortcut without repeating the live Aside, Finder, and System Settings
+tests.
 
 ## Commits
 
@@ -87,12 +88,32 @@ app's live `Defaults` to shortcut into a UI state.
 ## Architecture
 
 `RemoteKit` is the core and has no UI. `RemoteBridge` is the app. Keep timing,
-bindings and event synthesis out of the views — that split is what makes the
+bindings and event synthesis out of the views. That split is what makes the
 rules testable.
 
-**CEC transport — do not "fix" this.** macOS owns the CEC bus inside `corercd`,
+Use [thaw-app/Thaw](https://github.com/thaw-app/Thaw) at commit
+`97f3afd4c1a251bc79a131c0afc68f3dc402b14c` as the canonical organization
+reference. Thaw is the maintained fork of Ice. Adapt its names to Remote Bridge
+instead of copying product-specific names:
+
+- `Settings/Models` contains settings state and persistence models.
+- `Settings/SettingsPanes` contains one settings pane per file.
+- `UI` contains reusable presentation code.
+- `UI/RemoteBridgeUI` contains Remote Bridge-specific UI primitives, matching
+  Thaw's `UI/IceUI` role.
+- `UI/Modifiers`, `UI/Utilities`, and `UI/Views` match Thaw's reusable UI
+  boundaries. Add `UI/Shapes` only for an actual reusable `Shape`.
+- `Utilities` contains small, reusable non-UI helpers that do not own app state,
+  input synthesis, gesture timing, or CEC.
+
+Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
+stay in `RemoteKit/CEC`. Transport process ownership, unified-log streaming,
+line parsing, and CEC event decoding must not move into `Utilities`, app
+lifecycle code, settings models, or UI.
+
+**CEC transport: do not "fix" this.** macOS owns the CEC bus inside `corercd`,
 and its private CoreRC XPC service refuses bus enumeration to third parties
-(`queryBusesAsync:` → `NSOSStatusErrorDomain -6773`). Parsing the unified log
+(`queryBusesAsync:` returns `NSOSStatusErrorDomain -6773`). Parsing the unified log
 is the only path that works. A previous rewrite reinstated the framework
 approach and broke remote detection entirely.
 
@@ -116,7 +137,7 @@ Values are measured off Alcove and Klack, not chosen: capture a window with
 `.underWindowBackground` in front and `.contentBackground` behind; cards lift
 the ground 5% with a 16% edge; sidebar rows are 38pt; window radius 26.
 
-- The page title must be a `safeAreaBar`, not a `safeAreaInset` — only the bar
+- The page title must be a `safeAreaBar`, not a `safeAreaInset`. Only the bar
   extends the scroll edge effect into itself.
 - An overlay applied after `.ignoresSafeArea()` lays out inside the safe area.
 - Action pickers stay on `Picker`; a grouped `Menu` dropped half its items.

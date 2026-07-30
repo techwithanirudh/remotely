@@ -1,11 +1,7 @@
 import Foundation
 
-/// Speed curve for a held direction.
-///
-/// TV virtual-mouse implementations converge on this shape: start slow enough
-/// that a tap nudges a few points, then ramp while the key stays down. A fixed
-/// step per press cannot serve both — small enough to hit a menu item means
-/// crawling across the screen.
+/// Starts precisely, then accelerates while held. A fixed step cannot support
+/// both small targets and crossing the screen.
 public struct Glide: Sendable {
     public static let tick: TimeInterval = 1 / 60
 
@@ -44,7 +40,6 @@ public struct Glide: Sendable {
         )
     }
 
-    /// Distance for this frame, advancing the curve.
     public mutating func advance() -> Double {
         let distance = speed * Self.tick
         speed = min(speed + acceleration * Self.tick, maximumSpeed)

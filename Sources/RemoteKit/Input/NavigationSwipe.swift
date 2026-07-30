@@ -7,12 +7,9 @@
 
 import CoreGraphics
 
-/// The two-finger swipe a trackpad sends to go back or forward.
-///
 /// No private framework: the event is an ordinary CGEvent with undocumented
-/// integer fields set on it. 55 is the NSEvent type, 110 the IOHID event type,
-/// 132 the phase and 115 the direction. Values are from IOKit's own
-/// `IOHIDEventTypes.h`, which is where Mac Mouse Fix reads them too.
+/// fields from `IOHIDEventTypes.h`: 55 is NSEvent type, 110 is IOHID type, 132
+/// is phase and 115 is direction.
 enum NavigationSwipe {
     private static let gestureEventType: Int64 = 29
     private static let navigationSwipe: Int64 = 16
@@ -43,6 +40,7 @@ enum NavigationSwipe {
 
         event.setIntegerValueField(eventType, value: gestureEventType)
         event.setIntegerValueField(hidType, value: navigationSwipe)
+        event.setIntegerValueField(.eventSourceUserData, value: EventSignature.value)
         event.setIntegerValueField(phase, value: phaseBegan)
         event.setIntegerValueField(directionField, value: direction.rawValue)
         event.post(tap: .cghidEventTap)

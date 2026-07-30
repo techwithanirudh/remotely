@@ -7,49 +7,51 @@
 
 import Foundation
 
-/// How the frontmost app expects to be told to go back.
-///
-/// There is no single answer. Mac Mouse Fix tested about forty apps and wrote
-/// the results up in `Universal Back and Forward.md`: buttons 4 and 5 are
-/// ignored by Apple's own apps, and the swipe gesture those respond to is
-/// ignored by VS Code and its forks. This is their table, reimplemented — the
-/// app list is their finding, the code is not theirs to copy.
-///
-/// Their fourth method, a navigation swipe, needs a private touch API we do
-/// not have, so apps that want one get Command-bracket instead.
-///
-/// Their two fallbacks are not ours. A mouse button is the right guess when the
-/// press came from a mouse that has one, but this app has no such button to
-/// forward, and every app outside their table simply ignored it. The swipe is
-/// an ordinary CGEvent carrying undocumented gesture fields, which any other
-/// global listener sees too. Command-bracket is the one that works nearly
-/// everywhere, so unknown apps get that and the other two are left to the apps
-/// their table names.
+/// Per-app Back and Forward method, ported from Mac Mouse Fix's tested matrix.
 public enum NavigationMethod: Equatable, Sendable {
     case swipe
+    case mouseButton
     case commandBracket
     case optionCommandBracket
     case commandArrow
 
-    public init(frontmostApp bundleID: String) {
-        switch bundleID {
-        case "com.apple.Notes", "com.apple.freeform":
+    public init(targetApp bundleID: String) {
+        if Self.matches(bundleID, "com.apple.Notes", "com.apple.freeform") {
             self = .optionCommandBracket
-        case "com.adobe.Acrobat.Pro", "com.apple.iCal":
+        } else if Self.matches(bundleID, "com.adobe.Acrobat.Pro", "com.apple.iCal") {
             self = .commandArrow
-        case "com.operasoftware.Opera", "com.binarynights.ForkLift":
+        } else if Self.matches(bundleID, "com.operasoftware.Opera", "com.binarynights.ForkLift") {
             self = .swipe
-        default:
+        } else if Self.matches(
+            bundleID,
+            "org.zotero.zotero",
+            "dev.warp.Warp",
+            "com.apple.systempreferences",
+            "com.apple.AppStore",
+            "com.apple.Music",
+            "com.apple.AddressBook",
+            "com.apple.TV",
+            "com.apple.iBooksX",
+            "com.apple.Preview",
+            "com.apple.finder"
+        ) {
             self = .commandBracket
+        } else {
+            self = bundleID.hasPrefix("com.apple.") ? .swipe : .mouseButton
         }
     }
 
     public var title: String {
         switch self {
         case .swipe: "swipe"
+        case .mouseButton: "mouse-button"
         case .commandBracket: "command-bracket"
         case .optionCommandBracket: "option-command-bracket"
         case .commandArrow: "command-arrow"
         }
+    }
+
+    private static func matches(_ bundleID: String, _ prefixes: String...) -> Bool {
+        prefixes.contains { bundleID.hasPrefix($0) }
     }
 }

@@ -3,7 +3,9 @@ import RemoteKit
 
 // `--diagnose` prints CEC traffic without needing Accessibility, which is the
 // quickest way to tell a dead link from a missing permission.
-if CommandLine.arguments.contains("--diagnose") {
+if SyntheticInputCommand.runIfRequested(arguments: CommandLine.arguments) {
+    // The command owns the process and has already emitted its result.
+} else if CommandLine.arguments.contains("--diagnose") {
     let link = CECLink()
     link.onStateChange = { print("link:", $0) }
     link.onPress = { print("press:", $0.title) }

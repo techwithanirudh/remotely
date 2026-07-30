@@ -1,11 +1,6 @@
 import ConfettiSwiftUI
 import SwiftUI
 
-/// Rains from the top of the panel, once, when the last step appears.
-///
-/// ConfettiSwiftUI rather than a hand-rolled burst. Its cannon fires into a
-/// cone, and the cone's angles run anticlockwise from east: the default 60 to
-/// 120 fires upward, so a fall needs 180 to 360.
 struct Confetti: View {
     @State private var trigger = 0
 

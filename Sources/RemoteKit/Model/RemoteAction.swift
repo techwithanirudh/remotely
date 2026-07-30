@@ -1,6 +1,5 @@
 import CoreGraphics
 
-/// What a button does once pressed.
 public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable {
     case none
     case moveUp, moveDown, moveLeft, moveRight
@@ -101,7 +100,6 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
 
     public var isContinuous: Bool { direction != nil }
 
-    /// The scrolling counterpart, used while scroll mode is on.
     public var scrolling: RemoteAction {
         switch self {
         case .moveUp: .scrollUp

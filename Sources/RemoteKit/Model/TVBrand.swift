@@ -1,7 +1,5 @@
 import Foundation
 
-/// Where each maker hides the HDMI-CEC switch.
-///
 /// Nobody labels it "HDMI-CEC", and the setting sits several levels deep, so
 /// telling someone to enable CEC is not actionable on its own.
 public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
@@ -58,13 +56,9 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    /// The maker's own page, where one has been confirmed to resolve.
-    ///
-    /// Support articles get moved and retired constantly, so the rest fall back
-    /// to a search, which always lands somewhere current. Checking these for a
-    /// 200 is not enough: a retired article redirects to the help-library index
-    /// and answers 200 from there, which is how two dead links shipped. The URL
-    /// has to come back unchanged, which is what `scripts/check-links.sh` does.
+    /// A confirmed maker page or a current support search. A 200 is insufficient
+    /// because retired articles redirect to a help index; `check-links.sh`
+    /// therefore requires the final URL to stay unchanged.
     var verifiedArticle: URL? {
         switch self {
         case .samsung:

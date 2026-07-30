@@ -4,9 +4,15 @@
 
 Two targets. `RemoteKit` is the whole behaviour of the app and imports no UI
 framework; `RemoteBridge` is the window, the menu bar item and the guide. The
-split is not tidiness — it is what makes the rules testable, because every
+split is not tidiness. It is what makes the rules testable, because every
 interesting decision happens in a type that can be driven from a test without
 a screen, a remote, or a TV.
+
+The canonical organization reference is
+[thaw-app/Thaw](https://github.com/thaw-app/Thaw), the maintained fork of Ice,
+at commit `97f3afd4c1a251bc79a131c0afc68f3dc402b14c`. Remote Bridge follows
+Thaw's feature-oriented folder boundaries while using names appropriate to
+this product.
 
 ```
 Sources/RemoteKit          the core
@@ -15,24 +21,35 @@ Sources/RemoteKit          the core
   Model/                   buttons, actions, bindings, key combinations
 Sources/RemoteBridge       the app
   App/                     lifecycle, windows, menu bar
-  Components/              shared views, primitives under UI/
-  Theme/                   every measured value
-  Settings/                the window and its pages
+  Settings/
+    Models/                 settings state and persistence models
+    SettingsPanes/          one settings pane per file
+  UI/                      reusable presentation code
+    RemoteBridgeUI/         product-specific UI primitives
+    Modifiers/              reusable SwiftUI modifiers
+    Utilities/              UI-only styling helpers
+    Views/                  composed and transient views
+  Utilities/               small reusable non-UI helpers
   Onboarding/              first run
-  Overlays/                the scroll-mode chip
 Tests/RemoteKitTests       one file per behaviour
 ```
+
+`UI/RemoteBridgeUI` fills the same role as Thaw's `UI/IceUI`; it does not reuse
+the Ice product name. Add `UI/Shapes` only when the app owns a real reusable
+`Shape`. Empty folders and wrapper-only abstractions do not improve the
+architecture. Root `Utilities` is not a miscellaneous core folder. It must not
+own app state, input synthesis, gesture timing, or CEC work.
 
 ## How a button press becomes a click
 
 ```
-remote → TV → HDMI-CEC → corercd → CECLink → GestureReader → RemoteBridge → InputSynthesizer → CGEvent
+remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteBridge -> InputSynthesizer -> CGEvent
 ```
 
 **`CECLink`** owns the transport. macOS keeps the CEC bus inside the `corercd`
 daemon, and its private CoreRC XPC service refuses bus enumeration to
-third-party clients — `queryBusesAsync:` answers `NSOSStatusErrorDomain -6773`
-— so no HID events are ever routed to this process. What the daemon does do is
+third-party clients. `queryBusesAsync:` answers `NSOSStatusErrorDomain -6773`,
+so no HID events are ever routed to this process. What the daemon does do is
 log every frame, so the link runs `log stream` against it and reads the output.
 This is the single most important fact about the codebase: the framework path
 is a dead end, and a previous rewrite that "fixed" it by going back to CoreRC
@@ -40,6 +57,16 @@ broke remote detection completely.
 
 **`CECLogParser`** turns a line into an event. It is a plain struct with one
 pure function, which is why it is the best-tested thing here.
+
+These boundaries are locked during the Thaw-style reorganization:
+
+- `RemoteKit/CEC/CECLink.swift` owns process launch, unified-log streaming, and
+  transport lifecycle.
+- `RemoteKit/CEC/CECLogParser.swift` owns pure line parsing and CEC event
+  decoding.
+- Neither file moves to `Utilities`, `RemoteBridge`, settings code, or UI.
+- UI and settings consume decoded state. They never read `corercd`, parse log
+  lines, or construct transport commands.
 
 **`GestureReader`** turns events into buttons. CEC has no concept of a double
 tap or a hold: a key repeats while held and ends with a single release that
@@ -61,7 +88,7 @@ Two consequences worth knowing:
 
 **`InputSynthesizer`** posts the events. Everything it posts carries
 `EventSignature.value` in `kCGEventSourceUserData`, which is how onboarding's
-practice steps can tell a remote press from the user's own mouse — correlating
+practice steps can tell a remote press from the user's own mouse. Correlating
 by timestamp would only ever be a guess.
 
 ## Things that look wrong and are not
@@ -73,7 +100,7 @@ while it is up, which froze the pointer mid-glide. A custom lint rule now bans
 
 **Show Desktop and Mission Control go through the window server.** They are
 symbolic hot keys, not key presses, and both of the system's bindings carry the
-fn bit — posting F11 or control-Up alone matches nothing and is swallowed.
+fn bit. Posting F11 or control-Up alone matches nothing and is swallowed.
 `SymbolicHotKey` reads the live binding out of SkyLight before posting, so a
 user who rebinds them still gets what they asked for.
 
@@ -102,5 +129,5 @@ called in order from `main.swift`.
 What is tested is the part that can be: gesture timing, binding resolution and
 round-tripping, the glide curve's shape, key-combination encoding, status
 precedence, the CEC parser, the per-app navigation table. The AppKit and
-SwiftUI layers are deliberately untested — the same split alt-tab-macos calls
+SwiftUI layers are deliberately untested. The same split alt-tab-macos calls
 the Humble Object pattern.

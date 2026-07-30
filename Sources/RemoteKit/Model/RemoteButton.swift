@@ -1,11 +1,9 @@
-/// A press or gesture the bridge can act on.
-///
 /// CEC reports only five keys. Everything past `back` is derived from timing,
 /// because the wire has no concept of a double tap or a hold.
 public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable {
     case up, down, left, right
     case center, centerDouble, centerHold
-    case back, backDouble
+    case back, backDouble, backHold
 
     public var id: Self { self }
 
@@ -20,6 +18,7 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
         case .centerHold: "Center held"
         case .back: "Back"
         case .backDouble: "Back twice"
+        case .backHold: "Back held"
         }
     }
 
@@ -33,7 +32,7 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
         case .right: "Right"
         case .center, .back: "Press"
         case .centerDouble, .backDouble: "Press twice"
-        case .centerHold: "Hold"
+        case .centerHold, .backHold: "Hold"
         }
     }
 
@@ -48,6 +47,7 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
         case .centerHold: "hand.tap.fill"
         case .back: "arrow.uturn.backward"
         case .backDouble: "arrow.uturn.backward.circle"
+        case .backHold: "hand.tap.fill"
         }
     }
 
@@ -58,7 +58,6 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
         }
     }
 
-    /// The plain press a key maps to, before timing is taken into account.
     public init?(key: RemoteKey) {
         switch key {
         case .up: self = .up

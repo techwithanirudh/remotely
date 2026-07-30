@@ -3,7 +3,6 @@ import Combine
 import Defaults
 import RemoteKit
 
-/// Owns the app's windows and wires them to the bridge.
 @MainActor
 final class AppCoordinator: NSObject, NSApplicationDelegate {
     private(set) static var shared: AppCoordinator?
@@ -38,14 +37,11 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
         bridge.stop()
     }
 
-    /// Opening a menu bar app again has to bring something forward. While setup
-    /// is unfinished that is the guide, not the window behind it.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         showFirstWindow()
         return true
     }
 
-    /// Settings once setup is done, the guide until then.
     func showFirstWindow() {
         if Defaults[.onboardingDone] {
             showSettings()

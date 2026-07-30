@@ -1,16 +1,7 @@
 import CoreGraphics
 
-/// One of the shortcuts the window server owns, such as Show Desktop.
-///
-/// These are not ordinary key presses. The window server matches them on the
-/// exact combination the user has configured, and both of the ones here carry
-/// the fn bit: Show Desktop is fn-F11 and Mission Control is fn-control-Up.
-/// Posting F11 or control-Up alone, as this used to, matches nothing and the
-/// key press is simply swallowed.
-///
-/// The combination is also the user's to change, so it is read back from the
-/// window server at the moment of use rather than hard-coded. Mac Mouse Fix
-/// takes the same route through `CGSGetSymbolicHotKeyValue`.
+/// Reads the user's current window-server shortcut, including the fn bit.
+/// Hard-coded F11 or control-Up events are swallowed when they do not match.
 public enum SymbolicHotKey: Int32 {
     case missionControl = 32
     case showDesktop = 36
@@ -20,16 +11,16 @@ public enum SymbolicHotKey: Int32 {
     public var shortcut: (key: CGKeyCode, flags: CGEventFlags)? {
         guard WindowServer.isEnabled(rawValue) else { return nil }
 
-        var keyEquivalent: UInt16 = 0
-        var virtualKey: UInt16 = 0
-        var modifiers: UInt32 = 0
-        guard WindowServer.value(rawValue, &keyEquivalent, &virtualKey, &modifiers) == 0,
-              virtualKey != UInt16.max
+        var equivalent: UInt16 = 0
+        var key: UInt16 = 0
+        var flags: UInt32 = 0
+        guard WindowServer.value(rawValue, &equivalent, &key, &flags) == 0,
+              key != UInt16.max
         else { return nil }
 
         // The window server reports modifiers in the same bit layout CGEvent
         // uses, so they carry across unchanged.
-        return (CGKeyCode(virtualKey), CGEventFlags(rawValue: UInt64(modifiers)))
+        return (CGKeyCode(key), CGEventFlags(rawValue: UInt64(flags)))
     }
 }
 
@@ -67,11 +58,11 @@ private enum WindowServer {
 
     static func value(
         _ id: Int32,
-        _ keyEquivalent: UnsafeMutablePointer<UInt16>,
-        _ virtualKey: UnsafeMutablePointer<UInt16>,
-        _ modifiers: UnsafeMutablePointer<UInt32>
+        _ equivalent: UnsafeMutablePointer<UInt16>,
+        _ key: UnsafeMutablePointer<UInt16>,
+        _ flags: UnsafeMutablePointer<UInt32>
     ) -> Int32 {
-        calls?.value(id, keyEquivalent, virtualKey, modifiers) ?? -1
+        calls?.value(id, equivalent, key, flags) ?? -1
     }
 
     static func isEnabled(_ id: Int32) -> Bool { calls?.isEnabled(id) ?? false }

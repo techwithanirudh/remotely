@@ -2,7 +2,6 @@ import Combine
 import Defaults
 import Foundation
 
-/// Ties the CEC link, the gesture rules and input synthesis together.
 @MainActor
 public final class RemoteBridge: ObservableObject {
     @Published public private(set) var status: BridgeStatus = .paused
@@ -87,8 +86,6 @@ public final class RemoteBridge: ObservableObject {
         updateStatus()
     }
 
-    // MARK: Bindings
-
     public func binding(for button: RemoteButton) -> ButtonBinding { bindings[button] }
 
     public func setBinding(_ binding: ButtonBinding, for button: RemoteButton) {
@@ -129,7 +126,6 @@ public final class RemoteBridge: ObservableObject {
 private extension RemoteBridge {
     var clock: TimeInterval { ProcessInfo.processInfo.systemUptime }
 
-    /// Drives hold detection and the missed-release fallback.
     func startTicker() {
         let timer = Timer(timeInterval: 0.05, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -194,7 +190,6 @@ private extension RemoteBridge {
     }
 
     func scheduleTrigger(_ button: RemoteButton, after delay: TimeInterval) {
-        // Only worth waiting when the double-tap is actually bound.
         guard bindings[.backDouble].action != .none else {
             trigger(button)
             return

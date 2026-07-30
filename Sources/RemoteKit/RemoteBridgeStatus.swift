@@ -1,5 +1,3 @@
-/// What the user needs to know, in one value.
-///
 /// A live CEC link is not enough on its own: without Accessibility the remote's
 /// presses arrive and nothing happens, which looks identical to a dead remote.
 /// Reporting the two separately made "Connected" a lie.

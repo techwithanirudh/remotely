@@ -2,10 +2,7 @@ import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
 
-/// A recorded key combination.
-///
-/// Stored as key code plus modifier flags, since that is what has to be posted
-/// back. The printable form is derived rather than saved.
+/// Stores the values macOS posts; the printable form is derived.
 public struct KeyCombo: Codable, Hashable, Sendable {
     public static let modifierMask: CGEventFlags = [
         .maskCommand, .maskShift, .maskAlternate, .maskControl,
