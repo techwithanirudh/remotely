@@ -19,6 +19,12 @@ public final class InputSynthesizer {
     private var pointer: ContinuousMotion?
     private var scroll: ContinuousMotion?
 
+    private var scrollPixels = PixelAccumulator()
+
+    /// Where the pointer is being driven to, in full precision. Reading it back
+    /// from the window server each frame rounded to whole pixels.
+    private var pointerTarget: CGPoint?
+
     /// Nothing reports which app took a posted event, so the choice says so.
     public private(set) var lastNavigation = ""
 
@@ -92,6 +98,8 @@ public final class InputSynthesizer {
         pointer = nil
         scroll?.stop()
         scroll = nil
+        pointerTarget = nil
+        scrollPixels.reset()
     }
 }
 
@@ -114,7 +122,7 @@ private extension InputSynthesizer {
     }
 
     func movePointer(_ direction: CGVector, distance: Double) {
-        let current = CGEvent(source: nil)?.location ?? .zero
+        let current = pointerTarget ?? CGEvent(source: nil)?.location ?? .zero
         let screen = CGRect(
             x: 0, y: 0,
             width: CGFloat(CGDisplayPixelsWide(CGMainDisplayID())),
@@ -125,6 +133,7 @@ private extension InputSynthesizer {
             y: min(max(0, current.y + direction.dy * distance), screen.height - 1)
         )
 
+        pointerTarget = target
         let event = CGEvent(
             mouseEventSource: nil,
             mouseType: .mouseMoved,
@@ -139,8 +148,18 @@ private extension InputSynthesizer {
         distance: Double,
         units: CGScrollEventUnit = .pixel
     ) {
+        guard units == .pixel else {
+            send(
+                InputEventFactory.scroll(direction: direction, distance: distance, units: units),
+                tap: .cgSessionEventTap
+            )
+            return
+        }
+
+        let step = CGVector(dx: direction.dx * distance, dy: direction.dy * distance)
+        guard let whole = scrollPixels.take(step) else { return }
         send(
-            InputEventFactory.scroll(direction: direction, distance: distance, units: units),
+            InputEventFactory.scroll(direction: whole, distance: 1, units: .pixel),
             tap: .cgSessionEventTap
         )
     }
