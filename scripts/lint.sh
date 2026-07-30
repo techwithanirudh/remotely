@@ -10,10 +10,10 @@ if (( ! $+commands[swiftformat] )) || (( ! $+commands[swiftlint] )); then
     exit 1
 fi
 
-# SwiftLint looks for sourcekitd inside Xcode. On a Command Line Tools only
-# machine it lives here instead, and without this it dies on startup.
-if [[ -d /Library/Developer/CommandLineTools/usr/lib/sourcekitdInProc.framework ]]; then
-    export DYLD_FRAMEWORK_PATH=/Library/Developer/CommandLineTools/usr/lib
+# SwiftLint loads sourcekitd from Xcode. Without a full Xcode it has to be
+# pointed at the Command Line Tools copy or it dies on startup.
+if [[ ! -d /Applications/Xcode.app ]]; then
+    export TOOLCHAIN_DIR=${TOOLCHAIN_DIR:-$(xcode-select -p)}
 fi
 
 [[ ${1-} == "--check" ]] && format_flag="--lint" || format_flag=""

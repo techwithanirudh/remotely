@@ -44,6 +44,53 @@ opt_in_rules:
   - vertical_whitespace_closing_braces
   - yoda_condition
 
+  # Correctness rather than style: each of these stands for a bug that has
+  # shipped in somebody's app.
+  - discarded_notification_center_observer
+  - unowned_variable_capture
+  - weak_delegate
+  - unhandled_throwing_task
+  - identical_operands
+  - variable_shadowing
+  - return_value_from_void_function
+  - optional_enum_case_matching
+  - untyped_error_in_catch
+  - empty_collection_literal
+  - superfluous_else
+  - prohibited_super_call
+  - private_swiftui_state
+  - unneeded_throws_rethrows
+  - discouraged_assert
+  - explicit_init
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_range_nil_comparison
+  - flatmap_over_map_reduce
+  - reduce_into
+  - sorted_first_last
+
+custom_rules:
+  scheduled_timer:
+    name: "Scheduled Timer"
+    regex: 'Timer\s*\.\s*scheduledTimer'
+    message: "Use Timer(timeInterval:) with RunLoop.main.add(timer, forMode: .common). A scheduled timer stops firing while a menu is tracking."
+    severity: error
+
+  blocking_sleep:
+    name: "Blocking Sleep"
+    regex: '(?<![\w.])(?:Thread\.sleep|usleep)\s*\('
+    message: "A blocking sleep freezes the UI. Use Task.sleep or a timer."
+    severity: error
+
+  print_in_production:
+    name: "print() in Production Code"
+    regex: '(?<![\w."])(?:print|debugPrint|dump)\s*\('
+    match_kinds: [identifier]
+    # main.swift is the --diagnose CLI path, where stdout is the point.
+    excluded: ".*/(Tests|scripts)/.*|.*/main\\.swift"
+    message: "print() is invisible in a shipped app. Use the event log."
+    severity: warning
+
 line_length:
   warning: 100
   error: 130

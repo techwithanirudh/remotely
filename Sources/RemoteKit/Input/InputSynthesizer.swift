@@ -189,11 +189,11 @@ private final class ContinuousMotion {
 
         // Common modes: an open menu spins a nested tracking run loop, and a
         // timer scheduled the ordinary way stops firing while it is up.
-        let timer = Timer(timeInterval: Glide.tick, repeats: true) { [weak self] _ in
+        let ticker = Timer(timeInterval: Glide.tick, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.advance() }
         }
-        RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
+        RunLoop.main.add(ticker, forMode: .common)
+        timer = ticker
 
         advance()
     }

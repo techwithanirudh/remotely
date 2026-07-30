@@ -12,9 +12,13 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] Split the remaining multi-type files: OnboardingParts, SetupSteps,
       SettingsWindow, PracticeStep — one type per file under its feature.
 - [ ] README: screenshot at the top, architecture diagram, badges.
-- [ ] Commit-message enforcement (Conventional Commits) without a package.json.
-- [ ] Apply the rest of the magic-number audit: font scale, `Row` absorbing the
-      hand-rolled rows, one badge component, `IconTile` styles.
+- [ ] Collapse the font scale to 11/12/13/15 and add font tokens to `Theme`,
+      then enable the `hardcoded_font_size` custom lint rule (64 hits today).
+- [ ] `Row` absorbs the hand-rolled rows; one badge component; `IconTile`
+      styles instead of three hand-drawn tinted squares.
+- [ ] Merge WelcomeStep and FinishStep into one BookendStep.
+- [ ] `scripts/analyze.sh` for the analyzer rules in CI (needs a clean build,
+      ~60s, so never in a hook).
 - [ ] Rename the app? RemoteControl / CECControl are the candidates.
 
 ## Actions worth adding

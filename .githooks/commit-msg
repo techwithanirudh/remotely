@@ -1,0 +1,22 @@
+#!/bin/sh
+# Conventional Commits. Bypass with `git commit --no-verify`.
+subject=$(grep -v '^#' "$1" | sed '/^[[:space:]]*$/d' | head -n1)
+
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"Reapply "*) exit 0 ;;
+esac
+
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9._/-]+\))?!?: [a-z].{0,79}$'
+printf '%s' "$subject" | grep -Eq "$pattern" && exit 0
+
+cat >&2 <<EOF
+✗ Commit message must follow Conventional Commits.
+
+  got:      $subject
+  expected: <type>(<optional scope>)<optional !>: <lowercase subject>
+  types:    build chore ci docs feat fix perf refactor revert style test
+
+  e.g.  feat(cec): parse standby frames
+        fix: stop the glide timer on release
+EOF
+exit 1

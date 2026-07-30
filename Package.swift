@@ -1,6 +1,17 @@
 // swift-tools-version: 6.0
 import PackageDescription
 
+/// Verified against these sources: each is free today, no errors and no
+/// warnings. InternalImportsByDefault is deliberately absent — it produced 100+
+/// errors in RemoteKit and needs every import auditing first.
+let strict: [SwiftSetting] = [
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("MemberImportVisibility"),
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+    .enableUpcomingFeature("InferIsolatedConformances"),
+    .enableUpcomingFeature("ImmutableWeakCaptures"),
+]
+
 let package = Package(
     name: "RemoteBridge",
     platforms: [.macOS(.v15)],
@@ -17,7 +28,8 @@ let package = Package(
     targets: [
         .target(
             name: "RemoteKit",
-            dependencies: [.product(name: "Defaults", package: "Defaults")]
+            dependencies: [.product(name: "Defaults", package: "Defaults")],
+            swiftSettings: strict
         ),
         .executableTarget(
             name: "RemoteBridge",
@@ -26,7 +38,8 @@ let package = Package(
                 "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
                 .product(name: "LaunchAtLogin", package: "LaunchAtLogin-Modern"),
-            ]
+            ],
+            swiftSettings: strict
         ),
         // Command Line Tools ships neither swift-testing nor XCTest, and
         // pulling swift-testing in conflicts with Defaults over swift-syntax.

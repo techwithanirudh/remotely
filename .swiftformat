@@ -1,28 +1,28 @@
 # Written to agree with .swiftlint.yml. Every option here either implements a
 # SwiftLint rule or stays out of its way.
 
---swiftversion 6.0
+--swift-version 6.0
 --indent 4
---maxwidth 100          # line_length warning
---trailingcommas always # trailing_comma mandatory_comma
---importgrouping alpha  # sorted_imports
---self remove
+--max-width 100
+--trailing-commas always
+--import-grouping alpha
 --semicolons never
 --allman false
---stripunusedargs closure-only
---commas always
---emptybraces no-space
+--strip-unused-args closure-only
+--empty-braces no-space
+
+# Auto-fix what SwiftLint would otherwise only report, so those violations
+# never reach a review.
+--enable isEmpty,preferFirstWhere,preferContains,preferCountWhere
+--enable preferFlatMap,preferMinOverSorted,unusedPrivateDeclarations
 
 # Left to the author: these rewrite working code more aggressively than the
-# consistency they buy is worth.
+# consistency they buy is worth. Single-line bodies are idiomatic Swift, and
+# hoistPatternLet reads worse for a single associated value.
 --disable redundantSelf
 --disable redundantReturn
 --disable wrapMultilineStatementBraces
 --disable blankLinesAroundMark
-
-# Single-line bodies are idiomatic Swift; wrapping them adds three lines to say
-# nothing. `hoistPatternLet` moves `let` out of the case pattern, which reads
-# worse for a single associated value.
 --disable wrapFunctionBodies
 --disable wrapPropertyBodies
 --disable wrapIfStatementBodies

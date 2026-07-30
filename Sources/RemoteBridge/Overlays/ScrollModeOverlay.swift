@@ -23,28 +23,28 @@ final class ScrollModeOverlay {
     private func show() {
         guard panel == nil else { return }
 
-        let panel = NSPanel(
+        let chip = NSPanel(
             contentRect: NSRect(origin: .zero, size: Chip.panelSize),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
+        chip.isOpaque = false
+        chip.backgroundColor = .clear
         // The panel draws no shape of its own; its rounded backing showed
         // through behind the capsule and read as a second, squarer edge.
-        panel.hasShadow = false
-        panel.level = .statusBar
-        panel.ignoresMouseEvents = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
+        chip.hasShadow = false
+        chip.level = .statusBar
+        chip.ignoresMouseEvents = true
+        chip.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
 
         let host = NSHostingController(rootView: Chip())
         host.view.wantsLayer = true
         host.view.layer?.backgroundColor = NSColor.clear.cgColor
-        panel.contentViewController = host
-        panel.setContentSize(Chip.panelSize)
-        panel.orderFrontRegardless()
-        self.panel = panel
+        chip.contentViewController = host
+        chip.setContentSize(Chip.panelSize)
+        chip.orderFrontRegardless()
+        panel = chip
 
         reposition()
         // Common modes, so the chip keeps up while a menu is tracking.

@@ -25,7 +25,16 @@ does. Never restate what the next line does.
 
 ## Commits
 
-Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`.
+Conventional Commits, enforced by a hook: `feat:`, `fix:`, `refactor:`,
+`docs:`, `chore:`, `ci:`, `perf:`, `style:`, `test:`, `build:`, `revert:`.
+Subject lowercase, 80 characters or less.
+
+Hooks live in `.githooks` rather than a package manager, so there is nothing
+to install beyond one line per clone:
+
+```sh
+git config core.hooksPath .githooks
+```
 
 ## Commands
 

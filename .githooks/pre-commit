@@ -1,0 +1,26 @@
+#!/bin/sh
+# Formats and lints the staged Swift files. Bypass with `git commit --no-verify`.
+set -e
+
+if [ -z "$TOOLCHAIN_DIR" ] && [ ! -d /Applications/Xcode.app ]; then
+  TOOLCHAIN_DIR=$(xcode-select -p)
+  export TOOLCHAIN_DIR
+fi
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -z -- '*.swift' | tr '\0' '\n')
+[ -z "$files" ] && exit 0
+
+status=0
+
+if command -v swiftformat >/dev/null 2>&1; then
+  printf '%s\n' "$files" | xargs swiftformat --lint --quiet || {
+    echo "✗ swiftformat: run 'swiftformat .' and re-stage" >&2
+    status=1
+  }
+fi
+
+if command -v swiftlint >/dev/null 2>&1; then
+  printf '%s\n' "$files" | xargs swiftlint lint --quiet --strict --force-exclude || status=1
+fi
+
+exit $status
