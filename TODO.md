@@ -9,7 +9,8 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
       (`zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt`).
       Debug-level log lines are never archived, so this has to be recorded live.
 - [ ] Keyboard Shortcut binding is broken — recording no longer takes.
-- [ ] Reorganise sources by feature, one component per file, one casing scheme.
+- [ ] Split the remaining multi-type files: OnboardingParts, SetupSteps,
+      SettingsWindow, PracticeStep — one type per file under its feature.
 - [ ] README: screenshot at the top, architecture diagram, badges.
 - [ ] Commit-message enforcement (Conventional Commits) without a package.json.
 - [ ] Apply the rest of the magic-number audit: font scale, `Row` absorbing the

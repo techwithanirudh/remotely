@@ -15,7 +15,7 @@ struct GeneralPage: View {
                             .toggleStyle(.switch)
                             .controlSize(.small)
                     }
-                    Divider1px()
+                    HairlineDivider()
                     Row(title: "Launch at login") {
                         LaunchAtLogin.Toggle("")
                             .labelsHidden()

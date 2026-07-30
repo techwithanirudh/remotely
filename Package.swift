@@ -31,6 +31,10 @@ let package = Package(
         // Command Line Tools ships neither swift-testing nor XCTest, and
         // pulling swift-testing in conflicts with Defaults over swift-syntax.
         // A plain executable keeps the checks runnable: `swift run RemoteKitTests`.
-        .executableTarget(name: "RemoteKitTests", dependencies: ["RemoteKit"]),
+        .executableTarget(
+            name: "RemoteKitTests",
+            dependencies: ["RemoteKit"],
+            path: "Tests/RemoteKitTests"
+        ),
     ]
 )

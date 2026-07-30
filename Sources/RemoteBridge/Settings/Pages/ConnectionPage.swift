@@ -48,9 +48,9 @@ struct ConnectionPage: View {
                         text: "Connect this Mac to your TV with an HDMI cable",
                         done: isLinked
                     )
-                    Divider1px()
+                    HairlineDivider()
                     Checklist(text: "Switch the TV to that HDMI input", done: isLinked)
-                    Divider1px()
+                    HairlineDivider()
                     Checklist(text: "Turn on HDMI-CEC in the TV's settings", done: isLinked)
                 }
 
@@ -106,7 +106,7 @@ struct BrandGuide: View {
             .padding(.horizontal, Theme.cardPadding)
             .frame(height: 42)
 
-            Divider1px()
+            HairlineDivider()
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("Look for “\(brand.featureName)”")
@@ -123,7 +123,7 @@ struct BrandGuide: View {
             .padding(.vertical, 10)
 
             if let url = brand.helpURL {
-                Divider1px()
+                HairlineDivider()
                 instructions(url)
             }
         }

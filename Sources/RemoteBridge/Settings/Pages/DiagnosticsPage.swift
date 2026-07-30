@@ -14,14 +14,14 @@ struct DiagnosticsPage: View {
                             tint: bridge.status.isReady ? .green : .orange
                         )
                     }
-                    Divider1px()
+                    HairlineDivider()
                     Row(title: "Accessibility") {
                         StatusBadge(
                             text: bridge.hasAccessibility ? "Allowed" : "Required",
                             tint: bridge.hasAccessibility ? .green : .orange
                         )
                     }
-                    Divider1px()
+                    HairlineDivider()
                     Row(title: "Last button") {
                         Text(bridge.lastKey?.title ?? "None")
                             .font(.system(size: 12, weight: .medium))

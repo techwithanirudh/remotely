@@ -25,19 +25,19 @@ struct ControlsPage: View {
                         title: "Tap an arrow",
                         detail: "Nudges the pointer a few pixels, for hitting a small target."
                     )
-                    Divider1px()
+                    HairlineDivider()
                     InfoRow(
                         symbol: "hand.point.up.left.and.text",
                         title: "Hold an arrow",
                         detail: "Glides the pointer, speeding up the longer you hold."
                     )
-                    Divider1px()
+                    HairlineDivider()
                     InfoRow(
                         symbol: "cursorarrow.click",
                         title: "Press Center",
                         detail: "Clicks. Press twice to double-click, hold for a right click."
                     )
-                    Divider1px()
+                    HairlineDivider()
                     InfoRow(
                         symbol: "arrow.up.and.down.text.horizontal",
                         title: "Press Back twice",
@@ -71,7 +71,7 @@ struct ControlsPage: View {
 
     private func bindingRows(_ buttons: [RemoteButton]) -> some View {
         ForEach(Array(buttons.enumerated()), id: \.element) { index, button in
-            if index > 0 { Divider1px() }
+            if index > 0 { HairlineDivider() }
             BindingRow(button: button, bridge: bridge)
         }
     }

@@ -45,7 +45,7 @@ struct AboutPage: View {
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
-                    Divider1px()
+                    HairlineDivider()
                     Row(
                         title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."

@@ -4,6 +4,7 @@
 
 included:
   - Sources
+  - Tests
 
 analyzer_rules:
   - unused_import
