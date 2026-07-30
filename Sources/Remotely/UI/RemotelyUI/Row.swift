@@ -3,10 +3,18 @@ import SwiftUI
 struct Row<Control: View>: View {
     let title: String
     var subtitle: String?
+    var symbol: String?
     @ViewBuilder let control: Control
 
     var body: some View {
         HStack(spacing: 16) {
+            if let symbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .frame(width: Theme.Card.glyphWidth)
+            }
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.system(size: 13))
 

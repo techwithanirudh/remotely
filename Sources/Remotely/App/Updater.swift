@@ -5,15 +5,10 @@ import RemotelyKit
 
 /// Sparkle, wrapped so nothing else has to know about it.
 ///
-/// The updater is created but not started. Starting it validates the feed URL
-/// and the public key, and a failure there is what produces Sparkle's "the
-/// updater failed to start" alert, so it is deferred to the first check rather
-/// than run at launch.
-///
-/// Automatic downloading stays off. The build is ad-hoc signed, so an update
-/// writes a bundle with a different signature and macOS revokes Accessibility,
-/// which would leave the remote silently dead. Until releases are notarized an
-/// update only happens when the user asks for one.
+/// Automatic downloading stays off. Accessibility is granted against the app's
+/// code signature, and an ad-hoc signature changes on every build, so installing
+/// an update silently revokes it and leaves the remote dead. A stable signing
+/// identity fixes that; notarization is a separate concern.
 @MainActor
 final class Updater: NSObject, ObservableObject {
     @Published private(set) var canCheck = false
@@ -26,6 +21,7 @@ final class Updater: NSObject, ObservableObject {
     )
 
     private var hasStarted = false
+
     var wantsBeta: Bool {
         get { Defaults[.wantsBetaUpdates] }
         set {
@@ -39,6 +35,7 @@ final class Updater: NSObject, ObservableObject {
         super.init()
         controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
         controller.updater.publisher(for: \.lastUpdateCheckDate).assign(to: &$lastCheck)
+        start()
     }
 
     func checkForUpdates() {
@@ -50,7 +47,12 @@ final class Updater: NSObject, ObservableObject {
         guard !hasStarted else { return }
         hasStarted = true
         controller.updater.automaticallyDownloadsUpdates = false
+        controller.updater.automaticallyChecksForUpdates = Defaults[.checksForUpdatesAutomatically]
         controller.startUpdater()
+
+        Defaults.observe(.checksForUpdatesAutomatically) { [weak self] change in
+            self?.controller.updater.automaticallyChecksForUpdates = change.newValue
+        }.tieToLifetime(of: self)
     }
 }
 

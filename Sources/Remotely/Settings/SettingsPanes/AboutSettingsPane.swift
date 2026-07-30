@@ -5,6 +5,7 @@ import SwiftUI
 struct AboutSettingsPane: View {
     @State private var confirmingReset = false
     @Default(.wantsBetaUpdates) private var betaUpdates
+    @Default(.checksForUpdatesAutomatically) private var checksAutomatically
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -38,23 +39,49 @@ struct AboutSettingsPane: View {
                 Spacer().frame(height: 14)
 
                 Card {
-                    Row(
-                        title: "Updates",
-                        subtitle: betaUpdates
-                            ? "Including beta releases."
-                            : "Stable releases only."
-                    ) {
+                    Button {
+                        AppCoordinator.shared?.checkForUpdates()
+                    } label: {
                         HStack(spacing: 8) {
-                            Toggle("Beta", isOn: $betaUpdates)
-                                .toggleStyle(.checkbox)
-                                .controlSize(.small)
-                            Button("Check Now") {
-                                AppCoordinator.shared?.checkForUpdates()
-                            }
-                            .controlSize(.small)
+                            Text("Check for Updates…")
+                                .font(.system(size: 13))
+                            Spacer(minLength: 8)
+                            Text(version)
+                                .font(.system(size: 13))
+                                .foregroundStyle(.tertiary)
                         }
+                        .padding(.horizontal, Theme.Card.inset)
+                        .frame(height: Theme.Card.rowHeight)
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+
                     HairlineDivider()
+
+                    Row(
+                        title: "Automatically check for updates",
+                        symbol: "arrow.triangle.2.circlepath"
+                    ) {
+                        Toggle("", isOn: $checksAutomatically)
+                            .labelsHidden()
+                            .controlSize(.small)
+                    }
+
+                    HairlineDivider()
+
+                    Row(
+                        title: "Include beta releases",
+                        symbol: "flask"
+                    ) {
+                        Toggle("", isOn: $betaUpdates)
+                            .labelsHidden()
+                            .controlSize(.small)
+                    }
+                }
+
+                Spacer().frame(height: 14)
+
+                Card {
                     Row(
                         title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."
