@@ -33,8 +33,11 @@ xattr -cr "$app_dir"
 # measured as `identifier "com.anirudh.remotely" and certificate root = H"..."`
 # and unchanged across a version bump. Notarization is a separate matter: it
 # only silences Gatekeeper on first launch.
+# `find-identity -v` lists only *trusted* identities. codesign does not need
+# trust, just the private key, and a self-signed certificate is untrusted on a
+# fresh CI runner, so -v here silently fell back to ad-hoc.
 identity=${CODESIGN_IDENTITY:-Remotely Self Signed}
-if ! security find-identity -v 2>/dev/null | grep -qF "$identity"; then
+if ! security find-identity 2>/dev/null | grep -qF "$identity"; then
     print -u2 "No '$identity' identity; falling back to ad-hoc, which resets Accessibility on every install."
     identity="-"
 fi
