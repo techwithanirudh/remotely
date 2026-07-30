@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <b>Your display's remote becomes a mouse for your Mac.</b>
+  <b>Turns your display's remote into a mouse.</b>
 </p>
 
 <p align="center">
