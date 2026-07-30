@@ -14,6 +14,23 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
 
     public var id: Self { self }
 
+    /// Sections in the picker. Twenty flat items was a wall of text; Mac Mouse
+    /// Fix separates its menu the same way.
+    public enum Group: CaseIterable, Sendable {
+        case pointer, scrolling, clicks, navigation, system, other
+
+        public var actions: [RemoteAction] {
+            switch self {
+            case .pointer: [.moveUp, .moveDown, .moveLeft, .moveRight]
+            case .scrolling: [.scrollUp, .scrollDown, .scrollLeft, .scrollRight, .toggleScrolling]
+            case .clicks: [.leftClick, .doubleClick, .rightClick, .middleClick]
+            case .navigation: [.browserBack, .browserForward]
+            case .system: [.showDesktop, .missionControl, .escape]
+            case .other: [.keyboardShortcut, .none]
+            }
+        }
+    }
+
     public var title: String {
         switch self {
         case .none: "Do Nothing"

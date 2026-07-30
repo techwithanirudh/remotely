@@ -96,25 +96,37 @@ struct PageShell<Content: View>: View {
         // across the page. Before macOS 26 there is no such effect at all, so
         // content is faded out with a mask: masking to clear works over
         // vibrancy, where painting a solid strip would not.
-        if #available(macOS 26.0, *) {
-            scroll
-                .safeAreaBar(edge: .top, spacing: 0) { header }
-                .scrollEdgeEffectStyle(.soft, for: .top)
-        } else {
-            VStack(spacing: 0) {
-                header
-                scroll.mask(
-                    VStack(spacing: 0) {
-                        LinearGradient(
-                            colors: [.clear, .black],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .frame(height: 16)
-                        Color.black
-                    }
-                )
+        // `#available` is a runtime check; the symbols still have to exist in
+        // the SDK being compiled against. A macOS 15 SDK has neither, so the
+        // whole branch is compiled out below Swift 6.2, which is the toolchain
+        // the macOS 26 SDK ships with.
+        #if compiler(>=6.2)
+            if #available(macOS 26.0, *) {
+                scroll
+                    .safeAreaBar(edge: .top, spacing: 0) { header }
+                    .scrollEdgeEffectStyle(.soft, for: .top)
+            } else {
+                legacyScroll
             }
+        #else
+            legacyScroll
+        #endif
+    }
+
+    private var legacyScroll: some View {
+        VStack(spacing: 0) {
+            header
+            scroll.mask(
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [.clear, .black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 16)
+                    Color.black
+                }
+            )
         }
     }
 

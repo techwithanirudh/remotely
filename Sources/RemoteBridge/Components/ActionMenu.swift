@@ -18,8 +18,12 @@ struct ActionMenu: View {
 
     var body: some View {
         Picker("", selection: Binding(get: { binding.action }, set: { choose($0) })) {
-            ForEach(RemoteAction.allCases) { action in
-                Label(title(for: action), systemImage: action.symbol).tag(action)
+            ForEach(RemoteAction.Group.allCases, id: \.self) { group in
+                Section {
+                    ForEach(group.actions) { action in
+                        Label(title(for: action), systemImage: action.symbol).tag(action)
+                    }
+                }
             }
         }
         .labelsHidden()

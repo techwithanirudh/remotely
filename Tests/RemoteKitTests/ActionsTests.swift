@@ -14,6 +14,16 @@ func actionsTests() {
             .leftClick,
             "a click is unaffected by scroll mode"
         )
+        Expect.equal(
+            Set(RemoteAction.Group.allCases.flatMap(\.actions)),
+            Set(RemoteAction.allCases),
+            "every action appears in exactly one picker section"
+        )
+        Expect.equal(
+            RemoteAction.Group.allCases.flatMap(\.actions).count,
+            RemoteAction.allCases.count,
+            "no action is listed in two sections"
+        )
         Expect.that(RemoteAction.moveLeft.isContinuous, "movement is continuous")
         Expect.that(!RemoteAction.escape.isContinuous, "Escape is a one-shot")
         Expect.equal(RemoteAction.scrollDown.direction, CGVector(dx: 0, dy: 1), "down points down")
