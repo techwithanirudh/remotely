@@ -22,7 +22,7 @@ struct Confetti: View {
                     openingAngle: .degrees(180),
                     closingAngle: .degrees(360),
                     radius: 240,
-                    hapticFeedback: false
+                    hapticFeedback: true
                 )
 
             Spacer(minLength: 0)

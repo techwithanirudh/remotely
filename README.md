@@ -7,8 +7,7 @@
 </p>
 
 <p align="center">
-  <b>Your TV remote becomes a pointer for your Mac, over the HDMI cable you already have.<br />
-  No dongle, no extra hardware, nothing to plug in.</b>
+  <b>Your TV remote becomes a pointer for your Mac.</b>
 </p>
 
 <p align="center">
@@ -24,9 +23,7 @@
 
 ## Features
 
-- **Move the pointer with the D-pad**: tap to nudge, hold to glide, accelerating the longer you hold
-- **Click without a mouse**: press Center to click, twice to double click, hold for a right click
-- **Scroll with the same arrows**: press Back twice to switch modes, with a chip beside the pointer showing which you are in
+- **Scroll with the same arrows**, with a chip beside the pointer showing the mode
 - **Rebind anything**: twenty actions grouped by kind, including recorded keyboard shortcuts
 - **Nothing leaves your Mac**: no account, no network, no analytics
 
@@ -43,19 +40,14 @@
 | Back, twice | Switches the arrows between moving and scrolling |
 | Back, held | Yours to bind |
 
-Volume, media and Home never reach the Mac. Displays handle those themselves
-and keep them off the CEC bus.
-
 ## Setup
 
 1. Connect the Mac to the display over HDMI and switch to that input.
-2. Turn on HDMI-CEC in the display's settings. Every maker renames it: Anynet+
-   on Samsung, SimpLink on LG, Bravia Sync on Sony. **Connection** has the menu
-   path for eight brands.
+2. Turn on HDMI-CEC in the display's settings.
 3. Grant Accessibility under System Settings, Privacy & Security.
 
 The first run walks through all of it and has you practise each gesture, so you
-find out the remote works before you rely on it.
+find out the remote works.
 
 ## Build
 

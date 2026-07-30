@@ -105,6 +105,7 @@ jobs:
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           CHANNEL: ${{ steps.meta.outputs.channel }}
+          TAG: ${{ steps.meta.outputs.tag }}
         run: |
           set -euo pipefail
 
@@ -126,9 +127,13 @@ jobs:
           printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key_file"
           chmod 600 "$key_file"
 
+          # Only the appcast goes to Pages; the zip is a release asset, so
+          # without this the enclosure URL points at the Pages host and 404s.
+          prefix="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
+
           # A stable channel carries no channel attribute, which is what an
           # older Sparkle treats as "everyone". Only pre-releases get tagged.
-          args=(--ed-key-file "$key_file")
+          args=(--ed-key-file "$key_file" --download-url-prefix "$prefix")
           if [[ "$CHANNEL" != "stable" ]]; then
             args+=(--channel "$CHANNEL")
           fi
