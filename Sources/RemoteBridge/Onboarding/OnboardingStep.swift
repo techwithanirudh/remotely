@@ -8,7 +8,6 @@ enum OnboardingStep: Int, CaseIterable {
     @MainActor
     func isSatisfied(by bridge: RemoteBridge) -> Bool {
         switch self {
-        case .connect: bridge.status.isReady || bridge.status == .needsPermission
         case .permission: bridge.hasAccessibility
         default: true
         }

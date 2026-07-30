@@ -7,6 +7,7 @@ public final class RemoteBridge: ObservableObject {
     @Published public private(set) var status: BridgeStatus = .paused
     @Published public private(set) var displayName: String?
     @Published public private(set) var lastKey: RemoteKey?
+    @Published public private(set) var pressCount: UInt64 = 0
     @Published public private(set) var isScrolling = false
     @Published public private(set) var log: [LogEntry] = []
     @Published public private(set) var hasAccessibility = InputSynthesizer.hasAccessibility
@@ -116,6 +117,20 @@ public final class RemoteBridge: ObservableObject {
         append("Bindings reset")
     }
 
+    public func resetPreferences() {
+        Defaults.removeAll()
+        sensitivity = Defaults[.pointerSensitivity]
+        bindings = .resolving(Defaults[.bindings])
+        lastKey = nil
+        pressCount = 0
+        isScrolling = false
+        log.removeAll()
+        reader = GestureReader()
+        deferred?.cancel()
+        deferred = nil
+        isEnabled = Defaults[.enabled]
+    }
+
     public func clearLog() { log.removeAll() }
 
     public func logText() -> String {
@@ -149,6 +164,7 @@ private extension RemoteBridge {
 
     func handle(press key: RemoteKey) {
         lastKey = key
+        pressCount &+= 1
         if reader.heldKey != key { append("Pressed \(key.title)") }
         run(reader.press(key, at: clock))
     }

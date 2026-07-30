@@ -45,7 +45,7 @@ public final class CECLink {
     public init() {}
 
     public func start() {
-        stop()
+        tearDown()
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/log")
@@ -82,6 +82,13 @@ public final class CECLink {
     }
 
     public func stop() {
+        tearDown()
+        transition(to: .stopped)
+    }
+}
+
+private extension CECLink {
+    func tearDown() {
         if let stream {
             (stream.standardOutput as? Pipe)?.fileHandleForReading.readabilityHandler = nil
             stream.terminationHandler = nil
@@ -90,11 +97,8 @@ public final class CECLink {
         stream = nil
         buffer.removeAll()
         displayName = nil
-        transition(to: .stopped)
     }
-}
 
-private extension CECLink {
     func consume(_ chunk: Data) {
         buffer.append(chunk)
 

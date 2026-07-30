@@ -11,6 +11,7 @@ actionsTests()
 navigationTests()
 inputEventsTests()
 cecLogTests()
+cecLinkTests()
 systemShortcutsTests()
 
 exit(Expect.summarize())

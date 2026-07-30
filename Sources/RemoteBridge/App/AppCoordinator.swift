@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import Defaults
+import LaunchAtLogin
 import RemoteKit
 
 @MainActor
@@ -53,6 +54,14 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     func replayOnboarding() {
         Defaults[.onboardingDone] = false
         Defaults[.onboardingStep] = 0
+        showOnboarding()
+    }
+
+    func factoryReset() {
+        LaunchAtLogin.isEnabled = false
+        bridge.resetPreferences()
+        onboarding?.close()
+        onboarding = nil
         showOnboarding()
     }
 }

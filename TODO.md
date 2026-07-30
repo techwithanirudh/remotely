@@ -5,6 +5,8 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
+- [ ] Diagnose the live Samsung CEC pipeline from `corercd` through the
+      installed app, repair the regression, and verify a fresh physical press.
 - [ ] Capture a real CEC session as a test fixture and replay it in the suite
       (`zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt`).
       Debug-level log lines are never archived, so this has to be recorded live.

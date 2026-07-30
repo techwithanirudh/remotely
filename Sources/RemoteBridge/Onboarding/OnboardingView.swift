@@ -8,10 +8,17 @@ struct OnboardingView: View {
 
     @Default(.onboardingStep) private var rawStep
     @Default(.tvBrand) private var brand
+    @State private var connectBaseline: UInt64?
 
     private var step: OnboardingStep { OnboardingStep(rawValue: rawStep) ?? .welcome }
     private var isLast: Bool { step == OnboardingStep.allCases.last }
-    private var canGo: Bool { step.isSatisfied(by: bridge) }
+    private var canGo: Bool {
+        if step == .connect {
+            guard let connectBaseline else { return false }
+            return bridge.pressCount > connectBaseline
+        }
+        return step.isSatisfied(by: bridge)
+    }
 
     var body: some View {
         ZStack {
@@ -31,6 +38,8 @@ struct OnboardingView: View {
         }
         .frame(width: Theme.Onboarding.size.width, height: Theme.Onboarding.size.height)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Panel.radius, style: .continuous))
+        .onAppear(perform: beginCurrentStep)
+        .onChange(of: step) { _, _ in beginCurrentStep() }
     }
 
     @ViewBuilder
@@ -122,5 +131,9 @@ struct OnboardingView: View {
 
     private func back() {
         rawStep = max(0, step.rawValue - 1)
+    }
+
+    private func beginCurrentStep() {
+        connectBaseline = step == .connect ? bridge.pressCount : nil
     }
 }

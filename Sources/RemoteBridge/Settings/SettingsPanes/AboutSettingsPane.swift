@@ -3,6 +3,7 @@ import SwiftUI
 
 struct AboutSettingsPane: View {
     @ObservedObject var bridge: RemoteBridge
+    @State private var confirmingReset = false
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -51,8 +52,28 @@ struct AboutSettingsPane: View {
                         Button("Replay") { AppCoordinator.shared?.replayOnboarding() }
                             .controlSize(.small)
                     }
+                    HairlineDivider()
+                    Row(
+                        title: "Reset Remote Bridge",
+                        subtitle: "Clear every preference and restart onboarding."
+                    ) {
+                        Button("Reset…", role: .destructive) { confirmingReset = true }
+                            .controlSize(.small)
+                    }
                 }
             }
+        }
+        .confirmationDialog(
+            "Reset Remote Bridge?",
+            isPresented: $confirmingReset,
+            titleVisibility: .visible
+        ) {
+            Button("Reset Everything", role: .destructive) {
+                AppCoordinator.shared?.factoryReset()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This clears your controls, sensitivity, TV choice, and onboarding progress.")
         }
     }
 }
