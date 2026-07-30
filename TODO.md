@@ -8,7 +8,6 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] Capture a real CEC session as a test fixture and replay it in the suite
       (`zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt`).
       Debug-level log lines are never archived, so this has to be recorded live.
-- [ ] Keyboard Shortcut binding is broken — recording no longer takes.
 - [ ] Split the remaining multi-type files: OnboardingParts, SetupSteps,
       SettingsWindow, PracticeStep — one type per file under its feature.
 - [ ] README: screenshot at the top, architecture diagram, badges.
@@ -21,8 +20,9 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Actions worth adding
 
-- [ ] Back and Forward, the way Mac Mouse Fix posts them.
-- [ ] Middle click, App Exposé, Launchpad, Move a Space left/right.
+- [ ] App Exposé, Launchpad, Move a Space left/right.
+- [ ] Navigation swipes for Back/Forward, which is what Apple apps other than
+      the Catalyst ones actually respond to. Needs the private TouchSimulator.
 - [ ] Per-app bindings.
 
 ## Later

@@ -34,12 +34,9 @@ public final class InputSynthesizer {
         switch binding.action {
         case .none, .toggleScrolling:
             break
-        case .leftClick:
-            click(.left, clicks: 1)
-        case .doubleClick:
-            click(.left, clicks: 2)
-        case .rightClick:
-            click(.right, clicks: 1)
+        case .leftClick, .doubleClick, .rightClick,
+             .middleClick, .browserBack, .browserForward:
+            click(binding.action)
         case .escape:
             press(key: 53)
         case .keyboardShortcut:
@@ -126,11 +123,43 @@ private extension InputSynthesizer {
         send(event)
     }
 
+    /// Buttons 3 and 4 are what browsers and Finder read as Back and Forward,
+    /// and they work in more places than Command-[ does.
+    func click(_ action: RemoteAction) {
+        switch action {
+        case .leftClick: click(.left, clicks: 1)
+        case .doubleClick: click(.left, clicks: 2)
+        case .rightClick: click(.right, clicks: 1)
+        case .middleClick: click(.center, clicks: 1)
+        case .browserBack: navigate(back: true)
+        default: navigate(back: false)
+        }
+    }
+
+    /// No single Back works everywhere, which Mac Mouse Fix documents at
+    /// length: buttons 4 and 5 are ignored by Apple's own apps, and the swipe
+    /// gesture they respond to is ignored by VS Code and its forks. This takes
+    /// their split without the private swipe API — Command-bracket for Apple
+    /// apps, mouse buttons for everything else.
+    func navigate(back: Bool) {
+        let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
+        let wantsBracket = bundleID.hasPrefix("com.apple.")
+            || ["dev.warp.Warp", "org.zotero.zotero"].contains(bundleID)
+
+        if wantsBracket {
+            press(key: back ? 33 : 30, flags: .maskCommand)
+        } else {
+            click(CGMouseButton(rawValue: back ? 3 : 4) ?? .center, clicks: 1)
+        }
+    }
+
     func click(_ button: CGMouseButton, clicks: Int64) {
         let at = CGEvent(source: nil)?.location ?? .zero
-        let types: [CGEventType] = button == .right
-            ? [.rightMouseDown, .rightMouseUp]
-            : [.leftMouseDown, .leftMouseUp]
+        let types: [CGEventType] = switch button {
+        case .left: [.leftMouseDown, .leftMouseUp]
+        case .right: [.rightMouseDown, .rightMouseUp]
+        default: [.otherMouseDown, .otherMouseUp]
+        }
 
         for type in types {
             let event = CGEvent(

@@ -35,13 +35,13 @@ struct ActionMenu: View {
         return "\(action.title)  \(combo.display)"
     }
 
+    /// Picking Keyboard Shortcut has to commit the action as well as start
+    /// listening. Only arming left the binding on its old action, so SwiftUI
+    /// snapped the picker back and tore down the monitor before a key landed.
     private func choose(_ action: RemoteAction) {
-        guard action == .keyboardShortcut else {
-            disarm()
-            onPick(action)
-            return
-        }
-        arm()
+        disarm()
+        onPick(action)
+        if action == .keyboardShortcut { arm() }
     }
 
     /// Swallows the keystroke while listening, so recording Command-W does not

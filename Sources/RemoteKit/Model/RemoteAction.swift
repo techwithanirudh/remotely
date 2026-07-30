@@ -5,7 +5,8 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
     case none
     case moveUp, moveDown, moveLeft, moveRight
     case scrollUp, scrollDown, scrollLeft, scrollRight
-    case leftClick, doubleClick, rightClick
+    case leftClick, doubleClick, rightClick, middleClick
+    case browserBack, browserForward
     case escape
     case keyboardShortcut
     case showDesktop, missionControl
@@ -27,6 +28,9 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
         case .leftClick: "Left Click"
         case .doubleClick: "Double Click"
         case .rightClick: "Right Click"
+        case .middleClick: "Middle Click"
+        case .browserBack: "Back"
+        case .browserForward: "Forward"
         case .escape: "Escape"
         case .keyboardShortcut: "Keyboard Shortcut"
         case .showDesktop: "Show Desktop"
@@ -49,6 +53,9 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
         case .leftClick: "cursorarrow.click"
         case .doubleClick: "cursorarrow.click.2"
         case .rightClick: "contextualmenu.and.cursorarrow"
+        case .middleClick: "cursorarrow.click.badge.clock"
+        case .browserBack: "chevron.backward"
+        case .browserForward: "chevron.forward"
         case .escape: "escape"
         case .keyboardShortcut: "keyboard"
         case .showDesktop: "macwindow"
