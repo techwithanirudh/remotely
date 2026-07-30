@@ -39,6 +39,13 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Actions worth adding
 
+- [ ] A virtual keyboard the remote drives. `keyboardSetUnicodeString` on a
+      keycode-0 event types arbitrary characters with no keycode or layout
+      mapping, verified with an accent and an emoji, so the typing half is
+      solved. The panel must be `.nonactivatingPanel` like `ScrollModeOverlay`
+      or it takes focus and the keystrokes land in the keyboard itself. Before
+      building one, check whether pointing the remote at the system
+      Accessibility Keyboard is already good enough.
 - [ ] An on-screen command menu the remote drives, the way Pieoneer's pie menu
       and Remote Buddy's Menu tab work: a configurable list of actions per app,
       arrowed through with the D-pad and confirmed with Center. Reuses the
