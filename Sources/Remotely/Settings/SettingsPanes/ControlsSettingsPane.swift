@@ -7,16 +7,6 @@ struct ControlsSettingsPane: View {
     var body: some View {
         SettingsPane(page: .controls) {
             VStack(alignment: .leading, spacing: 0) {
-                Card {
-                    Row(
-                        title: "Make the remote yours",
-                        subtitle: "Assign any macOS action to each remote button."
-                    ) {
-                        Button("Reset Defaults") { remote.resetAllBindings() }
-                            .controlSize(.small)
-                    }
-                }
-
                 SectionLabel(title: "How to use the remote")
 
                 Card {
@@ -54,13 +44,21 @@ struct ControlsSettingsPane: View {
                 SectionLabel(title: "Back")
                 Card { bindingRows([.back, .backDouble, .backHold]) }
 
-                Label(
-                    "Volume, media and Home never reach the Mac. Displays handle those "
-                        + "themselves and keep them off the CEC bus.",
-                    systemImage: "info.circle"
-                )
-                .font(.system(size: 10.5))
-                .foregroundStyle(.tertiary)
+                HStack {
+                    Label(
+                        "Volume, media and Home never reach the Mac. Displays handle those "
+                            + "themselves and keep them off the CEC bus.",
+                        systemImage: "info.circle"
+                    )
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer(minLength: 12)
+
+                    Button("Reset Defaults") { remote.resetAllBindings() }
+                        .controlSize(.small)
+                }
                 .padding(.horizontal, 9)
                 .padding(.top, 12)
             }
