@@ -1,23 +1,48 @@
-<div align="center">
+<h1 align="center">Remote Bridge</h1>
 
-# Remote Bridge
+<p align="center">
+  <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
+  <a href="https://github.com/techwithanirudh/remote-bridge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remote-bridge/ci.yml?style=flat-square&label=CI" /></a>
+  <img alt="Tests" src="https://img.shields.io/badge/checks-68-555555?style=flat-square" />
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/techwithanirudh/remote-bridge?style=flat-square&color=555555" /></a>
+</p>
 
-**Your TV remote becomes a pointer for your Mac, over the HDMI cable you already have.**
+<p align="center">
+  <b>Your TV remote becomes a pointer for your Mac, over the HDMI cable you already have.<br />
+  No dongle, no extra hardware, nothing to plug in.</b>
+</p>
 
-<img src=".github/cover.png" width="700" alt="Remote Bridge settings, showing the Controls page">
+<p align="center">
+  <a href="#setup">Setup</a> ·
+  <a href="#what-the-buttons-do">Buttons</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="AGENTS.md">Contributing</a>
+</p>
 
-</div>
+<p align="center">
+  <img alt="Remote Bridge settings" src=".github/cover.png" width="800" />
+</p>
 
-Press the D-pad and the pointer moves. Press Center and it clicks. No dongle,
-no extra hardware, nothing to plug in.
+## Why Remote Bridge
 
-Requires macOS 15 or later, a Mac with an HDMI port, and a display that
-forwards its remote over HDMI-CEC.
+- **Nothing to buy.** It uses the HDMI cable already carrying your picture, and the remote already in your hand.
+- **Every button is yours.** Point, scroll, click, right click, Escape, Show Desktop, Mission Control, Back, Forward, or a keyboard shortcut you record.
+- **Nothing leaves your Mac.** No account, no network, no analytics.
+- **It tells you when it cannot work.** A live status, a setup checklist per TV brand, and an event log showing exactly what arrived.
+
+## Features
+
+- **Move the pointer with the D-pad**: tap to nudge, hold to glide, accelerating the longer you hold
+- **Click without a mouse**: press Center to click, twice to double click, hold for a right click
+- **Scroll with the same arrows**: press Back twice to switch modes, with a chip beside the pointer showing which you are in
+- **Rebind anything**: twenty actions grouped by kind, including recorded keyboard shortcuts
+- **Know why it is not working**: status, per brand HDMI-CEC instructions, and a live event log
 
 ## What the buttons do
 
 | Button | Default |
-|---|---|
+| --- | --- |
 | D-pad, tapped | Nudges the pointer a few pixels |
 | D-pad, held | Glides, accelerating the longer you hold |
 | Center | Left click |
@@ -26,42 +51,38 @@ forwards its remote over HDMI-CEC.
 | Back | Yours to bind |
 | Back, twice | Switches the arrows between moving and scrolling |
 
-Every button is reassignable from **Controls**: clicks, scrolling, Escape,
-Show Desktop, Mission Control, Back, Forward, middle click, or a keyboard
-shortcut you record.
-
-Volume, media and Home never reach the Mac — displays handle those themselves
+Volume, media and Home never reach the Mac. Displays handle those themselves
 and keep them off the CEC bus.
 
 ## Setup
 
 1. Connect the Mac to the display over HDMI and switch to that input.
-2. Turn on HDMI-CEC in the display's settings. Every maker renames it:
-   Anynet+ on Samsung, SimpLink on LG, Bravia Sync on Sony. **Connection**
-   has the menu path for eight brands.
-3. Grant Accessibility under System Settings → Privacy & Security.
+2. Turn on HDMI-CEC in the display's settings. Every maker renames it: Anynet+
+   on Samsung, SimpLink on LG, Bravia Sync on Sony. **Connection** has the menu
+   path for eight brands.
+3. Grant Accessibility under System Settings, Privacy & Security.
 
-The first run walks through all of it and has you practise each gesture, so
-you find out the remote works before you rely on it.
+The first run walks through all of it and has you practise each gesture, so you
+find out the remote works before you rely on it.
 
 ## How it works
 
-macOS owns the CEC bus inside the `corercd` daemon. Its private CoreRC XPC
-service refuses bus enumeration to third parties — `queryBusesAsync:` answers
-`NSOSStatusErrorDomain -6773` — so the daemon routes no HID events to this app.
-What it *does* do is log every button, so Remote Bridge reads the unified log:
+macOS keeps the CEC bus inside the `corercd` daemon. Its private CoreRC XPC
+service refuses bus enumeration to third parties, answering
+`NSOSStatusErrorDomain -6773`, so the daemon routes no HID events to this app.
+What it does do is log every button, so Remote Bridge reads the unified log:
 
-```
+```sh
 log stream --predicate 'process == "corercd"' --debug --style compact
 ```
 
 Lines carrying `<User Control Pressed> XX` give the CEC wire code, which the app
-maps to a button and posts as a `CGEvent`. Each posted event is stamped in
-`kCGEventSourceUserData`, which is how onboarding can tell a remote press from
-your own mouse.
+maps to a button and posts as a `CGEvent`. Every posted event is stamped in
+`kCGEventSourceUserData`, which is how onboarding tells a remote press from your
+own mouse.
 
 ```
-remote  →  TV  →  HDMI-CEC  →  Mac  →  corercd  →  Remote Bridge  →  pointer
+remote → TV → HDMI-CEC → Mac → corercd → Remote Bridge → pointer
 ```
 
 This is an experimental use of existing system components rather than a public
@@ -72,29 +93,21 @@ API. A macOS update could change it.
 ```sh
 swift build
 swift run RemoteKitTests     # 68 checks
-swiftformat . && swiftlint   # needs TOOLCHAIN_DIR set, see AGENTS.md
+swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 ```
 
-Requires `brew install swiftlint swiftformat`. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it fits together,
-[AGENTS.md](AGENTS.md) for the conventions, and [TODO.md](TODO.md) for what is
-next.
-
-## Layout
-
-| | |
-|---|---|
-| `Sources/RemoteKit` | The core, with no UI: CEC transport and log parsing, gesture rules, the glide curve, input synthesis, bindings |
+| Path | What lives there |
+| --- | --- |
+| `Sources/RemoteKit` | The core, with no UI: CEC transport and parsing, gesture rules, the glide curve, input synthesis, bindings |
 | `Sources/RemoteBridge` | The app: menu bar item, settings window, onboarding |
-| `Tests/RemoteKitTests` | A plain executable — Command Line Tools ships neither XCTest nor swift-testing |
+| `Tests/RemoteKitTests` | A plain executable, since Command Line Tools ships neither XCTest nor swift-testing |
 
-## Licence
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) covers how it fits together,
+[AGENTS.md](AGENTS.md) the conventions, [TODO.md](TODO.md) what is next.
 
-MIT. See [LICENSE](LICENSE).
+## License
 
-`Sources/RemoteKit/Input/NavigationMethod.swift` and `NavigationSwipe.swift`
-are derived from [Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix)
-and carry the MMF License instead — its author tested roughly forty apps to
-work out which respond to mouse buttons, gesture swipes or keyboard shortcuts
-for Back and Forward.
+MIT, except two files derived from
+[Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix) that carry the
+MMF License instead. See [LICENSE](LICENSE).

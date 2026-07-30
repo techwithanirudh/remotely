@@ -109,7 +109,7 @@ jobs:
           curl -fsSL -o swiftformat.zip \
             "https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT/swiftformat.zip"
           unzip -qo swiftlint.zip -d /usr/local/bin
-          unzip -qjo swiftformat.zip '*/swiftformat' -d /usr/local/bin
+          unzip -qo swiftformat.zip -d /usr/local/bin
           chmod +x /usr/local/bin/swiftlint /usr/local/bin/swiftformat
           swiftlint version && swiftformat --version
 
