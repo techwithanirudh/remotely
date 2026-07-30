@@ -25,10 +25,11 @@ does. Never restate what the next line does.
 
 ## Borrowed research
 
-`NavigationMethod` reimplements Mac Mouse Fix's per-app Back and Forward table.
-Their code is under the MMF License, which requires any program derived from
-it to carry their payment system — so the app list is used as a finding and the
-code is written from scratch. Do not paste MMF source into this repo.
+`NavigationMethod` and `NavigationSwipe` follow Mac Mouse Fix's per-app Back
+and Forward table and its gesture event. Their source is Objective-C wired into
+five of their own classes, so this is a port rather than a copy, and the MMF
+License attaches its conditions to publishing — worth re-reading before this
+app ever ships.
 
 ## Commits
 

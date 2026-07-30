@@ -139,6 +139,8 @@ private extension InputSynthesizer {
     func navigate(back: Bool) {
         let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
         switch NavigationMethod(frontmostApp: app) {
+        case .swipe:
+            NavigationSwipe.post(back ? .left : .right)
         case .mouseButton:
             click(CGMouseButton(rawValue: back ? 3 : 4) ?? .center, clicks: 1)
         case .commandBracket:
@@ -209,6 +211,7 @@ private extension InputSynthesizer {
 /// Their fourth method, a navigation swipe, needs a private touch API we do
 /// not have, so apps that want one get Command-bracket instead.
 public enum NavigationMethod: Equatable, Sendable {
+    case swipe
     case mouseButton
     case commandBracket
     case optionCommandBracket
@@ -225,9 +228,11 @@ public enum NavigationMethod: Equatable, Sendable {
              "com.apple.Music", "com.apple.AddressBook",
              "com.apple.TV", "com.apple.iBooksX", "com.apple.Preview":
             self = .commandBracket
+        case "com.operasoftware.Opera", "com.binarynights.ForkLift":
+            self = .swipe
         default:
             // Apple apps ignore buttons 4 and 5 entirely.
-            self = bundleID.hasPrefix("com.apple.") ? .commandBracket : .mouseButton
+            self = bundleID.hasPrefix("com.apple.") ? .swipe : .mouseButton
         }
     }
 }

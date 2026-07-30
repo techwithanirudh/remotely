@@ -221,8 +221,10 @@ Expect.suite("Actions") {
 Expect.suite("Back and Forward") {
     Expect.equal(NavigationMethod(frontmostApp: "com.microsoft.VSCode"), .mouseButton,
                  "VS Code ignores swipes, so it gets the mouse buttons")
-    Expect.equal(NavigationMethod(frontmostApp: "com.apple.Safari"), .commandBracket,
-                 "Apple apps ignore buttons 4 and 5")
+    Expect.equal(NavigationMethod(frontmostApp: "com.apple.Safari"), .swipe,
+                 "Apple apps ignore buttons 4 and 5 but take the swipe")
+    Expect.equal(NavigationMethod(frontmostApp: "com.operasoftware.Opera"), .swipe,
+                 "Opera is not an Apple app but wants the swipe")
     Expect.equal(NavigationMethod(frontmostApp: "com.apple.Notes"), .optionCommandBracket,
                  "plain Command-bracket indents in Notes")
     Expect.equal(NavigationMethod(frontmostApp: "com.apple.iCal"), .commandArrow,

@@ -21,8 +21,6 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 ## Actions worth adding
 
 - [ ] App Exposé, Launchpad, Move a Space left/right.
-- [ ] Navigation swipes for Back/Forward, which is what Apple apps other than
-      the Catalyst ones actually respond to. Needs the private TouchSimulator.
 - [ ] Per-app bindings.
 
 ## Later
