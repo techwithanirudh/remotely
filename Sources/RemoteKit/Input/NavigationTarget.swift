@@ -1,18 +1,17 @@
 import AppKit
-import CoreGraphics
 
 @MainActor
-enum NavigationTarget {
+package enum NavigationTarget {
     private static var lastOther = ""
     private static var observer: (any NSObjectProtocol)?
 
     static var bundleID: String {
         start()
-        if let pointed = appUnderPointer(), pointed != ownBundleID { return pointed }
-
-        let frontmost = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
-        if frontmost != ownBundleID { return frontmost }
-        return lastOther
+        return resolve(
+            frontmost: NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+            own: ownBundleID,
+            lastOther: lastOther
+        )
     }
 
     static func start() {
@@ -29,35 +28,39 @@ enum NavigationTarget {
         }
     }
 
-    static func activateIfNeeded(_ bundleID: String) -> Bool {
-        guard !bundleID.isEmpty,
-              NSWorkspace.shared.frontmostApplication?.bundleIdentifier != bundleID,
-              let app = NSRunningApplication.runningApplications(
-                  withBundleIdentifier: bundleID
-              ).first
-        else { return false }
-        return app.activate()
+    static func isFrontmost(_ id: String) -> Bool {
+        NSWorkspace.shared.frontmostApplication?.bundleIdentifier == id
     }
 
-    private static func appUnderPointer() -> String? {
-        let pointer = CGEvent(source: nil)?.location ?? .zero
-        let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
-        guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID)
-            as? [[CFString: Any]]
-        else { return nil }
-
-        for window in windows {
-            guard (window[kCGWindowLayer] as? Int) == 0,
-                  let bounds = window[kCGWindowBounds] as? [CFString: Any],
-                  let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary),
-                  rect.contains(pointer),
-                  let pid = window[kCGWindowOwnerPID] as? pid_t,
-                  let app = NSRunningApplication(processIdentifier: pid),
-                  let id = app.bundleIdentifier
-            else { continue }
-            return id
+    static func focus(_ id: String) async -> Bool {
+        guard !id.isEmpty else { return false }
+        if isFrontmost(id) { return true }
+        guard let app = NSRunningApplication.runningApplications(
+            withBundleIdentifier: id
+        ).first, app.activate() else {
+            return false
         }
-        return nil
+
+        let deadline = ContinuousClock.now + .milliseconds(500)
+        while !isFrontmost(id), ContinuousClock.now < deadline {
+            do {
+                try await Task.sleep(for: .milliseconds(10))
+            } catch {
+                return false
+            }
+        }
+        return isFrontmost(id)
+    }
+
+    package nonisolated static func resolve(
+        frontmost: String?,
+        own: String,
+        lastOther: String
+    ) -> String {
+        guard let frontmost, !frontmost.isEmpty, frontmost != own else {
+            return lastOther
+        }
+        return frontmost
     }
 
     private static var ownBundleID: String { Bundle.main.bundleIdentifier ?? "" }

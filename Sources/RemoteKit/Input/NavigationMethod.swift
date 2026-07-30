@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Per-app Back and Forward method, ported from Mac Mouse Fix's tested matrix.
+/// Per-app compatibility choices adapted from Mac Mouse Fix and verified here.
 public enum NavigationMethod: Equatable, Sendable {
     case swipe
     case mouseButton
@@ -33,6 +33,7 @@ public enum NavigationMethod: Equatable, Sendable {
             "com.apple.TV",
             "com.apple.iBooksX",
             "com.apple.Preview",
+            // Finder accepts Back swipes but not Forward swipes on macOS 26.
             "com.apple.finder"
         ) {
             self = .commandBracket

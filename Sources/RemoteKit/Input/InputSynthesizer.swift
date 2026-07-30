@@ -34,17 +34,25 @@ public final class InputSynthesizer {
     }
 
     public func perform(_ binding: ButtonBinding) {
-        perform(binding, targetApp: nil)
+        perform(binding, targetApp: nil, navigationMethod: nil)
     }
 
-    package func perform(_ binding: ButtonBinding, targetApp: String?) {
+    package func perform(
+        _ binding: ButtonBinding,
+        targetApp: String?,
+        navigationMethod: NavigationMethod? = nil
+    ) {
         lastNavigation = ""
         switch binding.action {
         case .none, .toggleScrolling:
             break
         case .leftClick, .doubleClick, .rightClick,
              .middleClick, .browserBack, .browserForward:
-            click(binding.action, targetApp: targetApp)
+            click(
+                binding.action,
+                targetApp: targetApp,
+                navigationMethod: navigationMethod
+            )
         case .escape:
             press(key: 53)
         case .keyboardShortcut:
@@ -140,29 +148,43 @@ private extension InputSynthesizer {
         )
     }
 
-    func click(_ action: RemoteAction, targetApp: String?) {
+    func click(
+        _ action: RemoteAction,
+        targetApp: String?,
+        navigationMethod: NavigationMethod?
+    ) {
         switch action {
         case .leftClick: click(.left, clicks: 1)
         case .doubleClick: click(.left, clicks: 2)
         case .rightClick: click(.right, clicks: 1)
         case .middleClick: click(.center, clicks: 1)
-        case .browserBack: navigate(back: true, targetApp: targetApp)
-        default: navigate(back: false, targetApp: targetApp)
+        case .browserBack:
+            navigate(back: true, targetApp: targetApp, method: navigationMethod)
+        default:
+            navigate(back: false, targetApp: targetApp, method: navigationMethod)
         }
     }
 
-    func navigate(back: Bool, targetApp: String?) {
+    func navigate(
+        back: Bool,
+        targetApp: String?,
+        method override: NavigationMethod?
+    ) {
         let app = targetApp ?? NavigationTarget.bundleID
-        let method = NavigationMethod(targetApp: app)
+        let method = override ?? NavigationMethod(targetApp: app)
         lastNavigation = "\(back ? "Back" : "Forward") to \(app) by \(method.title)"
 
-        if method != .mouseButton, NavigationTarget.activateIfNeeded(app) {
-            Task { @MainActor [weak self] in
-                try? await Task.sleep(for: .milliseconds(100))
-                self?.deliverNavigation(method, back: back)
-            }
-        } else {
+        if NavigationTarget.isFrontmost(app) {
             deliverNavigation(method, back: back)
+            return
+        }
+
+        Task { @MainActor [weak self] in
+            guard await NavigationTarget.focus(app) else {
+                self?.lastNavigation = "Could not focus \(app)"
+                return
+            }
+            self?.deliverNavigation(method, back: back)
         }
     }
 

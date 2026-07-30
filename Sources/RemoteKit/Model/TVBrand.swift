@@ -56,9 +56,7 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    /// A confirmed maker page or a current support search. A 200 is insufficient
-    /// because retired articles redirect to a help index; `check-links.sh`
-    /// therefore requires the final URL to stay unchanged.
+    /// A confirmed maker page or a current support search.
     var verifiedArticle: URL? {
         switch self {
         case .samsung:

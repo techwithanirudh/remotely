@@ -17,7 +17,13 @@ enum SyntheticInputCommand {
         guard arguments.indices.contains(index + 1),
               let action = RemoteAction(rawValue: arguments[index + 1])
         else {
-            fail("usage: RemoteBridge --synthesize <action> [--target <bundle-id>]",
+            fail("usage: RemoteBridge --synthesize <action> [--target <bundle-id>]"
+                + " [--method <navigation-method>]",
+                code: ExitCode.usage)
+        }
+        let method = navigationMethod(in: arguments)
+        if method != nil, action != .browserBack, action != .browserForward {
+            fail("--method only applies to browserBack and browserForward",
                  code: ExitCode.usage)
         }
         let target = targetBundleIdentifier(in: arguments)
@@ -41,7 +47,11 @@ enum SyntheticInputCommand {
         }
 
         let input = InputSynthesizer()
-        input.perform(ButtonBinding(action), targetApp: target)
+        input.perform(
+            ButtonBinding(action),
+            targetApp: target,
+            navigationMethod: method
+        )
         let pointer = CGEvent(source: nil)?.location ?? .zero
         write("Pointer \(Int(pointer.x)),\(Int(pointer.y))")
         if !input.lastNavigation.isEmpty { write(input.lastNavigation) }
@@ -58,6 +68,23 @@ enum SyntheticInputCommand {
                  code: ExitCode.usage)
         }
         return arguments[index + 1]
+    }
+
+    private static func navigationMethod(in arguments: [String]) -> NavigationMethod? {
+        guard let index = arguments.firstIndex(of: "--method") else { return nil }
+        guard arguments.indices.contains(index + 1) else {
+            fail("--method requires a value", code: ExitCode.usage)
+        }
+        switch arguments[index + 1] {
+        case "swipe": return .swipe
+        case "mouse-button": return .mouseButton
+        case "command-bracket": return .commandBracket
+        case "option-command-bracket": return .optionCommandBracket
+        case "command-arrow": return .commandArrow
+        default:
+            fail("Unknown navigation method: \(arguments[index + 1])",
+                 code: ExitCode.usage)
+        }
     }
 
     @MainActor
