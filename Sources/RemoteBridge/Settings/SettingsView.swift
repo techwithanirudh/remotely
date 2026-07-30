@@ -35,7 +35,7 @@ struct SettingsView: View {
         case .connection: ConnectionSettingsPane(bridge: bridge)
         case .controls: ControlsSettingsPane(bridge: bridge)
         case .diagnostics: DiagnosticsSettingsPane(bridge: bridge)
-        case .about: AboutSettingsPane(bridge: bridge)
+        case .about: AboutSettingsPane()
         }
     }
 }

@@ -2,7 +2,6 @@ import RemoteKit
 import SwiftUI
 
 struct AboutSettingsPane: View {
-    @ObservedObject var bridge: RemoteBridge
     @State private var confirmingReset = false
 
     private var version: String {
@@ -39,12 +38,6 @@ struct AboutSettingsPane: View {
                 Spacer().frame(height: 14)
 
                 Card {
-                    Row(title: "Display") {
-                        Text(bridge.displayName ?? "Not detected yet")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
-                    HairlineDivider()
                     Row(
                         title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."

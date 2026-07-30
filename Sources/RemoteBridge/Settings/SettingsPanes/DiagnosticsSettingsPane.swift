@@ -21,12 +21,6 @@ struct DiagnosticsSettingsPane: View {
                             tint: bridge.hasAccessibility ? .green : .orange
                         )
                     }
-                    HairlineDivider()
-                    Row(title: "Last button") {
-                        Text(bridge.lastKey?.title ?? "None")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.secondary)
-                    }
                 }
 
                 SectionLabel(title: "Events")
