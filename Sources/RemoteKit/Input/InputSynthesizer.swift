@@ -137,8 +137,7 @@ private extension InputSynthesizer {
     }
 
     func navigate(back: Bool) {
-        let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
-        switch NavigationMethod(frontmostApp: app) {
+        switch NavigationMethod(frontmostApp: FrontmostApp.bundleID) {
         case .swipe:
             NavigationSwipe.post(back ? .left : .right)
         case .mouseButton:
