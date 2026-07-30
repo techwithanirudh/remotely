@@ -35,6 +35,10 @@ struct AppIconButton: View {
         Self.generation += 1
         let token = Self.generation
 
+        // A no-op on a Mac without a Force Touch trackpad, which is most of
+        // them, so it accompanies the sound rather than replacing it.
+        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+
         click.stop()
         click.currentTime = 0
         click.volume = Self.level
