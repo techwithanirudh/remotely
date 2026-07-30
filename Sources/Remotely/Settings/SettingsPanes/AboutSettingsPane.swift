@@ -4,9 +4,8 @@ import SwiftUI
 
 struct AboutSettingsPane: View {
     @State private var confirmingReset = false
+    @ObservedObject private var updater = Updater.shared
     @Default(.wantsBetaUpdates) private var betaUpdates
-    @Default(.checksForUpdatesAutomatically) private var checksAutomatically
-    @Default(.installsUpdatesAutomatically) private var installsAutomatically
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -63,9 +62,12 @@ struct AboutSettingsPane: View {
                         title: "Automatically check for updates",
                         symbol: "arrow.triangle.2.circlepath"
                     ) {
-                        Toggle("", isOn: $checksAutomatically)
-                            .labelsHidden()
-                            .controlSize(.small)
+                        Toggle("", isOn: Binding(
+                            get: { updater.checksAutomatically },
+                            set: { updater.checksAutomatically = $0 }
+                        ))
+                        .labelsHidden()
+                        .controlSize(.small)
                     }
 
                     HairlineDivider()
@@ -74,9 +76,12 @@ struct AboutSettingsPane: View {
                         title: "Automatically install updates",
                         symbol: "square.and.arrow.down"
                     ) {
-                        Toggle("", isOn: $installsAutomatically)
-                            .labelsHidden()
-                            .controlSize(.small)
+                        Toggle("", isOn: Binding(
+                            get: { updater.installsAutomatically },
+                            set: { updater.installsAutomatically = $0 }
+                        ))
+                        .labelsHidden()
+                        .controlSize(.small)
                     }
 
                     HairlineDivider()

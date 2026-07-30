@@ -11,7 +11,6 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     private let remote = Remote()
     private let overlay = ScrollModeOverlay()
     private var statusItem: StatusItemController?
-    private var updater: Updater?
     private var settings: SettingsWindowController?
     private var onboarding: OnboardingWindowController?
     private var observers = Set<AnyCancellable>()
@@ -19,12 +18,12 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.shared = self
 
-        updater = Updater()
+        _ = Updater.shared
         statusItem = StatusItemController(
             onToggle: { [weak self] in self?.remote.isEnabled.toggle() },
             onSettings: { [weak self] in self?.showSettings() },
             onCopyLog: { [weak self] in self?.copyLog() },
-            onCheckForUpdates: { [weak self] in self?.updater?.checkForUpdates() },
+            onCheckForUpdates: { Updater.shared.checkForUpdates() },
             onQuit: { NSApp.terminate(nil) }
         )
 
@@ -55,7 +54,7 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     }
 
     func checkForUpdates() {
-        updater?.checkForUpdates()
+        Updater.shared.checkForUpdates()
     }
 
     func replayOnboarding() {
