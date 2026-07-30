@@ -58,8 +58,6 @@ enum Theme {
 
     enum Space {
         static let icon: CGFloat = 8
-        /// A row's glyph sits further from its label than a stacked one does.
-        static let rowIcon: CGFloat = 11
     }
 
     enum Opacity {

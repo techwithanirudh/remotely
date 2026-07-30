@@ -8,7 +8,7 @@ struct Row<Control: View>: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            HStack(spacing: Theme.Space.rowIcon) {
+            HStack(spacing: Theme.Space.icon) {
                 if let symbol {
                     Image(systemName: symbol)
                         .font(.system(size: 13))
