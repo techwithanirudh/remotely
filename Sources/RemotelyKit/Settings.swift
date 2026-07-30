@@ -4,6 +4,7 @@ public extension Defaults.Keys {
     static let enabled = Key<Bool>("enabled", default: true)
     static let pointerSensitivity = Key<Double>("pointerSensitivity", default: 1)
     static let releaseChannel = Key<ReleaseChannel>("releaseChannel", default: .stable)
+    static let showsMenuBarIcon = Key<Bool>("showsMenuBarIcon", default: true)
 
     /// Only what the user has changed; defaults are applied on top at load.
     static let bindings = Key<Bindings>("bindings", default: Bindings())

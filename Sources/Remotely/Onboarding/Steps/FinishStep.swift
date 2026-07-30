@@ -12,7 +12,7 @@ struct FinishStep: View {
                     .font(.system(size: 24, weight: .bold))
                     .padding(.top, 4)
 
-                Text("Your remote controls this Mac whenever the TV is on that HDMI input.")
+                Text("Your remote controls this Mac whenever the display is on that HDMI input.")
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

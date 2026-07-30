@@ -64,12 +64,13 @@ zsh scripts/build-app.sh     # writes build/Remotely.app
 | `Sources/Remotely` | The app: menu bar item, settings window, onboarding |
 | `Tests/RemotelyKitTests` | A plain executable, since Command Line Tools ships neither XCTest nor swift-testing |
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture and
-[docs/RELEASING.md](docs/RELEASING.md) for how releases are cut.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture,
+[docs/RELEASING.md](docs/RELEASING.md) for how releases are cut, and
+[CONTRIBUTING.md](CONTRIBUTING.md) to get set up.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
-The icon click is rendered from the `mechanical` pack of
+The icon click is rendered from the `core` pack of
 [@web-kits/audio](https://github.com/raphaelsalaja/audio) by Raphael Salaja, MIT.

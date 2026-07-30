@@ -4,13 +4,10 @@ import SwiftUI
 struct AppIconButton: View {
     let size: CGFloat
 
-    /// `Click.wav` is 26ms: white noise through a 3kHz bandpass at Q4, no
-    /// attack, a 26ms fall. Rendered from the "click" recipe in the `mechanical`
-    /// pack of @web-kits/audio by Raphael Salaja, MIT.
-    ///
-    /// Every system sound was wrong for this. They are bells, so nearly all of
-    /// their length is ring-out: Tink is 560ms and Pop is 1630ms, and cutting
-    /// one off at its attack only ever approximated a click.
+    /// `Click.wav` is 80ms: a 200Hz to 700Hz sine sweep with FM, rendered from
+    /// the "click" recipe in the `core` pack of @web-kits/audio by Raphael
+    /// Salaja, MIT. Every system sound is a bell whose length is mostly
+    /// ring-out, so none of them worked.
     ///
     /// One instance for the whole app. A fresh `NSSound` per click layers them
     /// on top of each other, and `play()` after `stop()` resumes from where it

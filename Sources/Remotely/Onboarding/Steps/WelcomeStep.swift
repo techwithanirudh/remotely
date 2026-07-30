@@ -30,11 +30,6 @@ struct WelcomeStep: View {
                       tint: .teal, label: "Back twice\nto scroll"),
             ])
             .padding(.top, 20)
-
-            Text("No extra hardware, no dongle, no subscription.")
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
-                .padding(.top, 18)
         }
     }
 }

@@ -127,7 +127,7 @@ struct AboutSettingsPane: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This clears your controls, sensitivity, TV choice, and onboarding progress.")
+            Text("This clears your controls, sensitivity, display choice, and onboarding progress.")
         }
     }
 }

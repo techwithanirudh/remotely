@@ -27,6 +27,11 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
             onQuit: { NSApp.terminate(nil) }
         )
 
+        statusItem?.isVisible = Defaults[.showsMenuBarIcon]
+        Defaults.observe(.showsMenuBarIcon) { [weak self] change in
+            self?.statusItem?.isVisible = change.newValue
+        }.tieToLifetime(of: self)
+
         remote.onScrollingChange = { [weak self] isScrolling in
             self?.overlay.setVisible(isScrolling)
         }

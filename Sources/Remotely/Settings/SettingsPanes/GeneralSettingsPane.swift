@@ -1,15 +1,17 @@
+import Defaults
 import LaunchAtLogin
 import RemotelyKit
 import SwiftUI
 
 struct GeneralSettingsPane: View {
     @ObservedObject var remote: Remote
+    @Default(.showsMenuBarIcon) private var showsMenuBarIcon
 
     var body: some View {
         SettingsPane(page: .general) {
             VStack(alignment: .leading, spacing: 0) {
                 Card {
-                    Row(title: "Enable remote remote") {
+                    Row(title: "Enable Remotely") {
                         Toggle("", isOn: $remote.isEnabled)
                             .labelsHidden()
                             .toggleStyle(.switch)
@@ -18,6 +20,18 @@ struct GeneralSettingsPane: View {
                     HairlineDivider()
                     Row(title: "Launch at login") {
                         LaunchAtLogin.Toggle("")
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                    }
+                    HairlineDivider()
+                    Row(
+                        title: "Show in the menu bar",
+                        subtitle: showsMenuBarIcon
+                            ? nil
+                            : "Reopen from Finder to get back to Settings."
+                    ) {
+                        Toggle("", isOn: $showsMenuBarIcon)
                             .labelsHidden()
                             .toggleStyle(.switch)
                             .controlSize(.small)

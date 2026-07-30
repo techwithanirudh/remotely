@@ -45,13 +45,13 @@ struct ConnectionSettingsPane: View {
 
                 Card {
                     Checklist(
-                        title: "Connect this Mac to your TV with an HDMI cable",
+                        title: "Connect this Mac to your display with an HDMI cable",
                         isDone: isLinked
                     )
                     HairlineDivider()
-                    Checklist(title: "Switch the TV to that HDMI input", isDone: isLinked)
+                    Checklist(title: "Switch the display to that HDMI input", isDone: isLinked)
                     HairlineDivider()
-                    Checklist(title: "Turn on HDMI-CEC in the TV's settings", isDone: isLinked)
+                    Checklist(title: "Turn on HDMI-CEC in the display's settings", isDone: isLinked)
                 }
 
                 SectionLabel(title: "Where to find it")

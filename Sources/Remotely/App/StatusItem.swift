@@ -58,6 +58,11 @@ final class StatusItemController {
         item.menu = menu
     }
 
+    var isVisible: Bool {
+        get { item.isVisible }
+        set { item.isVisible = newValue }
+    }
+
     func update(status: RemoteStatus, isEnabled: Bool) {
         header.update(status: status)
         item.button?.toolTip = "Remotely: \(status.title)"
