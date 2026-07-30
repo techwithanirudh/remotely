@@ -18,7 +18,7 @@ struct ConnectionPage: View {
                             .foregroundStyle(bridge.status.tint)
                             .frame(width: 34, height: 34)
                             .background(
-                                bridge.status.tint.opacity(0.13),
+                                bridge.status.tint.opacity(Theme.tintWash),
                                 in: RoundedRectangle(cornerRadius: 9, style: .continuous)
                             )
 
@@ -44,7 +44,10 @@ struct ConnectionPage: View {
                 SectionLabel(title: "Setup")
 
                 Card {
-                    Checklist(text: "Connect this Mac to your TV with an HDMI cable", done: isLinked)
+                    Checklist(
+                        text: "Connect this Mac to your TV with an HDMI cable",
+                        done: isLinked
+                    )
                     Divider1px()
                     Checklist(text: "Switch the TV to that HDMI input", done: isLinked)
                     Divider1px()
@@ -136,8 +139,8 @@ struct BrandGuide: View {
                     .frame(width: 14)
 
                 Text(brand.hasVerifiedArticle
-                     ? "\(brand.name) instructions"
-                     : "Search for instructions")
+                    ? "\(brand.name) instructions"
+                    : "Search for instructions")
                     .font(.system(size: 12.5))
 
                 Spacer(minLength: 8)

@@ -6,7 +6,7 @@ import RemoteKit
 /// Owns the app's windows and wires them to the bridge.
 @MainActor
 final class AppCoordinator: NSObject, NSApplicationDelegate {
-    static private(set) var shared: AppCoordinator?
+    private(set) static var shared: AppCoordinator?
 
     private let bridge = RemoteBridge()
     private let overlay = ScrollModeOverlay()
@@ -31,7 +31,7 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
         observe()
         bridge.start()
 
-        Defaults[.onboardingDone] ? showSettings() : showOnboarding()
+        showFirstWindow()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -41,8 +41,17 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     /// Opening a menu bar app again has to bring something forward. While setup
     /// is unfinished that is the guide, not the window behind it.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        Defaults[.onboardingDone] ? showSettings() : showOnboarding()
+        showFirstWindow()
         return true
+    }
+
+    /// Settings once setup is done, the guide until then.
+    func showFirstWindow() {
+        if Defaults[.onboardingDone] {
+            showSettings()
+        } else {
+            showOnboarding()
+        }
     }
 
     func replayOnboarding() {
@@ -114,5 +123,4 @@ private extension AppCoordinator {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(bridge.logText(), forType: .string)
     }
-
 }

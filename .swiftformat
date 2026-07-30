@@ -19,3 +19,12 @@
 --disable redundantReturn
 --disable wrapMultilineStatementBraces
 --disable blankLinesAroundMark
+
+# Single-line bodies are idiomatic Swift; wrapping them adds three lines to say
+# nothing. `hoistPatternLet` moves `let` out of the case pattern, which reads
+# worse for a single associated value.
+--disable wrapFunctionBodies
+--disable wrapPropertyBodies
+--disable wrapIfStatementBodies
+--disable wrapLoopBodies
+--disable hoistPatternLet

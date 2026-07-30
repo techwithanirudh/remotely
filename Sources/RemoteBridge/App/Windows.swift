@@ -47,6 +47,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         shouldCascadeWindows = false
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("not supported") }
 
     func show() {
@@ -130,6 +131,7 @@ final class OnboardingWindowController: NSWindowController {
         super.init(window: window)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("not supported") }
 
     func show() {

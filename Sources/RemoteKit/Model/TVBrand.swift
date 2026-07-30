@@ -43,7 +43,8 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         case .lg:
             "Settings → All Settings → General → Devices → HDMI Settings → SimpLink (HDMI-CEC)"
         case .sony:
-            "Settings → Channels & Inputs → External inputs → Bravia Sync settings → Bravia Sync control"
+            "Settings → Channels & Inputs → External inputs → Bravia Sync settings"
+                + " → Bravia Sync control"
         case .tclRoku:
             "Settings → System → Control other devices (CEC) → 1-touch play"
         case .hisense:

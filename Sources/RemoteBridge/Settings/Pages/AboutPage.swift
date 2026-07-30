@@ -25,7 +25,7 @@ struct AboutPage: View {
                                 .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
                             Text("Turns your TV remote into a pointer for this Mac, "
-                                 + "over the HDMI cable you already have.")
+                                + "over the HDMI cable you already have.")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)

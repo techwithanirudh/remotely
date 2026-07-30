@@ -16,7 +16,11 @@ public struct Glide: Sendable {
 
     public private(set) var speed: Double
 
-    public init(initialSpeed: Double = 95, acceleration: Double = 1500, maximumSpeed: Double = 2700) {
+    public init(
+        initialSpeed: Double = 95,
+        acceleration: Double = 1500,
+        maximumSpeed: Double = 2700
+    ) {
         self.initialSpeed = initialSpeed
         self.acceleration = acceleration
         self.maximumSpeed = maximumSpeed

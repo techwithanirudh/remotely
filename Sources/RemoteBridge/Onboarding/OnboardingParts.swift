@@ -199,7 +199,6 @@ struct PanelButton: View {
     }
 }
 
-
 /// Hero for a step that is teaching a gesture rather than previewing a system
 /// prompt. The dialog mock only earns its place where a real one follows.
 struct GestureHero: View {

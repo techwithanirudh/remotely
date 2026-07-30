@@ -12,7 +12,11 @@ final class ScrollModeOverlay {
     private var follower: Timer?
 
     func setVisible(_ visible: Bool) {
-        visible ? show() : hide()
+        if visible {
+            show()
+        } else {
+            hide()
+        }
     }
 
     private func show() {

@@ -11,10 +11,12 @@ import AppKit
 
 let side: CGFloat = 1024
 let margin: CGFloat = 100
-let cornerRadius: CGFloat = 185     // macOS squircle is ~0.2237 of the tile
+let cornerRadius: CGFloat = 185 // macOS squircle is ~0.2237 of the tile
 let glyphSize: CGFloat = 505
-let tilt: CGFloat = CommandLine.arguments.count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 45) : 45
-let glyphInset: CGFloat = CommandLine.arguments.count > 3 ? CGFloat(Double(CommandLine.arguments[3]) ?? 170) : 170
+let tilt: CGFloat = CommandLine.arguments
+    .count > 2 ? CGFloat(Double(CommandLine.arguments[2]) ?? 45) : 45
+let glyphInset: CGFloat = CommandLine.arguments
+    .count > 3 ? CGFloat(Double(CommandLine.arguments[3]) ?? 170) : 170
 
 let tile = NSRect(x: margin, y: margin,
                   width: side - margin * 2,
@@ -67,9 +69,9 @@ shape.lineWidth = 2.5
 shape.stroke()
 context.restoreGState()
 
-// Remote glyph, centred and large enough to carry the tile. `av.remote.fill`
-// was tried first and its grid of buttons turned to mush at dock size; the
-// Apple TV remote is two shapes and survives being small.
+/// Remote glyph, centred and large enough to carry the tile. `av.remote.fill`
+/// was tried first and its grid of buttons turned to mush at dock size; the
+/// Apple TV remote is two shapes and survives being small.
 let config = NSImage.SymbolConfiguration(pointSize: glyphSize, weight: .regular)
 if let symbol = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: nil)?
     .withSymbolConfiguration(config) {
@@ -119,10 +121,12 @@ func inkBounds(of image: NSImage) -> NSRect {
     var minX = rep.pixelsWide, maxX = 0
     var minY = rep.pixelsHigh, maxY = 0
 
-    for y in 0..<rep.pixelsHigh {
-        for x in 0..<rep.pixelsWide where (rep.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.05 {
-            minX = min(minX, x); maxX = max(maxX, x)
-            minY = min(minY, y); maxY = max(maxY, y)
+    for y in 0 ..< rep.pixelsHigh {
+        for x in 0 ..< rep.pixelsWide where (rep.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.05 {
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+            minY = min(minY, y)
+            maxY = max(maxY, y)
         }
     }
     guard maxX >= minX else { return NSRect(origin: .zero, size: image.size) }
@@ -139,7 +143,7 @@ func inkBounds(of image: NSImage) -> NSRect {
 
 image.unlockFocus()
 
-// Write every size the iconset needs.
+/// Write every size the iconset needs.
 let iconset = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "AppIcon.iconset"
 try? FileManager.default.createDirectory(atPath: iconset, withIntermediateDirectories: true)
 

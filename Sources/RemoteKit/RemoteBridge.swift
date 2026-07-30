@@ -15,7 +15,11 @@ public final class RemoteBridge: ObservableObject {
     @Published public var isEnabled: Bool {
         didSet {
             Defaults[.enabled] = isEnabled
-            isEnabled ? link.start() : link.stop()
+            if isEnabled {
+                link.start()
+            } else {
+                link.stop()
+            }
         }
     }
 

@@ -49,7 +49,8 @@ struct SettingsView: View {
         ZStack {
             // Transmissive while the window is in front, flat behind: the
             // material carries both states rather than a color painted over.
-            Vibrancy(material: activeState == .inactive ? .contentBackground : .underWindowBackground)
+            Vibrancy(material: activeState == .inactive ? .contentBackground :
+                .underWindowBackground)
 
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)
@@ -104,8 +105,12 @@ struct PageShell<Content: View>: View {
                 header
                 scroll.mask(
                     VStack(spacing: 0) {
-                        LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                            .frame(height: 16)
+                        LinearGradient(
+                            colors: [.clear, .black],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 16)
                         Color.black
                     }
                 )
@@ -150,8 +155,8 @@ private struct Sidebar: View {
                 }
             }
             .padding(.horizontal, Theme.sidebarInset)
-                .padding(.top, 44)
-                .padding(.bottom, 10)
+            .padding(.top, 44)
+            .padding(.bottom, 10)
 
             SidebarItem(page: .general, selection: $page)
 
@@ -205,7 +210,7 @@ private struct StatusPill: View {
         .frame(height: Theme.rowHeight)
         .background {
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(status.tint.opacity(0.13))
+                .fill(status.tint.opacity(Theme.tintWash))
         }
     }
 }

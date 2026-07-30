@@ -95,23 +95,33 @@ Expect.suite("Bindings") {
                  "only changed buttons are persisted")
 
     let resolved = Bindings.resolving(bindings.customized)
-    Expect.equal(resolved[.up], ButtonBinding(.moveLeft), "a customized button survives a round trip")
+    Expect.equal(
+        resolved[.up],
+        ButtonBinding(.moveLeft),
+        "a customized button survives a round trip"
+    )
     Expect.equal(resolved[.back], Bindings.standard[.back],
                  "changing a default still reaches someone who customized a different button")
 
     Expect.that(!ButtonBinding(.keyboardShortcut).isComplete,
                 "a shortcut binding is incomplete until something is recorded")
-    Expect.that(ButtonBinding(.keyboardShortcut, combo: KeyCombo(keyCode: 13, modifiers: .maskCommand)).isComplete,
-                "a shortcut binding with a combination is complete")
+    Expect.that(
+        ButtonBinding(.keyboardShortcut, combo: KeyCombo(keyCode: 13, modifiers: .maskCommand))
+            .isComplete,
+        "a shortcut binding with a combination is complete"
+    )
     Expect.that(ButtonBinding(.leftClick).isComplete, "a plain action needs no payload")
 
     do {
         var withCombo = Bindings.standard
         withCombo[.back] = ButtonBinding(.keyboardShortcut,
-                                   combo: KeyCombo(keyCode: 13, modifiers: [.maskCommand, .maskShift]))
-        let data = try! JSONEncoder().encode(withCombo.customized)
-        let decoded = try! JSONDecoder().decode(Bindings.self, from: data)
-        Expect.equal(Bindings.resolving(decoded)[.back], withCombo[.back],
+                                         combo: KeyCombo(
+                                             keyCode: 13,
+                                             modifiers: [.maskCommand, .maskShift]
+                                         ))
+        let roundTripped = (try? JSONEncoder().encode(withCombo.customized))
+            .flatMap { try? JSONDecoder().decode(Bindings.self, from: $0) }
+        Expect.equal(roundTripped.map { Bindings.resolving($0)[.back] }, withCombo[.back],
                      "bindings round-trip through Codable")
     }
 }
@@ -135,20 +145,20 @@ Expect.suite("Key combinations") {
 Expect.suite("Glide curve") {
     do {
         var glide = Glide.pointer(sensitivity: 1)
-        let travelled = (0..<7).reduce(0.0) { total, _ in total + glide.advance() }
+        let travelled = (0 ..< 7).reduce(0.0) { total, _ in total + glide.advance() }
         Expect.that(travelled < 20, "a tap moves only a few points (\(Int(travelled)))")
     }
 
     do {
         var glide = Glide.pointer(sensitivity: 1)
         let first = glide.advance()
-        for _ in 0..<60 { _ = glide.advance() }
+        for _ in 0 ..< 60 { _ = glide.advance() }
         Expect.that(glide.advance() > first * 5, "holding ramps the speed up")
     }
 
     do {
         var glide = Glide.pointer(sensitivity: 1)
-        for _ in 0..<1000 { _ = glide.advance() }
+        for _ in 0 ..< 1000 { _ = glide.advance() }
         Expect.that(glide.speed <= glide.maximumSpeed, "speed never exceeds its ceiling")
     }
 
@@ -183,8 +193,16 @@ Expect.suite("Status") {
 // MARK: Actions
 
 Expect.suite("Actions") {
-    Expect.equal(RemoteAction.moveUp.scrolling, .scrollUp, "moving maps to its scrolling counterpart")
-    Expect.equal(RemoteAction.leftClick.scrolling, .leftClick, "a click is unaffected by scroll mode")
+    Expect.equal(
+        RemoteAction.moveUp.scrolling,
+        .scrollUp,
+        "moving maps to its scrolling counterpart"
+    )
+    Expect.equal(
+        RemoteAction.leftClick.scrolling,
+        .leftClick,
+        "a click is unaffected by scroll mode"
+    )
     Expect.that(RemoteAction.moveLeft.isContinuous, "movement is continuous")
     Expect.that(!RemoteAction.escape.isContinuous, "Escape is a one-shot")
     Expect.equal(RemoteAction.scrollDown.direction, CGVector(dx: 0, dy: 1), "down points down")
@@ -196,20 +214,27 @@ Expect.suite("CEC log parsing") {
     let parser = CECLogParser()
 
     Expect.equal(
-        parser.parse("2026-07-28 19:00:00.000 corercd RX: TV -> Playback Device 1: <User Control Pressed> 02"),
+        parser
+            .parse(
+                "19:00:00.000 corercd RX: TV -> Playback 1: <User Control Pressed> 02"
+            ),
         .pressed(.down),
         "a pressed line decodes the wire code, not the English name"
     )
     Expect.equal(
-        parser.parse("... <User Control Pressed> 00"), .pressed(.select), "0x00 is Select")
+        parser.parse("... <User Control Pressed> 00"), .pressed(.select), "0x00 is Select"
+    )
     Expect.equal(
-        parser.parse("... <User Control Pressed> 0D"), .pressed(.back), "0x0D is Back")
+        parser.parse("... <User Control Pressed> 0D"), .pressed(.back), "0x0D is Back"
+    )
     Expect.equal(
         parser.parse("... <User Control Released>"), .released,
-        "a release carries no key code")
+        "a release carries no key code"
+    )
     Expect.that(
         parser.parse("... <User Control Pressed> 41") == nil,
-        "an unmapped code is ignored rather than guessed at")
+        "an unmapped code is ignored rather than guessed at"
+    )
     Expect.that(parser.parse("unrelated daemon chatter") == nil, "unrelated lines are ignored")
 
     Expect.equal(
@@ -218,7 +243,9 @@ Expect.suite("CEC log parsing") {
         "the display name is read out of the EDID line"
     )
     Expect.that(
-        parser.parse("CECBus <x> Link: N; EDID: <CECEDIDAttributes: 0x600> Smart M70D vID: 0x1") == nil,
+        parser
+            .parse("CECBus <x> Link: N; EDID: <CECEDIDAttributes: 0x600> Smart M70D vID: 0x1") ==
+            nil,
         "a down link is not reported as attached"
     )
 }

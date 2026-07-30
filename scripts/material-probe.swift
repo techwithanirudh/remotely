@@ -34,7 +34,12 @@ for (index, entry) in materials.enumerated() {
         height: size.height
     )
 
-    let window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+    let window = NSWindow(
+        contentRect: frame,
+        styleMask: [.borderless],
+        backing: .buffered,
+        defer: false
+    )
     window.isOpaque = false
     window.backgroundColor = .clear
     window.isMovableByWindowBackground = true

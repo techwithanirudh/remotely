@@ -6,7 +6,7 @@ import CoreGraphics
 /// the user's own mouse. CGEvent carries a spare user-data field for exactly
 /// this; correlating by timestamp would only ever be a guess.
 public enum EventSignature {
-    public static let value: Int64 = 0x52_45_4D_42  // "REMB"
+    public static let value: Int64 = 0x5245_4D42 // "REMB"
 
     public static func marks(_ event: NSEvent) -> Bool {
         event.cgEvent?.getIntegerValueField(.eventSourceUserData) == value
@@ -59,13 +59,19 @@ public final class InputSynthesizer {
 
         if action.isScroll {
             guard scroll?.direction != direction else { return }
-            scroll = ContinuousMotion(direction: direction, glide: .scroll(sensitivity: sensitivity)) {
-                [weak self] step in self?.postScroll(direction, distance: step)
+            scroll = ContinuousMotion(
+                direction: direction,
+                glide: .scroll(sensitivity: sensitivity)
+            ) { [weak self] step in
+                self?.postScroll(direction, distance: step)
             }
         } else {
             guard pointer?.direction != direction else { return }
-            pointer = ContinuousMotion(direction: direction, glide: .pointer(sensitivity: sensitivity)) {
-                [weak self] step in self?.movePointer(direction, distance: step)
+            pointer = ContinuousMotion(
+                direction: direction,
+                glide: .pointer(sensitivity: sensitivity)
+            ) { [weak self] step in
+                self?.movePointer(direction, distance: step)
             }
         }
     }

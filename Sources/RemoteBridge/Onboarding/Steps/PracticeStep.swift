@@ -170,7 +170,7 @@ struct PracticeStep: View {
         if exercise == .scroll {
             ScrollView {
                 VStack(alignment: .leading, spacing: 7) {
-                    ForEach(1...18, id: \.self) { row in
+                    ForEach(1 ... 18, id: \.self) { row in
                         Text("Scrollable line \(row)")
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
@@ -222,7 +222,8 @@ struct PracticeStep: View {
     private func watch() {
         monitor = NSEvent.addLocalMonitorForEvents(matching: exercise.mask) { event in
             let fromRemote = EventSignature.marks(event)
-            let inside = MainActor.assumeIsolated { ScrollAreaProbe.contains(NSEvent.mouseLocation) }
+            let inside = MainActor
+                .assumeIsolated { ScrollAreaProbe.contains(NSEvent.mouseLocation) }
 
             if let result = exercise.judge(event, fromRemote: fromRemote, insideTarget: inside) {
                 MainActor.assumeIsolated {
@@ -255,8 +256,8 @@ private struct Marker: View {
                     Image(systemName: symbol)
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(outcome == .waiting
-                                         ? AnyShapeStyle(.secondary)
-                                         : AnyShapeStyle(Color.white))
+                            ? AnyShapeStyle(.secondary)
+                            : AnyShapeStyle(Color.white))
                 }
                 .animation(.easeOut(duration: 0.15), value: outcome)
 
@@ -312,8 +313,8 @@ struct ModeBadge: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: isScrolling
-                  ? "arrow.up.and.down.text.horizontal"
-                  : "arrow.up.and.down.and.arrow.left.and.right")
+                ? "arrow.up.and.down.text.horizontal"
+                : "arrow.up.and.down.and.arrow.left.and.right")
                 .font(.system(size: 10, weight: .semibold))
 
             Text(isScrolling ? "Scrolling" : "Moving the pointer")
@@ -330,7 +331,6 @@ struct ModeBadge: View {
     }
 }
 
-
 /// Reports where the step's target sits on screen, so input can be judged
 /// against it rather than against the whole panel.
 ///
@@ -338,7 +338,7 @@ struct ModeBadge: View {
 /// is centered afterwards, so a frame recorded during layout described a patch of
 /// screen the card had since left, and presses well outside the card counted.
 struct ScrollAreaProbe: NSViewRepresentable {
-    @MainActor private static weak var current: Probe?
+    @MainActor private weak static var current: Probe?
 
     @MainActor
     static func contains(_ point: NSPoint) -> Bool {

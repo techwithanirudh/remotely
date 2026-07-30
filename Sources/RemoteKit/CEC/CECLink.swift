@@ -99,8 +99,8 @@ private extension CECLink {
         buffer.append(chunk)
 
         while let newline = buffer.firstIndex(of: 0x0A) {
-            let line = buffer[buffer.startIndex..<newline]
-            buffer.removeSubrange(buffer.startIndex...newline)
+            let line = buffer[buffer.startIndex ..< newline]
+            buffer.removeSubrange(buffer.startIndex ... newline)
 
             if let text = String(data: line, encoding: .utf8) {
                 handle(text)

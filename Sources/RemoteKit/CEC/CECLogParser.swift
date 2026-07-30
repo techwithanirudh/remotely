@@ -45,7 +45,7 @@ public struct CECLogParser: Sendable {
         let rest = afterMarker[objectEnd.upperBound...]
         guard let vendor = rest.range(of: " vID:") else { return nil }
 
-        let name = rest[rest.startIndex..<vendor.lowerBound].trimmingCharacters(in: .whitespaces)
+        let name = rest[rest.startIndex ..< vendor.lowerBound].trimmingCharacters(in: .whitespaces)
         return name.isEmpty ? nil : name
     }
 }

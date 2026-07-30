@@ -6,9 +6,9 @@ import Foundation
 /// swift-testing in conflicts with Defaults over swift-syntax, so the checks
 /// run as an ordinary executable instead.
 enum Expect {
-    nonisolated(unsafe) private static var failures: [String] = []
-    nonisolated(unsafe) private static var checks = 0
-    nonisolated(unsafe) private static var suite = ""
+    private nonisolated(unsafe) static var failures: [String] = []
+    private nonisolated(unsafe) static var checks = 0
+    private nonisolated(unsafe) static var suite = ""
 
     static func suite(_ name: String, _ body: () -> Void) {
         suite = name

@@ -69,7 +69,6 @@ struct ControlsPage: View {
         }
     }
 
-    @ViewBuilder
     private func bindingRows(_ buttons: [RemoteButton]) -> some View {
         ForEach(Array(buttons.enumerated()), id: \.element) { index, button in
             if index > 0 { Divider1px() }

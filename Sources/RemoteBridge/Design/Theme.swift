@@ -25,6 +25,11 @@ enum Theme {
     static let rowHeight: CGFloat = 38
     static let pageInset: CGFloat = 18
     static let cardPadding: CGFloat = 13
+    /// A single-line row inside a card.
+    static let rowHeightCompact: CGFloat = 42
+    /// Width reserved for a bare glyph leading a row, so labels line up whether
+    /// the row leads with a glyph or a filled tile.
+    static let glyphColumn: CGFloat = 20
 
     /// Window buttons sit level with the sidebar row icons, 22pt down.
     static let trafficLightInset: CGFloat = sidebarInset + rowPadding
@@ -63,6 +68,14 @@ enum Theme {
 
     /// How far the sidebar and page title fade once the window is not in front.
     static let inactiveDim: Double = 0.6
+
+    /// A tint laid behind its own icon or label. Eight surfaces were painting
+    /// this by hand at six different alphas.
+    static let tintWash: Double = 0.13
+    static let tintWashSoft: Double = 0.09
+
+    /// The one duration anything in the window changes state over.
+    static let stateChange: Animation = .easeOut(duration: 0.18)
 
     static var divider: Color { .primary.opacity(0.10) }
     static var selection: Color { .primary.opacity(0.08) }

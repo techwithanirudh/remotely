@@ -111,7 +111,7 @@ struct Row<Control: View>: View {
         }
         .padding(.horizontal, Theme.cardPadding)
         .padding(.vertical, 9)
-        .frame(minHeight: subtitle == nil ? 42 : 56)
+        .frame(minHeight: subtitle == nil ? Theme.rowHeightCompact : 56)
     }
 }
 
@@ -128,7 +128,7 @@ struct InfoRow: View {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(tint)
-                .frame(width: 20, height: 18)
+                .frame(width: Theme.glyphColumn, height: 18)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -159,7 +159,7 @@ struct Pill: View {
             .foregroundStyle(tint)
             .padding(.horizontal, 8)
             .frame(height: 20)
-            .background(tint.opacity(0.14), in: Capsule())
+            .background(tint.opacity(Theme.tintWash), in: Capsule())
     }
 }
 
@@ -174,6 +174,6 @@ struct StatusBadge: View {
         }
         .padding(.horizontal, 9)
         .frame(height: 23)
-        .background(tint.opacity(0.12), in: Capsule())
+        .background(tint.opacity(Theme.tintWash), in: Capsule())
     }
 }

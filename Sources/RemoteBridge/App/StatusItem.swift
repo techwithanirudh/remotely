@@ -18,7 +18,10 @@ final class StatusItemController {
     ) {
         toggle = NSMenuItem(title: "Enable", action: nil, keyEquivalent: "")
 
-        item.button?.image = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: "Remote Bridge")
+        item.button?.image = NSImage(
+            systemSymbolName: "appletvremote.gen4.fill",
+            accessibilityDescription: "Remote Bridge"
+        )
         item.button?.image?.isTemplate = true
 
         let menu = NSMenu()
@@ -63,7 +66,8 @@ final class StatusItemController {
         toggle.state = isEnabled ? .on : .off
     }
 
-    private static func item(_ item: NSMenuItem, symbol: String, action: @escaping () -> Void) -> NSMenuItem {
+    private static func item(_ item: NSMenuItem, symbol: String,
+                             action: @escaping () -> Void) -> NSMenuItem {
         let handler = ActionHandler(action)
         item.representedObject = handler
         item.target = handler
@@ -98,7 +102,10 @@ private final class MenuHeader: NSView {
         super.init(frame: NSRect(x: 0, y: 0, width: 272, height: 59))
 
         let icon = NSImageView()
-        icon.image = NSImage(systemSymbolName: "appletvremote.gen4.fill", accessibilityDescription: nil)
+        icon.image = NSImage(
+            systemSymbolName: "appletvremote.gen4.fill",
+            accessibilityDescription: nil
+        )
         icon.symbolConfiguration = .init(pointSize: 19, weight: .medium)
         icon.contentTintColor = .labelColor
 
@@ -139,6 +146,7 @@ private final class MenuHeader: NSView {
         ])
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("not supported") }
 
     func update(status: BridgeStatus) {

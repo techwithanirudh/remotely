@@ -52,7 +52,7 @@ struct GeneralPage: View {
                         subtitle: "How fast the pointer moves while you hold an arrow."
                     ) {
                         HStack(spacing: 9) {
-                            Slider(value: $bridge.sensitivity, in: 0.4...2, step: 0.1)
+                            Slider(value: $bridge.sensitivity, in: 0.4 ... 2, step: 0.1)
                                 .frame(width: 118)
                             Text(String(format: "%.1f×", bridge.sensitivity))
                                 .font(.system(size: 11, design: .monospaced))

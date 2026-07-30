@@ -13,7 +13,7 @@ struct WelcomeStep: View {
                 .padding(.top, 2)
 
             Text("Your TV remote becomes a pointer for this Mac, "
-                 + "over the HDMI cable you already have.")
+                + "over the HDMI cable you already have.")
                 .font(.system(size: 11.5))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -97,7 +97,11 @@ struct FinishStep: View {
                     .init(symbol: "menubar.arrow.up.rectangle", tint: .gray,
                           label: "Lives in the\nmenu bar"),
                     .init(symbol: "dpad.fill", tint: .purple, label: "Remap any\nbutton"),
-                    .init(symbol: "waveform.path.ecg", tint: .orange, label: "Diagnose\nfrom there"),
+                    .init(
+                        symbol: "waveform.path.ecg",
+                        tint: .orange,
+                        label: "Diagnose\nfrom there"
+                    ),
                 ])
                 .padding(.top, 20)
 
