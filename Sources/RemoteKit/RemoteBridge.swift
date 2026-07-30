@@ -6,7 +6,6 @@ import Foundation
 public final class RemoteBridge: ObservableObject {
     @Published public private(set) var status: BridgeStatus = .paused
     @Published public private(set) var displayName: String?
-    @Published public private(set) var lastKey: RemoteKey?
     @Published public private(set) var pressCount: UInt64 = 0
     @Published public private(set) var isScrolling = false
     @Published public private(set) var log: [LogEntry] = []
@@ -121,7 +120,6 @@ public final class RemoteBridge: ObservableObject {
         Defaults.removeAll()
         sensitivity = Defaults[.pointerSensitivity]
         bindings = .resolving(Defaults[.bindings])
-        lastKey = nil
         pressCount = 0
         isScrolling = false
         log.removeAll()
@@ -163,7 +161,6 @@ private extension RemoteBridge {
     }
 
     func handle(press key: RemoteKey) {
-        lastKey = key
         pressCount &+= 1
         if reader.heldKey != key { append("Pressed \(key.title)") }
         run(reader.press(key, at: clock))

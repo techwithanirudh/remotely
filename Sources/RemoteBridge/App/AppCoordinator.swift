@@ -86,7 +86,6 @@ private extension AppCoordinator {
     func refreshStatusItem() {
         statusItem?.update(
             status: bridge.status,
-            lastKey: bridge.lastKey,
             isEnabled: bridge.isEnabled
         )
     }

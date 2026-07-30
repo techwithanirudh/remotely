@@ -5,7 +5,6 @@ import RemoteKit
 final class StatusItemController {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let header = MenuHeader()
-    private let lastPress = NSMenuItem(title: "Last button: None", action: nil, keyEquivalent: "")
     private let toggle: NSMenuItem
 
     init(
@@ -28,10 +27,6 @@ final class StatusItemController {
         let headerItem = NSMenuItem()
         headerItem.view = header
         menu.addItem(headerItem)
-
-        lastPress.isEnabled = false
-        lastPress.image = Self.icon("button.programmable")
-        menu.addItem(lastPress)
         menu.addItem(.separator())
 
         // The header already names the app, so items do not repeat it.
@@ -57,10 +52,9 @@ final class StatusItemController {
         item.menu = menu
     }
 
-    func update(status: BridgeStatus, lastKey: RemoteKey?, isEnabled: Bool) {
+    func update(status: BridgeStatus, isEnabled: Bool) {
         header.update(status: status)
         item.button?.toolTip = "Remote Bridge: \(status.title)"
-        lastPress.title = "Last button: \(lastKey?.title ?? "None")"
         toggle.state = isEnabled ? .on : .off
     }
 
