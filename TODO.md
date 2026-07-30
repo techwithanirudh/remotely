@@ -59,6 +59,15 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Later
 
+- [ ] Delta updates. `generate_appcast` writes them automatically when the
+      archives directory holds more than one version, but the enclosure URL it
+      writes is derived from the archive's filename under one
+      `--download-url-prefix`. Per-tag release URLs therefore cannot host old
+      versions, so this needs one permanent archive location that every zip is
+      uploaded to and the prefix points at, which is why Thaw keeps a separate
+      `updates` repo. Do that before bolting deltas on, or the regenerated
+      appcast points old entries at URLs that 404.
+
 - [ ] Sparkle: generate the EdDSA keypair (only you can hold the private half)
       and have `.github/workflows/release.yml` sign the zip and publish an
       appcast. Until the app is notarized, every update replaces an ad-hoc

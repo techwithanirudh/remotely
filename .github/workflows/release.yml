@@ -3,6 +3,8 @@ name: Release
 # Manual only. Pushing a tag does not release, so tags can be backfilled or
 # moved without distributing anything.
 on:
+  push:
+    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
   workflow_dispatch:
     inputs:
       tag:
@@ -37,17 +39,19 @@ jobs:
     env:
       APP_NAME: Remotely.app
       ZIP_NAME: Remotely.zip
+      DMG_NAME: Remotely.dmg
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-          ref: refs/tags/${{ inputs.tag }}
+          ref: ${{ github.event_name == 'push' && github.ref || format('refs/tags/{0}', inputs.tag) }}
 
       - name: Resolve tag and channel
         id: meta
         env:
-          TAG_NAME: ${{ inputs.tag }}
-          CHANNEL_INPUT: ${{ inputs.channel }}
+          TAG_NAME: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+          CHANNEL_INPUT: ${{ github.event_name == 'push' && 'auto' || inputs.channel }}
+          PUBLISH_INPUT: ${{ github.event_name == 'push' && 'true' || inputs.publish }}
         run: |
           set -euo pipefail
 
@@ -72,6 +76,7 @@ jobs:
             echo "tag=$TAG_NAME"
             echo "channel=$channel"
             echo "prerelease=$prerelease"
+            echo "publish=$PUBLISH_INPUT"
           } >> "$GITHUB_OUTPUT"
 
       - run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
@@ -140,11 +145,26 @@ jobs:
 
       # Provenance without an Apple Developer account. Notarization needs one;
       # until then macOS will ask the user to right-click and Open.
+      - name: Build the DMG
+        run: |
+          set -euo pipefail
+          staging="$RUNNER_TEMP/dmg"
+          rm -rf "$staging" && mkdir -p "$staging"
+          ditto "build/$APP_NAME" "$staging/$APP_NAME"
+          ln -s /Applications "$staging/Applications"
+          hdiutil create -volname Remotely -srcfolder "$staging" \
+            -ov -format UDZO "build/$DMG_NAME"
+          codesign --force --sign "Remotely Self Signed" "build/$DMG_NAME"
+          codesign -v "build/$DMG_NAME"
+
       - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
-      - name: Sign the archive
+      - name: Sign the artefacts
         env:
           COSIGN_YES: "true"
-        run: cosign sign-blob --bundle "build/$ZIP_NAME.sigstore.json" "build/$ZIP_NAME"
+        run: |
+          set -euo pipefail
+          cosign sign-blob --bundle "build/$ZIP_NAME.sigstore.json" "build/$ZIP_NAME"
+          cosign sign-blob --bundle "build/$DMG_NAME.sigstore.json" "build/$DMG_NAME"
 
       # Thaw runs this through a composite action in their own org, which is
       # not public, so the same steps are inline here. generate_appcast signs
@@ -200,10 +220,12 @@ jobs:
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           files: |
+            build/${{ env.DMG_NAME }}
+            build/${{ env.DMG_NAME }}.sigstore.json
             build/${{ env.ZIP_NAME }}
             build/${{ env.ZIP_NAME }}.sigstore.json
             build/appcast.xml
-          draft: ${{ !inputs.publish }}
+          draft: ${{ steps.meta.outputs.publish != 'true' }}
           prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
           body: |
             Channel: `${{ steps.meta.outputs.channel }}`
@@ -221,7 +243,7 @@ jobs:
         run: security delete-keychain "$RUNNER_TEMP/buildagent.keychain" || true
 
       - name: Publish the appcast to gh-pages
-        if: steps.appcast.outputs.built == 'true' && inputs.publish
+        if: steps.appcast.outputs.built == 'true' && steps.meta.outputs.publish == 'true'
         env:
           TAG: ${{ steps.meta.outputs.tag }}
           CHANNEL: ${{ steps.meta.outputs.channel }}

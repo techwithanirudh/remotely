@@ -5,7 +5,10 @@
 | What | Where | URL |
 | --- | --- | --- |
 | Appcast | `gh-pages` branch, served by GitHub Pages | `https://remotely.techwithanirudh.com/appcast.xml` |
-| Update payload | GitHub Releases on this repo | `https://github.com/techwithanirudh/remotely/releases/download/<tag>/Remotely.zip` |
+| Update payload | GitHub Releases on this repo | `.../releases/download/<tag>/Remotely.zip` |
+| Installer | GitHub Releases on this repo | `.../releases/download/<tag>/Remotely.dmg` |
+
+The DMG is for people installing by hand. Sparkle never downloads it.
 
 Two hosts, not one, and the split is the part that broke first. `generate_appcast`
 writes an enclosure URL next to the appcast unless told otherwise, which pointed
@@ -31,22 +34,27 @@ flowchart LR
 
 ## Cutting a release
 
-1. Bump `CFBundleShortVersionString` in `Resources/Info.plist`, commit, push.
-2. Tag it and push the tag. The tag alone distributes nothing.
+Bump both version fields, commit, then push a tag. Pushing the tag runs the
+release.
 
-   ```sh
-   git tag -a 0.7.0 -m 0.7.0 && git push origin 0.7.0
-   ```
+```sh
+plutil -replace CFBundleShortVersionString -string 0.7.0 Resources/Info.plist
+plutil -replace CFBundleVersion -string 12 Resources/Info.plist
+git commit -am "chore: bump to 0.7.0" && git push
+git tag -a 0.7.0 -m 0.7.0 && git push origin 0.7.0
+```
 
-3. Run the workflow. It is manual on purpose, so tags can be moved or backfilled
-   without shipping anything.
+`CFBundleVersion` is the one Sparkle compares. Forget it and no existing install
+sees the release, whatever the marketing version says.
 
-   ```sh
-   gh workflow run release.yml -f tag=0.7.0 -f channel=auto -f publish=true
-   ```
+For a draft, dispatch it by hand with `publish` unchecked instead:
 
-Leave `publish` unchecked for a draft. The appcast is only pushed to `gh-pages`
-when `publish` is set, so a draft cannot offer an update to anyone.
+```sh
+gh workflow run release.yml -f tag=0.7.0 -f channel=auto -f publish=false
+```
+
+The appcast only reaches `gh-pages` when publishing, so a draft cannot offer an
+update to anyone.
 
 ## What the job does
 
@@ -99,5 +107,4 @@ still needs right-click then Open.
 
 ## Related
 
-- [VERIFYING_RELEASES.md](VERIFYING_RELEASES.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
