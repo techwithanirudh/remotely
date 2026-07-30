@@ -6,9 +6,7 @@ struct FinishStep: View {
             Confetti()
 
             VStack(spacing: 0) {
-                Image(nsImage: NSApp.applicationIconImage)
-                    .resizable()
-                    .frame(width: 72, height: 72)
+                AppIconButton(size: 72)
 
                 Text("You're all set")
                     .font(.system(size: 24, weight: .bold))

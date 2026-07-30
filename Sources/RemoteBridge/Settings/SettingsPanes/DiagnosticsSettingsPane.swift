@@ -10,14 +10,14 @@ struct DiagnosticsSettingsPane: View {
                 Card {
                     Row(title: "Remote signal") {
                         StatusBadge(
-                            title: bridge.status.isReady ? "Receiving" : "None yet",
+                            title: bridge.status.isReady ? "Receiving" : "Awaiting input",
                             tint: bridge.status.isReady ? .green : .orange
                         )
                     }
                     HairlineDivider()
                     Row(title: "Accessibility") {
                         StatusBadge(
-                            title: bridge.hasAccessibility ? "Allowed" : "Required",
+                            title: bridge.hasAccessibility ? "Granted" : "Not granted",
                             tint: bridge.hasAccessibility ? .green : .orange
                         )
                     }

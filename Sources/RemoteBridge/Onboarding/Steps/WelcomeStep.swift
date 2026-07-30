@@ -4,9 +4,7 @@ import SwiftUI
 struct WelcomeStep: View {
     var body: some View {
         VStack(spacing: 0) {
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable()
-                .frame(width: 76, height: 76)
+            AppIconButton(size: 76)
 
             Text("Remote Bridge")
                 .font(.system(size: 27, weight: .bold))

@@ -13,9 +13,7 @@ struct AboutSettingsPane: View {
             VStack(alignment: .leading, spacing: 0) {
                 Card {
                     HStack(alignment: .top, spacing: 12) {
-                        Image(nsImage: NSApp.applicationIconImage)
-                            .resizable()
-                            .frame(width: 44, height: 44)
+                        AppIconButton(size: 44)
 
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Remote Bridge").font(.system(size: 15, weight: .semibold))

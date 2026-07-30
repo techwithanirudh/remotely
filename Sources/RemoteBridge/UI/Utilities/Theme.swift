@@ -68,6 +68,9 @@ enum Theme {
 
     enum Motion {
         static let state = Animation.easeOut(duration: 0.18)
+        static let pressScale = 0.97
+        static let pressIn = Animation.easeOut(duration: 0.08)
+        static let pressOut = Animation.spring(duration: 0.22, bounce: 0.18)
     }
 
     enum Color {
