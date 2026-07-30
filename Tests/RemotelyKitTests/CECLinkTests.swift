@@ -8,9 +8,9 @@ func cecLinkTests() {
         link.onStateChange = { states.append($0) }
 
         link.start()
-        Expect.equal(states.first, .waitingForDisplay, "startup begins with the actual wait state")
+        Expect.equal(states.first, .idle, "startup begins waiting for a button")
 
         link.stop()
-        Expect.equal(states, [.waitingForDisplay, .stopped], "an explicit stop is reported once")
+        Expect.equal(states, [.idle, .stopped], "an explicit stop is reported once")
     }
 }

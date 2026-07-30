@@ -52,7 +52,7 @@ public enum RemoteStatus: Equatable, Sendable {
         case .stopped: self = .paused
         case .unsupported: self = .unsupported
         case .failed(let message): self = .failed(message)
-        case .waitingForDisplay:
+        case .idle:
             guard hasAccessibility else {
                 self = .needsPermission
                 return

@@ -4,9 +4,11 @@ import AppKit
 /// only learns of a display from an EDID line, which needs bus traffic.
 @MainActor
 public enum AttachedDisplay {
-    public static var isAttached: Bool {
-        NSScreen.screens.contains { !isBuiltIn($0) }
+    public static var name: String? {
+        NSScreen.screens.first { !isBuiltIn($0) }?.localizedName
     }
+
+    public static var isAttached: Bool { name != nil }
 
     private static func isBuiltIn(_ screen: NSScreen) -> Bool {
         let key = NSDeviceDescriptionKey("NSScreenNumber")

@@ -63,6 +63,10 @@ public final class Remote: ObservableObject {
     public func start() {
         watchDisplays()
         refreshPermission()
+        if let display = AttachedDisplay.name {
+            displayName = display
+            append("Connected to \(display)")
+        }
         if isEnabled { link.start() }
         startTicker()
     }

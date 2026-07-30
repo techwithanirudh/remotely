@@ -10,7 +10,7 @@ public final class CECLink {
     public enum State: Equatable, Sendable, CustomStringConvertible {
         case stopped
         case unsupported
-        case waitingForDisplay
+        case idle
         case listening
         case failed(String)
 
@@ -18,8 +18,8 @@ public final class CECLink {
             switch self {
             case .stopped: "Stopped"
             case .unsupported: "Not supported on this Mac"
-            case .waitingForDisplay: "Waiting for a display"
-            case .listening: "Listening"
+            case .idle: "Waiting for a button"
+            case .listening: "Receiving buttons"
             case .failed(let reason): "Failed, \(reason)"
             }
         }
@@ -35,7 +35,8 @@ public final class CECLink {
     private var stream: Process?
     private var buffer = Data()
     private var state: State?
-    private var displayName: String?
+    /// Seeded from the window server, so a name already known is not logged twice.
+    private var displayName: String? = AttachedDisplay.name
 
     public init() {}
 
@@ -73,7 +74,7 @@ public final class CECLink {
         }
 
         stream = process
-        transition(to: .waitingForDisplay)
+        transition(to: .idle)
     }
 
     public func stop() {
@@ -91,7 +92,7 @@ private extension CECLink {
         }
         stream = nil
         buffer.removeAll()
-        displayName = nil
+        displayName = AttachedDisplay.name
     }
 
     func consume(_ chunk: Data) {
