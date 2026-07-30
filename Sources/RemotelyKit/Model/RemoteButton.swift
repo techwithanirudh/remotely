@@ -51,7 +51,7 @@ public enum RemoteButton: String, CaseIterable, Identifiable, Codable, Sendable 
         }
     }
 
-    public var isDirectional: Bool {
+    var isDirectional: Bool {
         switch self {
         case .up, .down, .left, .right: true
         default: false

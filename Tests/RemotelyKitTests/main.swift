@@ -1,3 +1,4 @@
+// swiftlint:disable:next unused_import - Foundation provides exit(_:)
 import Foundation
 
 gestureRulesTests()

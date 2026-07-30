@@ -20,8 +20,8 @@ func bindingsTests() {
         )
         Expect.equal(resolved[.back], Bindings.standard[.back],
                      "changing a default still reaches someone who customized a different button")
-        Expect.equal(Bindings.standard[.backHold], ButtonBinding(.browserForward),
-                     "Forward sits on the hold, the rarest of Back's three gestures")
+        Expect.equal(Bindings.standard[.backHold], ButtonBinding(.none),
+                     "holding Back is unbound until Forward is known to work")
 
         Expect.that(!ButtonBinding(.keyboardShortcut).isComplete,
                     "a shortcut binding is incomplete until something is recorded")

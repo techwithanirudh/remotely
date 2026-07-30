@@ -46,7 +46,7 @@
 | Center, held | Right click |
 | Back | Back |
 | Back, twice | Switches the arrows between moving and scrolling |
-| Back, held | Forward |
+| Back, held | Yours to bind |
 
 Volume, media and Home never reach the Mac. Displays handle those themselves
 and keep them off the CEC bus.

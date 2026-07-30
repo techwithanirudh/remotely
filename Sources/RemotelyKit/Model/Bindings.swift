@@ -11,7 +11,7 @@ public struct ButtonBinding: Codable, Hashable, Sendable {
         action != .keyboardShortcut || combo != nil
     }
 
-    public var summary: String {
+    var summary: String {
         guard action == .keyboardShortcut else { return action.title }
         return combo?.display ?? "Not set"
     }
@@ -36,7 +36,7 @@ public struct Bindings: Codable, Hashable, Sendable {
         .centerHold: ButtonBinding(.rightClick),
         .back: ButtonBinding(.browserBack),
         .backDouble: ButtonBinding(.toggleScrolling),
-        .backHold: ButtonBinding(.browserForward),
+        .backHold: ButtonBinding(.none),
     ])
 
     public subscript(button: RemoteButton) -> ButtonBinding {

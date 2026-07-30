@@ -27,7 +27,7 @@ public final class InputSynthesizer {
     public static var hasAccessibility: Bool { AXIsProcessTrusted() }
 
     @discardableResult
-    public static func requestAccessibility() -> Bool {
+    static func requestAccessibility() -> Bool {
         AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
     }
 

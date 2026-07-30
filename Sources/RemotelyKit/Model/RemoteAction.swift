@@ -91,7 +91,7 @@ public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable 
         }
     }
 
-    public var isScroll: Bool {
+    var isScroll: Bool {
         switch self {
         case .scrollUp, .scrollDown, .scrollLeft, .scrollRight: true
         default: false

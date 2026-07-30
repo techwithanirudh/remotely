@@ -16,7 +16,7 @@ public enum RemoteKey: String, CaseIterable, Sendable {
         }
     }
 
-    public var isDirectional: Bool {
+    var isDirectional: Bool {
         switch self {
         case .up, .down, .left, .right: true
         case .select, .back: false
