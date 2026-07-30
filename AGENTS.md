@@ -63,7 +63,12 @@ swift run RemoteKitTests                 # the whole suite; there is no single-t
 zsh scripts/build-app.sh                 # writes build/Remote Bridge.app
 zsh scripts/capture-cec.sh 20            # records a CEC session for a fixture
 zsh scripts/analyze.sh                   # SwiftLint's analyzer rules, needs a clean build
+zsh scripts/check-links.sh               # the TV support links still reach the article
 ```
+
+A support link that answers 200 is not a working link. Retired articles redirect
+to the maker's help-library index, which answers 200 from there, so two dead
+links shipped. `check-links.sh` compares the final URL to the one asked for.
 
 Tests are a plain executable, not XCTest: Command Line Tools ships neither
 XCTest nor swift-testing, and swift-testing conflicts with Defaults over

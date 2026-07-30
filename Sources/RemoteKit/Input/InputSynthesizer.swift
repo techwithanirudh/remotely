@@ -137,7 +137,12 @@ private extension InputSynthesizer {
     }
 
     func navigate(back: Bool) {
-        switch NavigationMethod(frontmostApp: FrontmostApp.bundleID) {
+        // Without a target there is no right method, and the fallback posts a
+        // mouse button no app asked for, which other listeners pick up.
+        let app = FrontmostApp.bundleID
+        guard !app.isEmpty else { return }
+
+        switch NavigationMethod(frontmostApp: app) {
         case .swipe:
             NavigationSwipe.post(back ? .left : .right)
         case .mouseButton:

@@ -60,17 +60,21 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
 
     /// The maker's own page, where one has been confirmed to resolve.
     ///
-    /// Support articles get moved and retired constantly, and several of the
-    /// ones tried here answered 404 or 500. Rather than ship a link that dies,
-    /// the rest fall back to a search, which always lands somewhere current.
+    /// Support articles get moved and retired constantly, so the rest fall back
+    /// to a search, which always lands somewhere current. Checking these for a
+    /// 200 is not enough: a retired article redirects to the help-library index
+    /// and answers 200 from there, which is how two dead links shipped. The URL
+    /// has to come back unchanged, which is what `scripts/check-links.sh` does.
     var verifiedArticle: URL? {
         switch self {
         case .samsung:
             URL(string: "https://www.samsung.com/us/support/answer/ANS10006946/")
         case .lg:
-            URL(string: "https://www.lg.com/us/support/help-library/lg-tv-simplink-CT10000018")
+            URL(
+                string: "https://www.lg.com/us/support/help-library/lg-tv-how-to-enable-hdmi-cec--20153164607551"
+            )
         case .tclRoku:
-            URL(string: "https://support.roku.com/article/208755668")
+            URL(string: "https://support.roku.com/article/configure-hdmi-settings-on-your-tv")
         default:
             nil
         }
