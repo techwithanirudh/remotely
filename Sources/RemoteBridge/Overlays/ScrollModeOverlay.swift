@@ -1,4 +1,5 @@
 import AppKit
+import RemoteKit
 import SwiftUI
 
 /// A chip that follows the pointer while scroll mode is on.
@@ -101,7 +102,7 @@ private struct Chip: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: "arrow.up.and.down.text.horizontal")
+            Image(systemName: RemoteAction.toggleScrolling.symbol)
                 .font(.system(size: 9.5, weight: .semibold))
             Text("Scrolling").font(.system(size: 10.5, weight: .semibold))
         }

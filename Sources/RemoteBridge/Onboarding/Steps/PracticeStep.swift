@@ -34,11 +34,11 @@ struct PracticeStep: View {
 
         var symbol: String {
             switch self {
-            case .move: "arrow.up.and.down.and.arrow.left.and.right"
-            case .click: "cursorarrow.click"
+            case .move: RemoteAction.moveUp.symbol
+            case .click: RemoteAction.leftClick.symbol
             case .doubleClick: "cursorarrow.rays"
             case .rightClick: "contextualmenu.and.cursorarrow"
-            case .scroll: "arrow.up.and.down.text.horizontal"
+            case .scroll: RemoteAction.toggleScrolling.symbol
             }
         }
 
@@ -176,17 +176,17 @@ struct PracticeStep: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(10)
+                .padding(Theme.cardPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(height: 92)
             .card()
-            .background(ScrollAreaProbe())
+            .background(TargetProbe())
 
             verdict
         } else {
             Marker(outcome: outcome, idleSymbol: exercise.idleSymbol, prompt: exercise.prompt)
-                .background(ScrollAreaProbe())
+                .background(TargetProbe())
                 // A real menu, so the gesture is proven end to end rather than
                 // just registering that a right click happened.
                 .contextMenu {
@@ -223,7 +223,7 @@ struct PracticeStep: View {
         monitor = NSEvent.addLocalMonitorForEvents(matching: exercise.mask) { event in
             let fromRemote = EventSignature.marks(event)
             let inside = MainActor
-                .assumeIsolated { ScrollAreaProbe.contains(NSEvent.mouseLocation) }
+                .assumeIsolated { TargetProbe.contains(NSEvent.mouseLocation) }
 
             if let result = exercise.judge(event, fromRemote: fromRemote, insideTarget: inside) {
                 MainActor.assumeIsolated {
@@ -259,7 +259,7 @@ private struct Marker: View {
                             ? AnyShapeStyle(.secondary)
                             : AnyShapeStyle(Color.white))
                 }
-                .animation(.easeOut(duration: 0.15), value: outcome)
+                .animation(Theme.stateChange, value: outcome)
 
             Text(caption)
                 .font(.system(size: 11))
@@ -269,7 +269,7 @@ private struct Marker: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 15)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Theme.cardPadding)
         .card()
     }
 
@@ -313,8 +313,8 @@ struct ModeBadge: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: isScrolling
-                ? "arrow.up.and.down.text.horizontal"
-                : "arrow.up.and.down.and.arrow.left.and.right")
+                ? RemoteAction.toggleScrolling.symbol
+                : RemoteAction.moveUp.symbol)
                 .font(.system(size: 10, weight: .semibold))
 
             Text(isScrolling ? "Scrolling" : "Moving the pointer")
@@ -324,20 +324,22 @@ struct ModeBadge: View {
         .padding(.horizontal, 10)
         .frame(height: 24)
         .background(
-            (isScrolling ? Color.accentColor : .primary).opacity(isScrolling ? 0.15 : 0.07),
+            (isScrolling ? Color.accentColor : .primary)
+                .opacity(isScrolling ? Theme.tintWash : Theme.tintWashSoft),
             in: Capsule()
         )
-        .animation(.easeOut(duration: 0.18), value: isScrolling)
+        .animation(Theme.stateChange, value: isScrolling)
     }
 }
 
 /// Reports where the step's target sits on screen, so input can be judged
-/// against it rather than against the whole panel.
+/// against it rather than against the whole panel. Every exercise uses it, not
+/// just the scrolling one.
 ///
 /// Measured when asked rather than cached. The panel lays out at the origin and
 /// is centered afterwards, so a frame recorded during layout described a patch of
 /// screen the card had since left, and presses well outside the card counted.
-struct ScrollAreaProbe: NSViewRepresentable {
+struct TargetProbe: NSViewRepresentable {
     @MainActor private weak static var current: Probe?
 
     @MainActor
@@ -357,7 +359,7 @@ struct ScrollAreaProbe: NSViewRepresentable {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             guard window != nil else { return }
-            MainActor.assumeIsolated { ScrollAreaProbe.current = self }
+            MainActor.assumeIsolated { TargetProbe.current = self }
         }
     }
 }

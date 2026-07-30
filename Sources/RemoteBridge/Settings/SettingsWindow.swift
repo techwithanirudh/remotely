@@ -260,14 +260,3 @@ private struct SidebarItem: View {
         .padding(.horizontal, Theme.sidebarInset)
     }
 }
-
-extension BridgeStatus {
-    var tint: Color {
-        switch self {
-        case .ready: .green
-        case .waitingForRemote, .needsPermission: .orange
-        case .unsupported, .failed: .red
-        case .paused: .secondary
-        }
-    }
-}

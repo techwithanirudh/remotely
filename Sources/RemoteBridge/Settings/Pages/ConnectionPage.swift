@@ -45,13 +45,13 @@ struct ConnectionPage: View {
 
                 Card {
                     Checklist(
-                        text: "Connect this Mac to your TV with an HDMI cable",
-                        done: isLinked
+                        title: "Connect this Mac to your TV with an HDMI cable",
+                        isDone: isLinked
                     )
                     HairlineDivider()
-                    Checklist(text: "Switch the TV to that HDMI input", done: isLinked)
+                    Checklist(title: "Switch the TV to that HDMI input", isDone: isLinked)
                     HairlineDivider()
-                    Checklist(text: "Turn on HDMI-CEC in the TV's settings", done: isLinked)
+                    Checklist(title: "Turn on HDMI-CEC in the TV's settings", isDone: isLinked)
                 }
 
                 SectionLabel(title: "Where to find it")
@@ -63,19 +63,19 @@ struct ConnectionPage: View {
 }
 
 private struct Checklist: View {
-    let text: String
-    let done: Bool
+    let title: String
+    let isDone: Bool
 
     var body: some View {
         HStack(spacing: Theme.iconGap) {
-            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+            Image(systemName: isDone ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 14))
-                .foregroundStyle(done ? .green : .secondary)
-            Text(text).font(.system(size: 13))
+                .foregroundStyle(isDone ? .green : .secondary)
+            Text(title).font(.system(size: 13))
             Spacer()
         }
         .padding(.horizontal, Theme.cardPadding)
-        .frame(height: 42)
+        .frame(height: Theme.rowHeightCompact)
     }
 }
 
@@ -104,7 +104,7 @@ struct BrandGuide: View {
                 .fixedSize()
             }
             .padding(.horizontal, Theme.cardPadding)
-            .frame(height: 42)
+            .frame(height: Theme.rowHeightCompact)
 
             HairlineDivider()
 
@@ -151,7 +151,7 @@ struct BrandGuide: View {
             }
             .contentShape(Rectangle())
             .padding(.horizontal, Theme.cardPadding)
-            .frame(height: 40)
+            .frame(height: Theme.rowHeightCompact)
         }
         .buttonStyle(.plain)
     }

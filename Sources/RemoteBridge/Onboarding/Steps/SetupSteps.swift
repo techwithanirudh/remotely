@@ -21,10 +21,14 @@ struct WelcomeStep: View {
                 .padding(.top, 6)
 
             IconRow(items: [
-                .init(symbol: "arrow.up.and.down.and.arrow.left.and.right",
+                .init(symbol: RemoteAction.moveUp.symbol,
                       tint: .blue, label: "Hold to\nmove"),
-                .init(symbol: "cursorarrow.click", tint: .purple, label: "Center to\nclick"),
-                .init(symbol: "arrow.up.and.down.text.horizontal",
+                .init(
+                    symbol: RemoteAction.leftClick.symbol,
+                    tint: .purple,
+                    label: "Center to\nclick"
+                ),
+                .init(symbol: RemoteAction.toggleScrolling.symbol,
                       tint: .teal, label: "Back twice\nto scroll"),
             ])
             .padding(.top, 20)

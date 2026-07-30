@@ -4,7 +4,7 @@ import SwiftUI
 struct InfoRow: View {
     let symbol: String
     let title: String
-    let detail: String
+    let subtitle: String
     var tint: Color = .secondary
     var badge: String?
 
@@ -18,11 +18,11 @@ struct InfoRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(title).font(.system(size: 13, weight: .medium))
-                    if let badge { Pill(text: badge) }
+                    if let badge { Pill(title: badge) }
                     Spacer(minLength: 0)
                 }
 
-                Text(detail)
+                Text(subtitle)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct Pill: View {
-    let text: String
+    let title: String
     var tint: Color = .accentColor
 
     var body: some View {
-        Text(text)
+        Text(title)
             .font(.system(size: 10, weight: .semibold))
             .foregroundStyle(tint)
             .padding(.horizontal, 8)

@@ -10,14 +10,14 @@ struct DiagnosticsPage: View {
                 Card {
                     Row(title: "Remote signal") {
                         StatusBadge(
-                            text: bridge.status.isReady ? "Receiving" : "None yet",
+                            title: bridge.status.isReady ? "Receiving" : "None yet",
                             tint: bridge.status.isReady ? .green : .orange
                         )
                     }
                     HairlineDivider()
                     Row(title: "Accessibility") {
                         StatusBadge(
-                            text: bridge.hasAccessibility ? "Allowed" : "Required",
+                            title: bridge.hasAccessibility ? "Allowed" : "Required",
                             tint: bridge.hasAccessibility ? .green : .orange
                         )
                     }
@@ -56,10 +56,10 @@ private struct EventLog: View {
             }
             .buttonStyle(.plain)
             .font(.system(size: 11, weight: .semibold))
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Theme.cardPadding)
             .frame(height: 34)
 
-            Divider()
+            HairlineDivider()
 
             if bridge.log.isEmpty {
                 Text("Remote events will appear here.")
@@ -85,7 +85,7 @@ private struct EventLog: View {
                             .font(.system(size: 10, design: .monospaced))
                         }
                     }
-                    .padding(12)
+                    .padding(Theme.cardPadding)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(height: 190)

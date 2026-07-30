@@ -89,7 +89,7 @@ struct OnboardingView: View {
                         .fill(item == step ? Color.primary.opacity(0.45) : Color.primary
                             .opacity(0.14))
                         .frame(width: item == step ? 14 : 5, height: 5)
-                        .animation(.easeOut(duration: 0.18), value: step)
+                        .animation(Theme.stateChange, value: step)
                 }
             }
 

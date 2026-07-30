@@ -151,15 +151,6 @@ private final class MenuHeader: NSView {
 
     func update(status: BridgeStatus) {
         subtitle.stringValue = status.title
-        dot.layer?.backgroundColor = color(for: status).cgColor
-    }
-
-    private func color(for status: BridgeStatus) -> NSColor {
-        switch status {
-        case .ready: .systemGreen
-        case .waitingForRemote, .needsPermission: .systemOrange
-        case .unsupported, .failed: .systemRed
-        case .paused: .secondaryLabelColor
-        }
+        dot.layer?.backgroundColor = status.nsTint.cgColor
     }
 }

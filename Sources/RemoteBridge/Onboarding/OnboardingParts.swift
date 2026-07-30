@@ -157,7 +157,7 @@ struct StatusLine: View {
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(done ? .primary : .secondary)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, Theme.cardPadding)
         .frame(height: 30)
         .card(radius: Theme.cornerRadius)
     }
@@ -208,11 +208,11 @@ struct GestureHero: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(tint.opacity(0.10))
+                .fill(tint.opacity(Theme.tintWashSoft))
                 .frame(width: 132, height: 132)
 
             Circle()
-                .fill(tint.opacity(0.14))
+                .fill(tint.opacity(Theme.tintWash))
                 .frame(width: 96, height: 96)
 
             Image(systemName: symbol)

@@ -23,25 +23,25 @@ struct ControlsPage: View {
                     InfoRow(
                         symbol: "hand.tap",
                         title: "Tap an arrow",
-                        detail: "Nudges the pointer a few pixels, for hitting a small target."
+                        subtitle: "Nudges the pointer a few pixels, for hitting a small target."
                     )
                     HairlineDivider()
                     InfoRow(
                         symbol: "hand.point.up.left.and.text",
                         title: "Hold an arrow",
-                        detail: "Glides the pointer, speeding up the longer you hold."
+                        subtitle: "Glides the pointer, speeding up the longer you hold."
                     )
                     HairlineDivider()
                     InfoRow(
-                        symbol: "cursorarrow.click",
+                        symbol: RemoteAction.leftClick.symbol,
                         title: "Press Center",
-                        detail: "Clicks. Press twice to double-click, hold for a right click."
+                        subtitle: "Clicks. Press twice to double-click, hold for a right click."
                     )
                     HairlineDivider()
                     InfoRow(
-                        symbol: "arrow.up.and.down.text.horizontal",
+                        symbol: RemoteAction.toggleScrolling.symbol,
                         title: "Press Back twice",
-                        detail: "Switches the arrows between moving the pointer and scrolling.",
+                        subtitle: "Switches the arrows between moving the pointer and scrolling.",
                         tint: bridge.isScrolling ? .accentColor : .secondary,
                         badge: bridge.isScrolling ? "Scrolling" : nil
                     )
@@ -88,7 +88,7 @@ private struct BindingRow: View {
             Image(systemName: button.symbol)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(.purple)
-                .frame(width: 20)
+                .frame(width: Theme.glyphColumn)
 
             Text(button.shortTitle).font(.system(size: 13))
 
@@ -114,6 +114,6 @@ private struct BindingRow: View {
             )
         }
         .padding(.horizontal, Theme.cardPadding)
-        .frame(minHeight: 43)
+        .frame(minHeight: Theme.rowHeightCompact)
     }
 }
