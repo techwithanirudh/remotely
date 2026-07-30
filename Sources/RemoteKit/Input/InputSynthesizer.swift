@@ -19,6 +19,10 @@ public final class InputSynthesizer {
     private var pointer: ContinuousMotion?
     private var scroll: ContinuousMotion?
 
+    /// Whatever the last Back or Forward did, for the Diagnostics log. Nothing
+    /// reports which app took a posted event, so the choice has to say so.
+    public private(set) var lastNavigation = ""
+
     public init() {}
 
     public static var hasAccessibility: Bool { AXIsProcessTrusted() }
@@ -31,6 +35,7 @@ public final class InputSynthesizer {
     /// One-shot actions. Continuous ones go through `hold`/`release`, which need
     /// the key-down duration rather than a single event.
     public func perform(_ binding: ButtonBinding) {
+        lastNavigation = ""
         switch binding.action {
         case .none, .toggleScrolling:
             break
@@ -123,8 +128,6 @@ private extension InputSynthesizer {
         send(event)
     }
 
-    /// Buttons 3 and 4 are what browsers and Finder read as Back and Forward,
-    /// and they work in more places than Command-[ does.
     func click(_ action: RemoteAction) {
         switch action {
         case .leftClick: click(.left, clicks: 1)
@@ -137,16 +140,13 @@ private extension InputSynthesizer {
     }
 
     func navigate(back: Bool) {
-        // Without a target there is no right method, and the fallback posts a
-        // mouse button no app asked for, which other listeners pick up.
-        let app = FrontmostApp.bundleID
-        guard !app.isEmpty else { return }
+        let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "unknown"
+        let method = NavigationMethod(frontmostApp: app)
+        lastNavigation = "\(back ? "Back" : "Forward") to \(app) by \(method.title)"
 
-        switch NavigationMethod(frontmostApp: app) {
+        switch method {
         case .swipe:
             NavigationSwipe.post(back ? .left : .right)
-        case .mouseButton:
-            click(CGMouseButton(rawValue: back ? 3 : 4) ?? .center, clicks: 1)
         case .commandBracket:
             press(key: back ? 33 : 30, flags: .maskCommand)
         case .optionCommandBracket:

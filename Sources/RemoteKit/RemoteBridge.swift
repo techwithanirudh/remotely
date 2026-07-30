@@ -218,6 +218,7 @@ private extension RemoteBridge {
             return
         }
         input.perform(binding)
+        if !input.lastNavigation.isEmpty { append(input.lastNavigation) }
     }
 
     /// Without Accessibility every posted event is dropped silently. Onboarding

@@ -17,9 +17,16 @@ import Foundation
 ///
 /// Their fourth method, a navigation swipe, needs a private touch API we do
 /// not have, so apps that want one get Command-bracket instead.
+///
+/// Their two fallbacks are not ours. A mouse button is the right guess when the
+/// press came from a mouse that has one, but this app has no such button to
+/// forward, and every app outside their table simply ignored it. The swipe is
+/// an ordinary CGEvent carrying undocumented gesture fields, which any other
+/// global listener sees too. Command-bracket is the one that works nearly
+/// everywhere, so unknown apps get that and the other two are left to the apps
+/// their table names.
 public enum NavigationMethod: Equatable, Sendable {
     case swipe
-    case mouseButton
     case commandBracket
     case optionCommandBracket
     case commandArrow
@@ -30,16 +37,19 @@ public enum NavigationMethod: Equatable, Sendable {
             self = .optionCommandBracket
         case "com.adobe.Acrobat.Pro", "com.apple.iCal":
             self = .commandArrow
-        case "org.zotero.zotero", "dev.warp.Warp",
-             "com.apple.systempreferences", "com.apple.AppStore",
-             "com.apple.Music", "com.apple.AddressBook",
-             "com.apple.TV", "com.apple.iBooksX", "com.apple.Preview":
-            self = .commandBracket
         case "com.operasoftware.Opera", "com.binarynights.ForkLift":
             self = .swipe
         default:
-            // Apple apps ignore buttons 4 and 5 entirely.
-            self = bundleID.hasPrefix("com.apple.") ? .swipe : .mouseButton
+            self = .commandBracket
+        }
+    }
+
+    public var title: String {
+        switch self {
+        case .swipe: "swipe"
+        case .commandBracket: "command-bracket"
+        case .optionCommandBracket: "option-command-bracket"
+        case .commandArrow: "command-arrow"
         }
     }
 }

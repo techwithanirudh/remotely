@@ -42,6 +42,12 @@ five of their own classes, so this is a port rather than a copy, and the MMF
 License attaches its conditions to publishing — worth re-reading before this
 app ever ships.
 
+Their two fallbacks are not used. A mouse button is right for a mouse that has
+one and is ignored everywhere else; the swipe is a plain CGEvent carrying
+undocumented gesture fields, which every other global listener sees too.
+Command-bracket is the default here, and the swipe is kept only for the two
+apps their table says need it.
+
 ## Commits
 
 Conventional Commits, enforced by a hook: `feat:`, `fix:`, `refactor:`,
