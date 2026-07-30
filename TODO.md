@@ -8,9 +8,8 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] Capture a real CEC session as a test fixture and replay it in the suite
       (`zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt`).
       Debug-level log lines are never archived, so this has to be recorded live.
-- [ ] Split the remaining multi-type files: OnboardingParts, SetupSteps,
+- [ ] Split the remaining multi-type view files: OnboardingParts, SetupSteps,
       SettingsWindow, PracticeStep — one type per file under its feature.
-- [ ] README: screenshot at the top, architecture diagram, badges.
 - [ ] Collapse the font scale to 11/12/13/15 and add font tokens to `Theme`,
       then enable the `hardcoded_font_size` custom lint rule (64 hits today).
 - [ ] `Row` absorbs the hand-rolled rows; one badge component; `IconTile`

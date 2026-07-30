@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  SWIFTLINT: 0.65.0
+  SWIFTFORMAT: 0.62.1
+
 jobs:
   build:
     runs-on: macos-15
@@ -21,15 +25,32 @@ jobs:
       - run: swift build
       - run: swift run RemoteKitTests
 
-      - name: Lint
+      # Release binaries rather than `brew install`: Homebrew has no versioned
+      # formula for either, so an unpinned install turns a rule change upstream
+      # into a red build here for reasons unrelated to the commit.
+      - name: Install linters
         run: |
-          brew install swiftlint swiftformat
-          zsh scripts/lint.sh --check
+          curl -fsSL -o swiftlint.zip \
+            https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip
+          curl -fsSL -o swiftformat.zip \
+            https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT/swiftformat.zip
+          unzip -qo swiftlint.zip -d /usr/local/bin
+          unzip -qjo swiftformat.zip '*/swiftformat' -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftlint /usr/local/bin/swiftformat
+          swiftlint version && swiftformat --version
+
+      - run: zsh scripts/lint.sh --check
 
   analyze:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - run: brew install swiftlint
+      - name: Install SwiftLint
+        run: |
+          curl -fsSL -o swiftlint.zip \
+            https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip
+          unzip -qo swiftlint.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftlint
+
       # Needs a clean build, so it runs on its own rather than in the hook.
       - run: zsh scripts/analyze.sh

@@ -14,7 +14,9 @@ swift build
 swift run RemoteKitTests
 ```
 
-`scripts/lint.sh --check` is the read-only version CI runs.
+`scripts/lint.sh --check` is the read-only version CI runs. CI pins SwiftLint
+0.65.0 and SwiftFormat 0.62.1 from their release binaries, so match those
+locally: `brew install swiftlint swiftformat`.
 
 ## Comments
 
