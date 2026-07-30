@@ -95,6 +95,30 @@ jobs:
           COSIGN_YES: "true"
         run: cosign sign-blob --bundle "build/$ZIP_NAME.sigstore.json" "build/$ZIP_NAME"
 
+      # generate_appcast signs the archive with the EdDSA private key and emits
+      # the feed. Without the secret it is skipped rather than emitting an
+      # unsigned appcast, which Sparkle would reject anyway.
+      - name: Build the appcast
+        if: env.SPARKLE_PRIVATE_KEY != ''
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+        run: |
+          set -euo pipefail
+          sparkle_dir=$(find .build/artifacts -type d -name 'Sparkle-*' -o -type d -name 'bin' | grep -m1 'bin' || true)
+          generate_appcast=$(find .build/artifacts -type f -name generate_appcast | head -1)
+          if [[ -z "$generate_appcast" ]]; then
+            echo "generate_appcast not found in the resolved Sparkle artifact"; exit 1
+          fi
+
+          mkdir -p appcast-in
+          cp "build/$ZIP_NAME" appcast-in/
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_ed_key
+          "$generate_appcast" --ed-key-file /tmp/sparkle_ed_key \
+            --channel "$CHANNEL" appcast-in
+          rm -f /tmp/sparkle_ed_key
+          cp appcast-in/appcast.xml build/appcast.xml
+
       - name: Create the release
         uses: softprops/action-gh-release@v2
         with:
@@ -102,6 +126,7 @@ jobs:
           files: |
             build/${{ env.ZIP_NAME }}
             build/${{ env.ZIP_NAME }}.sigstore.json
+            build/appcast.xml
           draft: ${{ !inputs.publish }}
           prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
           body: |

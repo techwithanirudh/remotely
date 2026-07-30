@@ -11,6 +11,7 @@ final class StatusItemController {
         onToggle: @escaping () -> Void,
         onSettings: @escaping () -> Void,
         onCopyLog: @escaping () -> Void,
+        onCheckForUpdates: @escaping () -> Void,
         onQuit: @escaping () -> Void
     ) {
         toggle = NSMenuItem(title: "Enable", action: nil, keyEquivalent: "")
@@ -37,6 +38,11 @@ final class StatusItemController {
             action: onSettings
         ))
         menu.addItem(.separator())
+        menu.addItem(Self.item(
+            NSMenuItem(title: "Check for Updates…", action: nil, keyEquivalent: ""),
+            symbol: "arrow.down.circle",
+            action: onCheckForUpdates
+        ))
         menu.addItem(Self.item(
             NSMenuItem(title: "Copy Diagnostic Log", action: nil, keyEquivalent: ""),
             symbol: "doc.on.doc",

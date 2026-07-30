@@ -23,6 +23,7 @@ let package = Package(
         // Type-safe UserDefaults. Alcove links the same library.
         .package(url: "https://github.com/sindresorhus/Defaults", from: "9.0.0"),
         .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.4"),
         .package(url: "https://github.com/sindresorhus/LaunchAtLogin-Modern", from: "1.0.0"),
     ],
     targets: [
@@ -38,8 +39,15 @@ let package = Package(
                 "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
                 .product(name: "LaunchAtLogin", package: "LaunchAtLogin-Modern"),
+                .product(name: "Sparkle", package: "Sparkle"),
             ],
-            swiftSettings: strict
+            swiftSettings: strict,
+            // Sparkle links as @rpath/Sparkle.framework, and the bundle is
+            // assembled by hand, so the binary needs to be told where the
+            // Frameworks folder is relative to itself.
+            linkerSettings: [
+                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"]),
+            ]
         ),
         // Command Line Tools ships neither swift-testing nor XCTest, and
         // pulling swift-testing in conflicts with Defaults over swift-syntax.

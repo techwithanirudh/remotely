@@ -8,6 +8,16 @@
     <string>Remotely</string>
     <key>CFBundleIdentifier</key>
     <string>com.anirudh.remotely</string>
+    <key>SUFeedURL</key>
+    <string>https://techwithanirudh.github.io/remotely/appcast.xml</string>
+    <!-- Replaced by the EdDSA public key from `generate_keys`. Sparkle refuses
+         every update while this is a placeholder, which is the safe default. -->
+    <key>SUPublicEDKey</key>
+    <string></string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUAutomaticallyUpdate</key>
+    <false/>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleIconFile</key>

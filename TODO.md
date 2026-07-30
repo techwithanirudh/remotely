@@ -59,8 +59,10 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Later
 
-- [ ] Sparkle: embed the framework, generate an EdDSA keypair, and have
-      `.github/workflows/release.yml` sign the zip and publish an appcast.
+- [ ] Sparkle: generate the EdDSA keypair (only you can hold the private half)
+      and have `.github/workflows/release.yml` sign the zip and publish an
+      appcast. Until the app is notarized, every update replaces an ad-hoc
+      signature and macOS revokes Accessibility, so automatic install stays off.
 - [ ] Apple Developer cert so releases can be notarized instead of ad-hoc
       signed, which currently forces right-click-Open on first launch.
 - [ ] Progressive blur at the scroll edge on macOS 15, where there is no

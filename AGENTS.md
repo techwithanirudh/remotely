@@ -76,6 +76,12 @@ Tests are a plain executable, not XCTest: Command Line Tools ships neither
 XCTest nor swift-testing, and swift-testing conflicts with Defaults over
 swift-syntax.
 
+Sparkle is linked by SwiftPM but not embedded by it, so `build-app.sh` copies
+`Sparkle.framework` into `Contents/Frameworks`, and the app target carries an
+`@executable_path/../Frameworks` rpath. Nested code is signed before its
+container. Automatic install stays off until releases are notarized: an update
+writes a new ad-hoc signature and macOS revokes Accessibility.
+
 Installing means replacing `/Applications/Remotely.app`. The build is
 ad-hoc signed, so macOS revokes Accessibility every time. Never write to the
 app's live `Defaults` to shortcut into a UI state.
