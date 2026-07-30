@@ -28,14 +28,18 @@ struct EventLog: View {
             HairlineDivider()
 
             if bridge.log.isEmpty {
-                Text("Remote events will appear here.")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .frame(height: 190)
+                ZStack {
+                    Text("Remote events will appear here.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .offset(y: -1)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 190)
             } else {
                 ScrollView {
-                    // The newest event must remain visible without following the scroll position.
+                    // The newest event must remain visible without following the scroll
+                    // position.
                     LazyVStack(alignment: .leading, spacing: 6) {
                         ForEach(bridge.log.suffix(100).reversed()) { entry in
                             HStack(alignment: .firstTextBaseline, spacing: 9) {
