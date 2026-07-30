@@ -1,0 +1,113 @@
+name: Release
+
+# Manual only. Pushing a tag does not release, so tags can be backfilled or
+# moved without distributing anything.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish (1.2.3 or 1.2.3-rc.1)
+        required: true
+        type: string
+      channel:
+        description: Update channel (auto infers from the tag suffix)
+        required: true
+        type: choice
+        default: auto
+        options: [auto, stable, beta, alpha]
+      publish:
+        description: Publish the release (leave unchecked for a draft)
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: macos-26
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      APP_NAME: Remote Bridge.app
+      ZIP_NAME: RemoteBridge.zip
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/tags/${{ inputs.tag }}
+
+      - name: Resolve tag and channel
+        id: meta
+        env:
+          TAG_NAME: ${{ inputs.tag }}
+          CHANNEL_INPUT: ${{ inputs.channel }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9._]+)?$ ]]; then
+            echo "Tag must look like 1.2.3 or 1.2.3-rc.1"; exit 1
+          fi
+
+          channel="$CHANNEL_INPUT"
+          if [[ "$channel" == "auto" ]]; then
+            shopt -s nocasematch
+            if   [[ "$TAG_NAME" =~ -(alpha|nightly)(\.|$) ]]; then channel=alpha
+            elif [[ "$TAG_NAME" =~ -(beta|rc)(\.|$)      ]]; then channel=beta
+            else channel=stable
+            fi
+            shopt -u nocasematch
+          fi
+
+          prerelease=false
+          [[ "$channel" != "stable" ]] && prerelease=true
+
+          {
+            echo "tag=$TAG_NAME"
+            echo "channel=$channel"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+
+      - run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+        continue-on-error: true
+
+      - run: swift run RemoteKitTests
+
+      - name: Build the app
+        run: zsh scripts/build-app.sh release
+
+      # ditto rather than zip: it is the only one that preserves the bundle's
+      # symlinks and resource forks, which Sparkle needs intact.
+      - name: Package
+        run: ditto -c -k --keepParent "build/$APP_NAME" "build/$ZIP_NAME"
+
+      # Provenance without an Apple Developer account. Notarization needs one;
+      # until then macOS will ask the user to right-click and Open.
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign the archive
+        env:
+          COSIGN_YES: "true"
+        run: cosign sign-blob --bundle "build/$ZIP_NAME.sigstore.json" "build/$ZIP_NAME"
+
+      - name: Create the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: |
+            build/${{ env.ZIP_NAME }}
+            build/${{ env.ZIP_NAME }}.sigstore.json
+          draft: ${{ !inputs.publish }}
+          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+          body: |
+            Channel: `${{ steps.meta.outputs.channel }}`
+
+            The build is ad-hoc signed rather than notarized, so the first
+            launch needs right-click then Open.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

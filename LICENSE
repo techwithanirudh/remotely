@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Two files are derived from Mac Mouse Fix and are NOT covered by the MIT licence
+above:
+
+    Sources/RemoteKit/Input/NavigationMethod.swift
+    Sources/RemoteKit/Input/NavigationSwipe.swift
+
+They follow the MMF License, whose conditions attach to publishing a program
+whose source is copied or derived from theirs:
+
+    https://github.com/noah-nuebling/mac-mouse-fix/blob/master/License

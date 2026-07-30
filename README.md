@@ -91,7 +91,8 @@ the architecture and the conventions, and [TODO.md](TODO.md) for what is next.
 
 MIT. See [LICENSE](LICENSE).
 
-`NavigationMethod` and `NavigationSwipe` follow research published by
-[Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix), whose author
-tested roughly forty apps to work out which of them respond to mouse buttons,
-gesture swipes or keyboard shortcuts for Back and Forward.
+`Sources/RemoteKit/Input/NavigationMethod.swift` and `NavigationSwipe.swift`
+are derived from [Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix)
+and carry the MMF License instead — its author tested roughly forty apps to
+work out which respond to mouse buttons, gesture swipes or keyboard shortcuts
+for Back and Forward.
