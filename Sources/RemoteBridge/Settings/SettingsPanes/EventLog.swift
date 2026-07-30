@@ -3,6 +3,12 @@ import RemoteKit
 import SwiftUI
 
 struct EventLog: View {
+    private enum Layout {
+        static let headerHeight: CGFloat = 34
+        static let contentHeight: CGFloat = 190
+        static let emptyStateLift: CGFloat = 10
+    }
+
     @ObservedObject var bridge: RemoteBridge
 
     var body: some View {
@@ -23,7 +29,7 @@ struct EventLog: View {
             .buttonStyle(.plain)
             .font(.system(size: 11, weight: .semibold))
             .padding(.horizontal, Theme.Card.inset)
-            .frame(height: 34)
+            .frame(height: Layout.headerHeight)
 
             HairlineDivider()
 
@@ -32,10 +38,10 @@ struct EventLog: View {
                     Text("Remote events will appear here.")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
-                        .offset(y: -1)
+                        .offset(y: -Layout.emptyStateLift)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 190)
+                .frame(height: Layout.contentHeight)
             } else {
                 ScrollView {
                     // The newest event must remain visible without following the scroll
@@ -56,7 +62,7 @@ struct EventLog: View {
                     .padding(Theme.Card.inset)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(height: 190)
+                .frame(height: Layout.contentHeight)
             }
         }
         .card()
