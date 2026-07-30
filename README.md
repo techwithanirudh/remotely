@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <b>Your TV remote becomes a pointer for your Mac.</b>
+  <b>Your display's remote becomes a mouse for your Mac.</b>
 </p>
 
 <p align="center">
