@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Defaults
 import Foundation
@@ -42,6 +43,7 @@ public final class Remote: ObservableObject {
     private var linkState: CECLink.State = .stopped
 
     private var ticker: Timer?
+    private var displayObserver: (any NSObjectProtocol)?
     private var deferred: DispatchWorkItem?
 
     public var onScrollingChange: ((Bool) -> Void)?
@@ -59,6 +61,7 @@ public final class Remote: ObservableObject {
     }
 
     public func start() {
+        watchDisplays()
         refreshPermission()
         if isEnabled { link.start() }
         startTicker()
@@ -139,6 +142,17 @@ public final class Remote: ObservableObject {
 private extension Remote {
     var clock: TimeInterval { ProcessInfo.processInfo.systemUptime }
 
+    func watchDisplays() {
+        guard displayObserver == nil else { return }
+        displayObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.updateStatus() }
+        }
+    }
+
     func startTicker() {
         let timer = Timer(timeInterval: 0.05, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -157,7 +171,11 @@ private extension Remote {
     }
 
     func updateStatus() {
-        status = RemoteStatus(link: linkState, hasAccessibility: hasAccessibility)
+        status = RemoteStatus(
+            link: linkState,
+            hasAccessibility: hasAccessibility,
+            hasDisplay: AttachedDisplay.isAttached
+        )
     }
 
     func handle(press key: RemoteKey) {

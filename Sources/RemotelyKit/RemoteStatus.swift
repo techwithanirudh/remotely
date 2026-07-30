@@ -4,6 +4,7 @@
 public enum RemoteStatus: Equatable, Sendable {
     case paused
     case needsPermission
+    case noDisplay
     case waitingForRemote
     case ready
     case unsupported
@@ -13,6 +14,7 @@ public enum RemoteStatus: Equatable, Sendable {
         switch self {
         case .paused: "Paused"
         case .needsPermission: "Needs Permission"
+        case .noDisplay: "No Display"
         case .waitingForRemote: "Waiting for Remote"
         case .ready: "Ready"
         case .unsupported: "Not Supported"
@@ -24,8 +26,9 @@ public enum RemoteStatus: Equatable, Sendable {
         switch self {
         case .paused: "Remote control is turned off."
         case .needsPermission: "Click to allow Accessibility, so the remote can move the pointer."
-        case .waitingForRemote: "No buttons yet. Check the HDMI cable and that HDMI-CEC is on."
-        case .ready: "Your TV remote is controlling this Mac."
+        case .noDisplay: "Connect this Mac to a display over HDMI."
+        case .waitingForRemote: "Connected. Press a button on the remote to confirm."
+        case .ready: "Your remote is controlling this Mac."
         case .unsupported: "This Mac has no HDMI port that carries remote buttons."
         case .failed(let message): message
         }
@@ -35,6 +38,7 @@ public enum RemoteStatus: Equatable, Sendable {
         switch self {
         case .paused: "pause.circle.fill"
         case .needsPermission: "lock.fill"
+        case .noDisplay: "cable.connector"
         case .waitingForRemote: "dot.radiowaves.left.and.right"
         case .ready: "checkmark.circle.fill"
         case .unsupported, .failed: "exclamationmark.triangle.fill"
@@ -43,12 +47,17 @@ public enum RemoteStatus: Equatable, Sendable {
 
     public var isReady: Bool { self == .ready }
 
-    public init(link: CECLink.State, hasAccessibility: Bool) {
+    public init(link: CECLink.State, hasAccessibility: Bool, hasDisplay: Bool) {
         switch link {
         case .stopped: self = .paused
         case .unsupported: self = .unsupported
         case .failed(let message): self = .failed(message)
-        case .waitingForDisplay: self = hasAccessibility ? .waitingForRemote : .needsPermission
+        case .waitingForDisplay:
+            guard hasAccessibility else {
+                self = .needsPermission
+                return
+            }
+            self = hasDisplay ? .waitingForRemote : .noDisplay
         case .listening: self = hasAccessibility ? .ready : .needsPermission
         }
     }
