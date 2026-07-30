@@ -5,6 +5,12 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
+- [ ] Find out whether volume, mute, media and Home reach the Mac over CEC.
+      `RemoteKey` documents that they never do, but that claim has never been
+      tested and 0x2C already proved one documented assumption wrong. The codes
+      are 0x41 up, 0x42 down, 0x43 mute. A 40s capture recorded nothing at all,
+      so it stays untested rather than disproved.
+
 - [ ] Rename to Remotely. Bundle ID `com.anirudh.remotely`, targets `Remotely`
       and `RemotelyKit`, core type `Remotely` becomes `Remote`. Resets stored
       settings and the Accessibility grant.
@@ -38,8 +44,17 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Actions worth adding
 
+- [ ] An on-screen command menu the remote drives, the way Pieoneer's pie menu
+      and Remote Buddy's Menu tab work: a configurable list of actions per app,
+      arrowed through with the D-pad and confirmed with Center. Reuses the
+      `ScrollModeOverlay` panel approach, which already floats over everything
+      without taking focus.
+- [ ] Per-app bindings, layered the way Remote Buddy does it: a global "All
+      apps" table plus per-app overrides keyed on bundle ID, resolving
+      app-specific then global then default. Copy their conflict rule too: a
+      button claimed globally is removed from the per-app tables.
+
 - [ ] App Exposé, Launchpad, Move a Space left/right.
-- [ ] Per-app bindings.
 
 ## Later
 

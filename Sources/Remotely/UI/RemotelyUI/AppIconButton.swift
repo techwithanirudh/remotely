@@ -4,14 +4,14 @@ import SwiftUI
 struct AppIconButton: View {
     let size: CGFloat
 
-    /// Tink is the shortest system sound at 0.56s, but most of that is a
+    /// Purr is soft and dull where Tink was bright. Most of its 0.76s is
     /// ring-out that reads as a chime, so only the attack is played. Pop is
     /// worse for this: 1.63s, nearly all tail.
     ///
     /// One instance for the whole app. A fresh `NSSound` per click layers them
     /// on top of each other, and `play()` after `stop()` resumes from where it
     /// stopped unless the time is reset.
-    @MainActor private static let click = NSSound(named: "Tink")
+    @MainActor private static let click = NSSound(named: "Purr")
 
     private static let attack = 0.09
     private static let level: Float = 0.4
