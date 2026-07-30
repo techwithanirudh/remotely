@@ -15,6 +15,8 @@ public enum EventSignature {
 
 @MainActor
 public final class InputSynthesizer {
+    private static let clickHold = 0.07
+
     private var pointer: ContinuousMotion?
     private var scroll: ContinuousMotion?
 
@@ -196,18 +198,26 @@ private extension InputSynthesizer {
         }
     }
 
+    /// Down and up were posted back to back, so the button was held for no time
+    /// at all. Anything drawing a pressed state never got a frame to draw it,
+    /// and a real click holds for about a tenth of a second.
     func click(
         _ button: CGMouseButton,
         clicks: Int64,
         tap: CGEventTapLocation = .cghidEventTap
     ) {
         let at = CGEvent(source: nil)?.location ?? .zero
-        for event in InputEventFactory.mouseClick(
-            button: button,
-            location: at,
-            clicks: clicks
-        ) {
-            send(event, tap: tap)
+        let events = InputEventFactory.mouseClick(button: button, location: at, clicks: clicks)
+
+        for (step, event) in events.enumerated() {
+            guard step > 0 else {
+                send(event, tap: tap)
+                continue
+            }
+            let delay = Double(step) * Self.clickHold
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                MainActor.assumeIsolated { self?.send(event, tap: tap) }
+            }
         }
     }
 
