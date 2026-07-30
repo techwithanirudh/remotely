@@ -1,56 +1,145 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   SWIFTLINT: 0.65.0
   SWIFTFORMAT: 0.62.1
 
 jobs:
-  build:
-    runs-on: macos-26
+  # Cheap gate on a Linux runner. The macOS jobs still run so required checks
+  # stay satisfiable; they no-op when nothing they care about changed.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect code-related paths
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            range="origin/${{ github.base_ref }}...HEAD"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            before="${{ github.event.before }}"
+            if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+              echo "code=true" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            range="${before}...${{ github.sha }}"
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          patterns='(\.swift$|(^|/)Package\.(swift|resolved)$|^\.swiftlint|^\.swiftformat|^scripts/|^\.github/workflows/ci\.yml$)'
+          if git diff --name-only "$range" | grep -E "$patterns" >/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: changes
+    runs-on: macos-26
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+    steps:
+      - name: Skip (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed."
+
+      - uses: actions/checkout@v4
+        if: needs.changes.outputs.code == 'true'
+
+      # safeAreaBar and scrollEdgeEffectStyle only exist in the macOS 26 SDK,
+      # and `#available` cannot conjure a symbol the SDK does not have.
+      - run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+        if: needs.changes.outputs.code == 'true'
+        continue-on-error: true
 
       - name: Cache SwiftPM
+        if: needs.changes.outputs.code == 'true'
         uses: actions/cache@v4
         with:
           path: .build
-          key: swiftpm-${{ hashFiles('Package.resolved') }}
-          restore-keys: swiftpm-
+          key: spm-${{ runner.os }}-${{ hashFiles('Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
 
-      - run: swift build
+      - run: swift build -Xswiftc -warnings-as-errors
+        if: needs.changes.outputs.code == 'true'
       - run: swift run RemoteKitTests
+        if: needs.changes.outputs.code == 'true'
 
-      # Release binaries rather than `brew install`: Homebrew has no versioned
-      # formula for either, so an unpinned install turns a rule change upstream
+  lint:
+    needs: changes
+    runs-on: macos-26
+    steps:
+      - name: Skip (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed."
+
+      - uses: actions/checkout@v4
+        if: needs.changes.outputs.code == 'true'
+
+      # Release binaries rather than `brew install`: neither tool has a
+      # versioned formula, so an unpinned install turns an upstream rule change
       # into a red build here for reasons unrelated to the commit.
       - name: Install linters
+        if: needs.changes.outputs.code == 'true'
         run: |
+          set -euo pipefail
           curl -fsSL -o swiftlint.zip \
-            https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip
+            "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip"
           curl -fsSL -o swiftformat.zip \
-            https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT/swiftformat.zip
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/$SWIFTFORMAT/swiftformat.zip"
           unzip -qo swiftlint.zip -d /usr/local/bin
           unzip -qjo swiftformat.zip '*/swiftformat' -d /usr/local/bin
           chmod +x /usr/local/bin/swiftlint /usr/local/bin/swiftformat
           swiftlint version && swiftformat --version
 
       - run: zsh scripts/lint.sh --check
+        if: needs.changes.outputs.code == 'true'
 
   analyze:
+    needs: changes
     runs-on: macos-26
     steps:
+      - name: Skip (no code changes)
+        if: needs.changes.outputs.code != 'true'
+        run: echo "No code-related paths changed."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.code == 'true'
+
+      - run: sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+        if: needs.changes.outputs.code == 'true'
+        continue-on-error: true
+
       - name: Install SwiftLint
+        if: needs.changes.outputs.code == 'true'
         run: |
+          set -euo pipefail
           curl -fsSL -o swiftlint.zip \
-            https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip
+            "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT/portable_swiftlint.zip"
           unzip -qo swiftlint.zip -d /usr/local/bin
           chmod +x /usr/local/bin/swiftlint
 
-      # Needs a clean build, so it runs on its own rather than in the hook.
+      # Needs a clean build, so it stays out of the hook and off the fast path.
       - run: zsh scripts/analyze.sh
+        if: needs.changes.outputs.code == 'true'

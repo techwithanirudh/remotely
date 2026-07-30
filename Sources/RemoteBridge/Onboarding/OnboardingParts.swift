@@ -139,23 +139,15 @@ struct IconRow: View {
     }
 }
 
-/// Live pass/fail readout, so a step reflects real state.
-struct StatusLine: View {
-    let done: Bool
-    let doneText: String
-    let waitingText: String
+/// A step that has been satisfied, said once.
+struct DoneLine: View {
+    let title: String
 
     var body: some View {
         HStack(spacing: 7) {
-            if done {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-            } else {
-                ProgressView().controlSize(.small)
-            }
-
-            Text(done ? doneText : waitingText)
+            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+            Text(title)
                 .font(.system(size: 11.5, weight: .medium))
-                .foregroundStyle(done ? .primary : .secondary)
         }
         .padding(.horizontal, Theme.cardPadding)
         .frame(height: 30)

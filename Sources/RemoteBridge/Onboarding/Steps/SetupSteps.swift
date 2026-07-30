@@ -70,7 +70,7 @@ struct PermissionStep: View {
             DialogMock(symbol: "hand.raised.fill", tint: .orange, badge: "gearshape.fill")
         } content: {
             if bridge.hasAccessibility {
-                StatusLine(done: true, doneText: "Permission allowed", waitingText: "")
+                DoneLine(title: "Permission allowed")
             }
         }
     }

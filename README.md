@@ -4,7 +4,7 @@
 
 **Your TV remote becomes a pointer for your Mac, over the HDMI cable you already have.**
 
-<img src="docs/settings.png" width="700" alt="Remote Bridge settings, showing the Controls page">
+<img src=".github/cover.png" width="700" alt="Remote Bridge settings, showing the Controls page">
 
 </div>
 
