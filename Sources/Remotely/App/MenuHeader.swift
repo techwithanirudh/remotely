@@ -8,7 +8,7 @@ final class MenuHeader: NSView {
     private let dot = NSView()
 
     init() {
-        super.init(frame: NSRect(x: 0, y: 0, width: 272, height: 59))
+        super.init(frame: NSRect(x: 0, y: 0, width: 272, height: 50))
 
         let icon = NSImageView()
         icon.image = NSImage(
@@ -33,7 +33,6 @@ final class MenuHeader: NSView {
 
         NSLayoutConstraint.activate([
             widthAnchor.constraint(equalToConstant: 272),
-            heightAnchor.constraint(equalToConstant: 59),
 
             icon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             icon.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -52,6 +51,10 @@ final class MenuHeader: NSView {
             subtitle.leadingAnchor.constraint(equalTo: dot.trailingAnchor, constant: 6),
             subtitle.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
             subtitle.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -14),
+
+            // Derived rather than hard-coded, so the padding stays even and the
+            // height cannot drift when a font size changes.
+            dot.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -11),
         ])
     }
 
