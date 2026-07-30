@@ -1,5 +1,3 @@
-import AppKit
-
 final class ActionHandler: NSObject {
     private let action: () -> Void
 

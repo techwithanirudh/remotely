@@ -1,5 +1,4 @@
 import CoreGraphics
-import Foundation
 import RemoteKit
 
 private struct ScrollCase {

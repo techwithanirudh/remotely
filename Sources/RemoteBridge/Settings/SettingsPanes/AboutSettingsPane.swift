@@ -1,4 +1,3 @@
-import RemoteKit
 import SwiftUI
 
 struct AboutSettingsPane: View {

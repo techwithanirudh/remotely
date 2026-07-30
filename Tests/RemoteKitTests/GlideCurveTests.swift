@@ -1,5 +1,3 @@
-import CoreGraphics
-import Foundation
 import RemoteKit
 
 func glideCurveTests() {

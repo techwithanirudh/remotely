@@ -5,8 +5,6 @@
 // Its conditions attach to publishing a program whose source is copied or
 // derived from theirs, so read it before this app is distributed.
 
-import Foundation
-
 /// Per-app compatibility choices adapted from Mac Mouse Fix and verified here.
 public enum NavigationMethod: Equatable, Sendable {
     case swipe
