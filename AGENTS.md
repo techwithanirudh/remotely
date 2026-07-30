@@ -9,14 +9,23 @@ being worked on.
 ## Before committing
 
 ```sh
-zsh scripts/lint.sh     # formats, then lints
+swiftformat .
+swiftlint
 swift build
 swift run RemoteKitTests
 ```
 
-`scripts/lint.sh --check` is the read-only version CI runs. CI pins SwiftLint
-0.65.0 and SwiftFormat 0.62.1 from their release binaries, so match those
-locally: `brew install swiftlint swiftformat`.
+The pre-commit hook runs the first two on staged files, so this is only for
+checking before you get there. CI pins SwiftLint 0.65.0 and SwiftFormat 0.62.1
+from their release binaries; match those with
+`brew install swiftlint swiftformat`.
+
+Without a full Xcode, SwiftLint cannot find `sourcekitd` and dies on startup.
+Point it at the Command Line Tools copy once, in your shell profile:
+
+```sh
+export TOOLCHAIN_DIR=$(xcode-select -p)
+```
 
 ## Comments
 
@@ -53,7 +62,7 @@ swift build
 swift run RemoteKitTests                 # the whole suite; there is no single-test runner
 zsh scripts/build-app.sh                 # writes build/Remote Bridge.app
 zsh scripts/capture-cec.sh 20            # records a CEC session for a fixture
-swift scripts/make-icon.swift <iconset> [tilt] [inset]
+zsh scripts/analyze.sh                   # SwiftLint's analyzer rules, needs a clean build
 ```
 
 Tests are a plain executable, not XCTest: Command Line Tools ships neither

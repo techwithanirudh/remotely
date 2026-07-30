@@ -71,8 +71,8 @@ API. A macOS update could change it.
 
 ```sh
 swift build
-swift run RemoteKitTests     # 66 checks
-zsh scripts/lint.sh          # formats, then lints
+swift run RemoteKitTests     # 68 checks
+swiftformat . && swiftlint   # needs TOOLCHAIN_DIR set, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 ```
 

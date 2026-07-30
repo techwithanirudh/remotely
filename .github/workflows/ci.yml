@@ -113,7 +113,9 @@ jobs:
           chmod +x /usr/local/bin/swiftlint /usr/local/bin/swiftformat
           swiftlint version && swiftformat --version
 
-      - run: zsh scripts/lint.sh --check
+      - run: swiftformat --lint .
+        if: needs.changes.outputs.code == 'true'
+      - run: swiftlint lint --strict
         if: needs.changes.outputs.code == 'true'
 
   analyze:
