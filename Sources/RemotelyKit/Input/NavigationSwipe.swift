@@ -1,9 +1,5 @@
-// Derived from Mac Mouse Fix (https://github.com/noah-nuebling/mac-mouse-fix),
-// which is under the MMF License, not MIT like the rest of this repository:
-// https://github.com/noah-nuebling/mac-mouse-fix/blob/master/License
-//
-// Its conditions attach to publishing a program whose source is copied or
-// derived from theirs, so read it before this app is distributed.
+// Derived from Mac Mouse Fix, under the MMF License rather than this
+// repository's MIT: https://github.com/noah-nuebling/mac-mouse-fix/blob/master/License
 
 import CoreGraphics
 
@@ -22,8 +18,7 @@ enum NavigationSwipe {
         case right = 8
     }
 
-    /// The four fields the gesture is assembled from. Not in the public
-    /// CGEventField enum, so they are built from their raw values.
+    /// Not in the public `CGEventField` enum, so built from raw values.
     private enum Field {
         static let eventType = CGEventField(rawValue: 55)
         static let hidType = CGEventField(rawValue: 110)

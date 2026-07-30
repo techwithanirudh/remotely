@@ -97,8 +97,7 @@ public final class Remote: ObservableObject {
         append("\(button.title) → \(binding.summary)")
     }
 
-    /// Keeps any recorded combination, so switching away and back does not
-    /// silently discard it.
+    /// Keeps any recorded combination, so switching away and back is lossless.
     public func setAction(_ action: RemoteAction, for button: RemoteButton) {
         setBinding(ButtonBinding(action, combo: bindings[button].combo), for: button)
     }
@@ -206,10 +205,8 @@ private extension Remote {
         }
     }
 
-    /// An arrow key is held rather than tapped, but any action can be bound to
-    /// one. Only the actions that move something can be glided; the rest fire
-    /// once, as the key goes down, or pressing an arrow bound to Show Desktop
-    /// would do nothing at all.
+    /// Only actions with a direction can glide; the rest fire on key down, or an
+    /// arrow bound to Show Desktop would do nothing at all.
     func beginHold(_ button: RemoteButton) {
         let action = bindings[button].action
         guard action.isContinuous else {
@@ -247,8 +244,7 @@ private extension Remote {
         if !input.lastNavigation.isEmpty { append(input.lastNavigation) }
     }
 
-    /// Without Accessibility every posted event is dropped silently. Onboarding
-    /// gates on it and the status reports it, so this only keeps the log honest.
+    /// Posted events are dropped silently without Accessibility.
     func permitted() -> Bool {
         guard hasAccessibility else {
             append("Ignored, no Accessibility permission yet")

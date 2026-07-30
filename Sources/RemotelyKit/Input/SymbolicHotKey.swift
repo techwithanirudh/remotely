@@ -6,8 +6,7 @@ public enum SymbolicHotKey: Int32 {
     case missionControl = 32
     case showDesktop = 36
 
-    /// The key and modifiers currently bound, or nil when the user has switched
-    /// the shortcut off, in which case there is nothing to post.
+    /// Nil when the user has switched the shortcut off.
     public var shortcut: (key: CGKeyCode, flags: CGEventFlags)? {
         guard WindowServer.isEnabled(rawValue) else { return nil }
 
@@ -18,16 +17,12 @@ public enum SymbolicHotKey: Int32 {
               key != UInt16.max
         else { return nil }
 
-        // The window server reports modifiers in the same bit layout CGEvent
-        // uses, so they carry across unchanged.
         return (CGKeyCode(key), CGEventFlags(rawValue: UInt64(flags)))
     }
 }
 
-/// The private window-server calls behind symbolic hot keys.
-///
-/// SkyLight exports them but publishes no header, so they are resolved by name
-/// once and treated as absent if that ever stops working.
+/// SkyLight exports these but publishes no header, so they are resolved by name
+/// and treated as absent if that stops working.
 private enum WindowServer {
     typealias Value = @convention(c) @Sendable (
         Int32,

@@ -1,9 +1,5 @@
-// Derived from Mac Mouse Fix (https://github.com/noah-nuebling/mac-mouse-fix),
-// which is under the MMF License, not MIT like the rest of this repository:
-// https://github.com/noah-nuebling/mac-mouse-fix/blob/master/License
-//
-// Its conditions attach to publishing a program whose source is copied or
-// derived from theirs, so read it before this app is distributed.
+// Derived from Mac Mouse Fix, under the MMF License rather than this
+// repository's MIT: https://github.com/noah-nuebling/mac-mouse-fix/blob/master/License
 
 /// Per-app compatibility choices adapted from Mac Mouse Fix and verified here.
 public enum NavigationMethod: Equatable, Sendable {

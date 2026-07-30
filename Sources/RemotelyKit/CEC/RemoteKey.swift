@@ -1,7 +1,4 @@
-/// A key as CEC reports it.
-///
-/// Only these six ever arrive. Volume, media transport and Home never reach the
-/// Mac: displays handle them internally and keep them off the bus entirely.
+/// A key as CEC reports it. Volume, media and Home never reach the Mac.
 public enum RemoteKey: String, CaseIterable, Sendable {
     case up, down, left, right, select, back
 
@@ -25,12 +22,9 @@ public enum RemoteKey: String, CaseIterable, Sendable {
 
     /// The CEC User Control wire codes.
     ///
-    /// The display decides tap from hold itself and reports them as different
-    /// codes. Measured over 36 presses on a Hisense M70D: 0x0D always spans
-    /// 0.070-0.072s whatever the finger does, while 0x2C spans 0.875-1.729s and
-    /// tracks the real press. Both are Back, so the duration between press and
-    /// release is what separates a tap from a hold, and dropping 0x2C as
-    /// unknown is what made holding Back do nothing.
+    /// The display reports tap and hold as different codes. Measured on a
+    /// Hisense M70D: 0x0D always spans 0.070-0.072s whatever the finger does,
+    /// 0x2C spans 0.875-1.729s. Both are Back.
     init?(cecCode code: UInt8) {
         switch code {
         case 0x00: self = .select

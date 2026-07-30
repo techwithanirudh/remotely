@@ -1,7 +1,6 @@
 import Foundation
 
-/// Nobody labels it "HDMI-CEC", and the setting sits several levels deep, so
-/// telling someone to enable CEC is not actionable on its own.
+/// Nobody labels it "HDMI-CEC", so "enable CEC" is not actionable on its own.
 public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
     case samsung, lg, sony, tclRoku, hisense, vizio, philips, panasonic
 
@@ -20,7 +19,6 @@ public enum TVBrand: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    /// The maker's own name for HDMI-CEC.
     public var featureName: String {
         switch self {
         case .samsung: "Anynet+"

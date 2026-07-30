@@ -3,10 +3,8 @@ import Defaults
 import RemotelyKit
 @preconcurrency import Sparkle
 
-/// Sparkle, wrapped so nothing else has to know about it.
-///
 /// Sparkle owns the automatic settings, so these read through to it rather than
-/// mirroring into `Defaults`, which left its own dialog and this app disagreeing.
+/// mirroring into `Defaults`, which left its dialog and this app disagreeing.
 @MainActor
 final class Updater: NSObject, ObservableObject {
     static let shared = Updater()

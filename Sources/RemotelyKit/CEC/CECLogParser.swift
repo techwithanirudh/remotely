@@ -2,17 +2,12 @@ import Foundation
 
 /// Parses `corercd` unified-log lines into remote events.
 ///
-/// Two line shapes matter:
-///   `... RX: TV -> Playback Device 1: <User Control Pressed> 02`
-///   `... CECBus <...> Link: Y; ... EDID: <CECEDIDAttributes: 0x...> Smart M70D vID: ...`
-///
-/// The raw User Control byte is used rather than the daemon's English button
-/// names, because it is the actual CEC wire code and because the daemon repeats
-/// it while a key is held, which is what drives the glide.
+/// The raw User Control byte is read rather than the daemon's English button
+/// names, because the byte is the actual CEC wire code.
 public struct CECLogParser: Sendable {
     public enum Event: Equatable, Sendable {
         case pressed(RemoteKey)
-        /// CEC releases carry no key code: only one key is ever held at a time.
+        /// Releases carry no key code; only one key is ever held.
         case released
         case attached(String)
     }

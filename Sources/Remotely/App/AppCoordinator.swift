@@ -84,8 +84,7 @@ private extension AppCoordinator {
             .sink { [weak self] in self?.refreshStatusItem() }
             .store(in: &observers)
 
-        // Accessibility can be granted while the app runs and macOS sends no
-        // notification when it is.
+        // macOS sends no notification when Accessibility is granted.
         let timer = Timer(timeInterval: 2, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.remote.refreshPermission() }
         }
@@ -105,21 +104,19 @@ private extension AppCoordinator {
         if settings == nil {
             let controller = SettingsWindowController(remote: remote)
             controller.onClose = { [weak self] in
-                // The guide may have just replaced it, and going accessory
-                // would hide that too.
+                // The guide may have just replaced it.
                 guard self?.onboarding?.window?.isVisible != true else { return }
                 NSApp.setActivationPolicy(.accessory)
             }
             settings = controller
         }
-        // A menu bar app is .accessory, which cannot take proper key focus.
+        // .accessory cannot take proper key focus.
         NSApp.setActivationPolicy(.regular)
         settings?.show()
         remote.refreshPermission()
     }
 
-    /// Reuses the open guide. Building a second one left two panels on screen,
-    /// each on its own step.
+    /// Reuses the open guide; a second one left two panels on their own steps.
     func showOnboarding() {
         if onboarding == nil {
             onboarding = OnboardingWindowController(remote: remote) { [weak self] in

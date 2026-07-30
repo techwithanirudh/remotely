@@ -1,14 +1,12 @@
 import Foundation
 
-/// A press repeats while the key is held and ends with a single release that
-/// carries no key code. Timing must distinguish taps, double taps and holds, so
-/// callers drive this pure state machine with `press`, `release` and `elapse`.
+/// Taps, double taps and holds all come out of timing. A pure state machine,
+/// driven by `press`, `release` and `elapse`.
 public struct GestureReader: Sendable {
     public struct Config: Sendable {
         public var holdThreshold: TimeInterval
         public var doubleTapWindow: TimeInterval
-        /// How long after the last repeat a held key is assumed released. CEC
-        /// occasionally drops the release entirely.
+        /// CEC occasionally drops the release entirely.
         public var repeatTimeout: TimeInterval
 
         public init(
@@ -23,11 +21,9 @@ public struct GestureReader: Sendable {
     }
 
     public enum Event: Equatable, Sendable {
-        /// A continuous action should start; it runs until `endHold`.
         case beginHold(RemoteButton)
         case endHold
         case trigger(RemoteButton)
-        /// A single tap that must wait out the double-tap window first.
         case triggerDeferred(RemoteButton, after: TimeInterval)
         case cancelDeferred
     }
@@ -48,7 +44,6 @@ public struct GestureReader: Sendable {
     public mutating func press(_ key: RemoteKey, at time: TimeInterval) -> [Event] {
         now = time
 
-        // Repeats only keep the hold alive; motion is already running.
         if key == heldKey {
             lastRepeatAt = time
             return []
@@ -71,8 +66,7 @@ public struct GestureReader: Sendable {
         return finish(released: true)
     }
 
-    /// Advances time without an incoming event, firing a hold once it qualifies
-    /// and dropping a held key whose repeats have gone quiet.
+    /// Fires a hold once it qualifies, and drops a key whose repeats went quiet.
     public mutating func elapse(to time: TimeInterval) -> [Event] {
         now = time
         guard let key = heldKey else { return [] }
@@ -102,8 +96,7 @@ private extension GestureReader {
             return [.endHold]
         }
 
-        // The hold already fired while the key was down; the release that
-        // follows must not also register a tap.
+        // A hold already fired, so this release must not also register a tap.
         if holdFired {
             holdFired = false
             return []

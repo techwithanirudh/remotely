@@ -1,15 +1,10 @@
 import Foundation
 
-/// Receives HDMI-CEC remote presses.
+/// Receives HDMI-CEC remote presses by parsing the unified log.
 ///
-/// macOS owns the CEC bus inside the `corercd` daemon. Its private CoreRC XPC
-/// service refuses bus enumeration to third-party clients — `queryBusesAsync:`
-/// answers `NSOSStatusErrorDomain -6773` — and without a bus object the daemon
-/// routes no HID events our way, so going through the framework yields nothing
-/// however the delegate is wired up.
-///
-/// The same daemon writes every decoded button to the unified log, which is
-/// readable without any entitlement, so that is the transport used here.
+/// Not a mistake to be fixed: `corercd` owns the bus and its private XPC service
+/// refuses enumeration to third parties (`queryBusesAsync:` answers
+/// `NSOSStatusErrorDomain -6773`), so the framework route yields nothing.
 @MainActor
 public final class CECLink {
     public enum State: Equatable, Sendable, CustomStringConvertible {

@@ -2,9 +2,8 @@ import AppKit
 import ApplicationServices
 import CoreGraphics
 
-/// Marks every event this app posts, so a listener can tell a remote press from
-/// the user's own mouse. CGEvent carries a spare user-data field for exactly
-/// this; correlating by timestamp would only ever be a guess.
+/// Marks every event this app posts, so onboarding can tell a remote press from
+/// the user's own mouse.
 public enum EventSignature {
     public static let value: Int64 = 0x5245_4D42 // "REMB"
 
@@ -20,8 +19,7 @@ public final class InputSynthesizer {
     private var pointer: ContinuousMotion?
     private var scroll: ContinuousMotion?
 
-    /// Whatever the last Back or Forward did, for the Diagnostics log. Nothing
-    /// reports which app took a posted event, so the choice has to say so.
+    /// Nothing reports which app took a posted event, so the choice says so.
     public private(set) var lastNavigation = ""
 
     public init() {}
@@ -98,7 +96,6 @@ public final class InputSynthesizer {
 }
 
 private extension InputSynthesizer {
-    /// A tap still travels a little, by running the curve for a moment.
     func nudge(_ action: RemoteAction) {
         if action.isScroll, let direction = action.direction {
             let horizontal = direction.dx != 0
@@ -165,9 +162,8 @@ private extension InputSynthesizer {
         }
     }
 
-    /// A posted keystroke goes to whatever window is frontmost, so the method
-    /// has to be chosen for that app. Activating anything first would both
-    /// steal focus and land the event somewhere the user was not looking.
+    /// A posted keystroke goes to the frontmost window, so the method is chosen
+    /// for that app. Activating anything first would steal focus.
     func navigate(
         back: Bool,
         targetApp: String?,
@@ -198,9 +194,7 @@ private extension InputSynthesizer {
         }
     }
 
-    /// Down and up were posted back to back, so the button was held for no time
-    /// at all. Anything drawing a pressed state never got a frame to draw it,
-    /// and a real click holds for about a tenth of a second.
+    /// A zero-length press gives a pressed state no frame to draw in.
     func click(
         _ button: CGMouseButton,
         clicks: Int64,
@@ -221,9 +215,8 @@ private extension InputSynthesizer {
         }
     }
 
-    /// Posts a recorded combination, then a bare event to restore modifier
-    /// state. Mac Mouse Fix found that last step necessary: without it the
-    /// system can believe modifiers are still held and fire the wrong hotkey.
+    /// The trailing bare event clears modifier state, or the system can believe
+    /// modifiers are still held and fire the wrong hotkey.
     func post(_ combo: KeyCombo) {
         press(key: CGKeyCode(combo.keyCode), flags: combo.flags)
         send(CGEvent(source: nil), tap: .cgSessionEventTap)
@@ -263,8 +256,7 @@ private final class ContinuousMotion {
         self.glide = glide
         self.step = step
 
-        // Common modes: an open menu spins a nested tracking run loop, and a
-        // timer scheduled the ordinary way stops firing while it is up.
+        // An open menu spins a nested run loop that starves a default-mode timer.
         let ticker = Timer(timeInterval: Glide.tick, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.advance() }
         }

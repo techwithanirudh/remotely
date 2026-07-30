@@ -29,7 +29,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.contentViewController = NSHostingController(rootView: SettingsView(remote: remote))
         window.standardWindowButton(.zoomButton)?.isEnabled = false
 
-        // The transparent content layer carries Alcove's measured corner shape.
+        // The transparent content layer carries the measured corner shape.
         window.contentView?.wantsLayer = true
         window.contentView?.layer?.cornerRadius = Theme.Window.radius
         window.contentView?.layer?.cornerCurve = .continuous
@@ -37,7 +37,6 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
         super.init(window: window)
         window.delegate = self
-        // Cascading moves the window away from the measured center.
         shouldCascadeWindows = false
     }
 
@@ -59,7 +58,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         onClose?()
     }
 
-    /// The hosting controller sizes its window late, so centering requires layout first.
+    /// The hosting controller sizes late, so centering needs layout first.
     private func center() {
         guard let window, let screen = window.screen ?? NSScreen.main else { return }
         window.layoutIfNeeded()
@@ -75,7 +74,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
     }
 
-    /// Alcove places the window buttons on the sidebar icon rail.
+    /// Window buttons sit on the sidebar icon rail.
     private func alignWindowButtons() {
         guard let window else { return }
         let buttons = [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton]
