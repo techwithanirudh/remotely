@@ -5,6 +5,9 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
+- [ ] Confirm the unfocused window background by eye. It is a solid fill under
+      the material now, not `windowBackgroundColor` alone, which was white on
+      Tahoe. Klack's grey measures rgb(232,235,237).
 - [ ] Diagnose the live Samsung CEC pipeline from `corercd` through the
       installed app, repair the regression, and verify a fresh physical press.
 - [ ] Separate macOS display discovery from CEC input discovery, then test one

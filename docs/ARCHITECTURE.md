@@ -8,11 +8,9 @@ split is not tidiness. It is what makes the rules testable, because every
 interesting decision happens in a type that can be driven from a test without
 a screen, a remote, or a TV.
 
-The canonical organization reference is
-[thaw-app/Thaw](https://github.com/thaw-app/Thaw), the maintained fork of Ice,
-at commit `97f3afd4c1a251bc79a131c0afc68f3dc402b14c`. Remote Bridge follows
-Thaw's feature-oriented folder boundaries while using names appropriate to
-this product.
+Folders group by feature rather than by type. A screen's pane, its model and
+its primitives sit together, so a file's path says what it belongs to instead
+of what kind of thing it is.
 
 ```
 Sources/RemoteKit          the core
@@ -34,9 +32,8 @@ Sources/RemoteBridge       the app
 Tests/RemoteKitTests       one file per behaviour
 ```
 
-`UI/RemoteBridgeUI` fills the same role as Thaw's `UI/IceUI`; it does not reuse
-the Ice product name. Add `UI/Shapes` only when the app owns a real reusable
-`Shape`. Empty folders and wrapper-only abstractions do not improve the
+`UI/RemoteBridgeUI` holds this app's own primitives. Add `UI/Shapes` only when
+the app owns a real reusable `Shape`. Empty folders and wrapper-only abstractions do not improve the
 architecture. Root `Utilities` is not a miscellaneous core folder. It must not
 own app state, input synthesis, gesture timing, or CEC work.
 
@@ -58,7 +55,7 @@ broke remote detection completely.
 **`CECLogParser`** turns a line into an event. It is a plain struct with one
 pure function, which is why it is the best-tested thing here.
 
-These boundaries are locked during the Thaw-style reorganization:
+These boundaries hold through any reorganization:
 
 - `RemoteKit/CEC/CECLink.swift` owns process launch, unified-log streaming, and
   transport lifecycle.
@@ -110,7 +107,7 @@ carries their licence rather than this repository's.
 
 ## The design values are measured
 
-Nothing in `Theme` is chosen by eye. Alcove and Klack are captured with
+Nothing in `Theme` is chosen by eye. Reference windows are captured with
 `screencapture -o -l <window-id>` and sampled pixel by pixel, and the numbers
 in the comments are the readings. When something looks wrong, measure it again
 rather than nudging the constant.

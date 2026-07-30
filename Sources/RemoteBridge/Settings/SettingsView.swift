@@ -8,8 +8,15 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Vibrancy(material: activeState == .inactive ? .contentBackground :
-                .underWindowBackground)
+            // The cool grey is the material's own tint, not an NSColor, so the
+            // material has to stay. The window is not opaque, so behind it also
+            // needs a fill under the material or the desktop still reads through.
+            if activeState == .inactive {
+                Color(nsColor: .windowBackgroundColor)
+                Vibrancy(blendingMode: .withinWindow)
+            } else {
+                Vibrancy()
+            }
 
             HStack(spacing: 0) {
                 Sidebar(page: $page, bridge: bridge)

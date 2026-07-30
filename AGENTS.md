@@ -86,20 +86,16 @@ app's live `Defaults` to shortcut into a UI state.
 bindings and event synthesis out of the views. That split is what makes the
 rules testable.
 
-Use [thaw-app/Thaw](https://github.com/thaw-app/Thaw) at commit
-`97f3afd4c1a251bc79a131c0afc68f3dc402b14c` as the canonical organization
-reference. Thaw is the maintained fork of Ice. Adapt its names to Remote Bridge
-instead of copying product-specific names:
+Folders group by feature, not by type, so everything a screen needs sits
+together and a file's path says what it belongs to rather than what it is:
 
-- `Settings/Models` contains settings state and persistence models.
-- `Settings/SettingsPanes` contains one settings pane per file.
-- `UI` contains reusable presentation code.
-- `UI/RemoteBridgeUI` contains Remote Bridge-specific UI primitives, matching
-  Thaw's `UI/IceUI` role.
-- `UI/Modifiers`, `UI/Utilities`, and `UI/Views` match Thaw's reusable UI
-  boundaries. Add `UI/Shapes` only for an actual reusable `Shape`.
-- `Utilities` contains small, reusable non-UI helpers that do not own app state,
-  input synthesis, gesture timing, or CEC.
+- `Settings/Models` holds settings state and persistence models.
+- `Settings/SettingsPanes` holds one pane per file.
+- `UI/RemoteBridgeUI` holds this app's own primitives; `UI/Modifiers`,
+  `UI/Utilities` and `UI/Views` hold the reusable pieces. Add `UI/Shapes` only
+  for an actual reusable `Shape`.
+- `Utilities` holds small non-UI helpers that own no app state, no input
+  synthesis, no gesture timing and no CEC.
 
 Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
 stay in `RemoteKit/CEC`. Transport process ownership, unified-log streaming,
@@ -127,7 +123,7 @@ approach and broke remote detection entirely.
 
 ## UI
 
-Values are measured off Alcove and Klack, not chosen: capture a window with
+Values in `Theme` are measured, not chosen: capture a window with
 `screencapture -o -l <id>` and sample pixels. Window material is
 `.underWindowBackground` in front and `.contentBackground` behind; cards lift
 the ground 5% with a 16% edge; sidebar rows are 38pt; window radius 26.

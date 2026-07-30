@@ -4,7 +4,7 @@
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remote-bridge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remote-bridge/ci.yml?style=flat-square&label=CI" /></a>
   <img alt="Tests" src="https://img.shields.io/badge/checks-68-555555?style=flat-square" />
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/techwithanirudh/remote-bridge?style=flat-square&color=555555" /></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-555555?style=flat-square" /></a>
 </p>
 
 <p align="center">
@@ -37,7 +37,6 @@
 - **Click without a mouse**: press Center to click, twice to double click, hold for a right click
 - **Scroll with the same arrows**: press Back twice to switch modes, with a chip beside the pointer showing which you are in
 - **Rebind anything**: twenty actions grouped by kind, including recorded keyboard shortcuts
-- **Know why it is not working**: status, per brand HDMI-CEC instructions, and a live event log
 
 ## What the buttons do
 
@@ -48,8 +47,9 @@
 | Center | Left click |
 | Center, twice | Double click |
 | Center, held | Right click |
-| Back | Yours to bind |
+| Back | Back |
 | Back, twice | Switches the arrows between moving and scrolling |
+| Back, held | Forward |
 
 Volume, media and Home never reach the Mac. Displays handle those themselves
 and keep them off the CEC bus.
@@ -85,9 +85,6 @@ own mouse.
 remote → TV → HDMI-CEC → Mac → corercd → Remote Bridge → pointer
 ```
 
-This is an experimental use of existing system components rather than a public
-API. A macOS update could change it.
-
 ## Build
 
 ```sh
@@ -108,6 +105,4 @@ zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 
 ## License
 
-MIT, except two files derived from
-[Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix) that carry the
-MMF License instead. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

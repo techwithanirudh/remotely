@@ -34,9 +34,9 @@ public struct Bindings: Codable, Hashable, Sendable {
         .center: ButtonBinding(.leftClick),
         .centerDouble: ButtonBinding(.doubleClick),
         .centerHold: ButtonBinding(.rightClick),
-        .back: ButtonBinding(.escape),
+        .back: ButtonBinding(.browserBack),
         .backDouble: ButtonBinding(.toggleScrolling),
-        .backHold: ButtonBinding(.none),
+        .backHold: ButtonBinding(.browserForward),
     ])
 
     public subscript(button: RemoteButton) -> ButtonBinding {

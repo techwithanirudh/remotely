@@ -41,9 +41,7 @@ struct ControlsSettingsPane: View {
                     InfoRow(
                         symbol: RemoteAction.toggleScrolling.symbol,
                         title: "Press Back twice",
-                        subtitle: "Switches the arrows between moving the pointer and scrolling.",
-                        tint: bridge.isScrolling ? .accentColor : .secondary,
-                        badge: bridge.isScrolling ? "Scrolling" : nil
+                        subtitle: "Switches the arrows between moving the pointer and scrolling."
                     )
                 }
 
