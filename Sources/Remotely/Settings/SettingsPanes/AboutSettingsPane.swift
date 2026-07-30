@@ -1,7 +1,10 @@
+import Defaults
+import RemotelyKit
 import SwiftUI
 
 struct AboutSettingsPane: View {
     @State private var confirmingReset = false
+    @Default(.wantsBetaUpdates) private var betaUpdates
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -35,6 +38,23 @@ struct AboutSettingsPane: View {
                 Spacer().frame(height: 14)
 
                 Card {
+                    Row(
+                        title: "Updates",
+                        subtitle: betaUpdates
+                            ? "Including beta releases."
+                            : "Stable releases only."
+                    ) {
+                        HStack(spacing: 8) {
+                            Toggle("Beta", isOn: $betaUpdates)
+                                .toggleStyle(.checkbox)
+                                .controlSize(.small)
+                            Button("Check Now") {
+                                AppCoordinator.shared?.checkForUpdates()
+                            }
+                            .controlSize(.small)
+                        }
+                    }
+                    HairlineDivider()
                     Row(
                         title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."

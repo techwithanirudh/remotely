@@ -95,29 +95,49 @@ jobs:
           COSIGN_YES: "true"
         run: cosign sign-blob --bundle "build/$ZIP_NAME.sigstore.json" "build/$ZIP_NAME"
 
-      # generate_appcast signs the archive with the EdDSA private key and emits
-      # the feed. Without the secret it is skipped rather than emitting an
-      # unsigned appcast, which Sparkle would reject anyway.
+      # Thaw runs this through a composite action in their own org, which is
+      # not public, so the same steps are inline here. generate_appcast signs
+      # the archive with the EdDSA private key and writes the feed. Without the
+      # secret it is skipped rather than emitting an unsigned appcast, which
+      # Sparkle would reject anyway.
       - name: Build the appcast
-        if: env.SPARKLE_PRIVATE_KEY != ''
+        id: appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           CHANNEL: ${{ steps.meta.outputs.channel }}
         run: |
           set -euo pipefail
-          sparkle_dir=$(find .build/artifacts -type d -name 'Sparkle-*' -o -type d -name 'bin' | grep -m1 'bin' || true)
+
+          if [[ -z "${SPARKLE_PRIVATE_KEY:-}" ]]; then
+            echo "SPARKLE_PRIVATE_KEY is not set; skipping the appcast"
+            echo "built=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           generate_appcast=$(find .build/artifacts -type f -name generate_appcast | head -1)
           if [[ -z "$generate_appcast" ]]; then
             echo "generate_appcast not found in the resolved Sparkle artifact"; exit 1
           fi
 
-          mkdir -p appcast-in
-          cp "build/$ZIP_NAME" appcast-in/
-          printf '%s' "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_ed_key
-          "$generate_appcast" --ed-key-file /tmp/sparkle_ed_key \
-            --channel "$CHANNEL" appcast-in
-          rm -f /tmp/sparkle_ed_key
-          cp appcast-in/appcast.xml build/appcast.xml
+          mkdir -p "$RUNNER_TEMP/archives"
+          cp "build/$ZIP_NAME" "$RUNNER_TEMP/archives/"
+
+          key_file="$RUNNER_TEMP/sparkle_ed_key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key_file"
+          chmod 600 "$key_file"
+
+          # A stable channel carries no channel attribute, which is what an
+          # older Sparkle treats as "everyone". Only pre-releases get tagged.
+          args=(--ed-key-file "$key_file")
+          if [[ "$CHANNEL" != "stable" ]]; then
+            args+=(--channel "$CHANNEL")
+          fi
+
+          "$generate_appcast" "${args[@]}" "$RUNNER_TEMP/archives"
+          rm -f "$key_file"
+
+          cp "$RUNNER_TEMP/archives/appcast.xml" build/appcast.xml
+          echo "built=true" >> "$GITHUB_OUTPUT"
 
       - name: Create the release
         uses: softprops/action-gh-release@v2
@@ -136,3 +156,55 @@ jobs:
             launch needs right-click then Open.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The feed URL is baked into every shipped binary, so it has to keep
+      # working. Publishing to gh-pages here rather than attaching the appcast
+      # to a release is what gives it a stable address.
+      - name: Publish the appcast to gh-pages
+        if: steps.appcast.outputs.built == 'true' && inputs.publish
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+          FEED_HOST: remotely.techwithanirudh.com
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          work="$RUNNER_TEMP/gh-pages"
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          for attempt in 1 2 3 4 5; do
+            rm -rf "$work"
+            if ! git clone --depth 1 --branch gh-pages "$remote" "$work" 2>/dev/null; then
+              rm -rf "$work"
+              git clone --depth 1 "$remote" "$work"
+              git -C "$work" checkout --orphan gh-pages
+              git -C "$work" rm -rf . >/dev/null 2>&1 || true
+            fi
+
+            cp build/appcast.xml "$work/appcast.xml"
+            printf '%s\n' "$FEED_HOST" > "$work/CNAME"
+            # Pages would otherwise run the feed through Jekyll.
+            touch "$work/.nojekyll"
+
+            git -C "$work" config user.name "github-actions[bot]"
+            git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git -C "$work" add appcast.xml CNAME .nojekyll
+
+            if git -C "$work" diff --staged --quiet; then
+              echo "appcast.xml unchanged"
+              exit 0
+            fi
+
+            git -C "$work" commit -m "chore(sparkle): publish appcast for ${TAG} (${CHANNEL})"
+            if git -C "$work" push origin HEAD:gh-pages; then
+              echo "Published to gh-pages"
+              exit 0
+            fi
+
+            echo "push failed (attempt ${attempt}/5), refetching"
+            sleep $((attempt * 2))
+          done
+
+          echo "Failed to push gh-pages after 5 attempts"
+          exit 1

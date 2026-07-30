@@ -54,6 +54,10 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
         }
     }
 
+    func checkForUpdates() {
+        updater?.checkForUpdates()
+    }
+
     func replayOnboarding() {
         Defaults[.onboardingDone] = false
         Defaults[.onboardingStep] = 0
