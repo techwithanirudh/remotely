@@ -3,7 +3,7 @@ import PackageDescription
 
 /// Verified against these sources: each is free today, no errors and no
 /// warnings. InternalImportsByDefault is deliberately absent — it produced 100+
-/// errors in RemoteKit and needs every import auditing first.
+/// errors in RemotelyKit and needs every import auditing first.
 let strict: [SwiftSetting] = [
     .enableUpcomingFeature("ExistentialAny"),
     .enableUpcomingFeature("MemberImportVisibility"),
@@ -13,11 +13,11 @@ let strict: [SwiftSetting] = [
 ]
 
 let package = Package(
-    name: "RemoteBridge",
+    name: "Remotely",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "RemoteKit", targets: ["RemoteKit"]),
-        .executable(name: "RemoteBridge", targets: ["RemoteBridge"]),
+        .library(name: "RemotelyKit", targets: ["RemotelyKit"]),
+        .executable(name: "Remotely", targets: ["Remotely"]),
     ],
     dependencies: [
         // Type-safe UserDefaults. Alcove links the same library.
@@ -27,14 +27,14 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "RemoteKit",
+            name: "RemotelyKit",
             dependencies: [.product(name: "Defaults", package: "Defaults")],
             swiftSettings: strict
         ),
         .executableTarget(
-            name: "RemoteBridge",
+            name: "Remotely",
             dependencies: [
-                "RemoteKit",
+                "RemotelyKit",
                 "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
                 .product(name: "LaunchAtLogin", package: "LaunchAtLogin-Modern"),
@@ -43,11 +43,11 @@ let package = Package(
         ),
         // Command Line Tools ships neither swift-testing nor XCTest, and
         // pulling swift-testing in conflicts with Defaults over swift-syntax.
-        // A plain executable keeps the checks runnable: `swift run RemoteKitTests`.
+        // A plain executable keeps the checks runnable: `swift run RemotelyKitTests`.
         .executableTarget(
-            name: "RemoteKitTests",
-            dependencies: ["RemoteKit"],
-            path: "Tests/RemoteKitTests"
+            name: "RemotelyKitTests",
+            dependencies: ["RemotelyKit"],
+            path: "Tests/RemotelyKitTests"
         ),
     ]
 )

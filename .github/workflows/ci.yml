@@ -83,7 +83,7 @@ jobs:
 
       - run: swift build -Xswiftc -warnings-as-errors
         if: needs.changes.outputs.code == 'true'
-      - run: swift run RemoteKitTests
+      - run: swift run RemotelyKitTests
         if: needs.changes.outputs.code == 'true'
 
   lint:

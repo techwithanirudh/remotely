@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir=${0:A:h:h}
 configuration=${1:-release}
-app_dir="$repo_dir/build/Remote Bridge.app"
+app_dir="$repo_dir/build/Remotely.app"
 module_cache="$repo_dir/.build/swiftpm-cache"
 clang_cache="$repo_dir/.build/clang-module-cache"
 
@@ -15,7 +15,7 @@ swift build --disable-sandbox -c "$configuration"
 binary_dir=$(swift build --disable-sandbox -c "$configuration" --show-bin-path)
 
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
-cp "$binary_dir/RemoteBridge" "$app_dir/Contents/MacOS/RemoteBridge"
+cp "$binary_dir/Remotely" "$app_dir/Contents/MacOS/Remotely"
 cp "$repo_dir/Resources/Info.plist" "$app_dir/Contents/Info.plist"
 cp "$repo_dir/Resources/AppIcon.icns" "$app_dir/Contents/Resources/AppIcon.icns"
 xattr -cr "$app_dir"

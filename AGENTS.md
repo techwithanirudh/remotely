@@ -12,7 +12,7 @@ being worked on.
 swiftformat .
 swiftlint
 swift build
-swift run RemoteKitTests
+swift run RemotelyKitTests
 ```
 
 The pre-commit hook runs the first two on staged files, so this is only for
@@ -66,8 +66,8 @@ git config core.hooksPath .githooks
 
 ```sh
 swift build
-swift run RemoteKitTests                 # the whole suite; there is no single-test runner
-zsh scripts/build-app.sh                 # writes build/Remote Bridge.app
+swift run RemotelyKitTests                 # the whole suite; there is no single-test runner
+zsh scripts/build-app.sh                 # writes build/Remotely.app
 zsh scripts/capture-cec.sh 20            # records a CEC session for a fixture
 zsh scripts/analyze.sh                   # SwiftLint's analyzer rules, needs a clean build
 ```
@@ -76,13 +76,13 @@ Tests are a plain executable, not XCTest: Command Line Tools ships neither
 XCTest nor swift-testing, and swift-testing conflicts with Defaults over
 swift-syntax.
 
-Installing means replacing `/Applications/Remote Bridge.app`. The build is
+Installing means replacing `/Applications/Remotely.app`. The build is
 ad-hoc signed, so macOS revokes Accessibility every time. Never write to the
 app's live `Defaults` to shortcut into a UI state.
 
 ## Architecture
 
-`RemoteKit` is the core and has no UI. `RemoteBridge` is the app. Keep timing,
+`RemotelyKit` is the core and has no UI. `Remotely` is the app. Keep timing,
 bindings and event synthesis out of the views. That split is what makes the
 rules testable.
 
@@ -91,14 +91,14 @@ together and a file's path says what it belongs to rather than what it is:
 
 - `Settings/Models` holds settings state and persistence models.
 - `Settings/SettingsPanes` holds one pane per file.
-- `UI/RemoteBridgeUI` holds this app's own primitives; `UI/Modifiers`,
+- `UI/RemotelyUI` holds this app's own primitives; `UI/Modifiers`,
   `UI/Utilities` and `UI/Views` hold the reusable pieces. Add `UI/Shapes` only
   for an actual reusable `Shape`.
 - `Utilities` holds small non-UI helpers that own no app state, no input
   synthesis, no gesture timing and no CEC.
 
 Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
-stay in `RemoteKit/CEC`. Transport process ownership, unified-log streaming,
+stay in `RemotelyKit/CEC`. Transport process ownership, unified-log streaming,
 line parsing, and CEC event decoding must not move into `Utilities`, app
 lifecycle code, settings models, or UI.
 
@@ -108,7 +108,7 @@ and its private CoreRC XPC service refuses bus enumeration to third parties
 is the only path that works. A previous rewrite reinstated the framework
 approach and broke remote detection entirely.
 
-`CECLink` → `GestureReader` → `RemoteBridge` → `InputSynthesizer`.
+`CECLink` → `GestureReader` → `Remotely` → `InputSynthesizer`.
 `GestureReader` is a pure struct driven by `press`/`release`/`elapse`.
 
 - CEC repeats a key while held and sends one release with no key code, so taps,

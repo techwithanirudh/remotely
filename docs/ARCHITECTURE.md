@@ -2,8 +2,8 @@
 
 ## The shape
 
-Two targets. `RemoteKit` is the whole behaviour of the app and imports no UI
-framework; `RemoteBridge` is the window, the menu bar item and the guide. The
+Two targets. `RemotelyKit` is the whole behaviour of the app and imports no UI
+framework; `Remotely` is the window, the menu bar item and the guide. The
 split is not tidiness. It is what makes the rules testable, because every
 interesting decision happens in a type that can be driven from a test without
 a screen, a remote, or a TV.
@@ -13,26 +13,26 @@ its primitives sit together, so a file's path says what it belongs to instead
 of what kind of thing it is.
 
 ```
-Sources/RemoteKit          the core
+Sources/RemotelyKit          the core
   CEC/                     transport and parsing
   Input/                   synthesis, gesture timing, the glide curve
   Model/                   buttons, actions, bindings, key combinations
-Sources/RemoteBridge       the app
+Sources/Remotely       the app
   App/                     lifecycle, windows, menu bar
   Settings/
     Models/                 settings state and persistence models
     SettingsPanes/          one settings pane per file
   UI/                      reusable presentation code
-    RemoteBridgeUI/         product-specific UI primitives
+    RemotelyUI/         product-specific UI primitives
     Modifiers/              reusable SwiftUI modifiers
     Utilities/              UI-only styling helpers
     Views/                  composed and transient views
   Utilities/               small reusable non-UI helpers
   Onboarding/              first run
-Tests/RemoteKitTests       one file per behaviour
+Tests/RemotelyKitTests       one file per behaviour
 ```
 
-`UI/RemoteBridgeUI` holds this app's own primitives. Add `UI/Shapes` only when
+`UI/RemotelyUI` holds this app's own primitives. Add `UI/Shapes` only when
 the app owns a real reusable `Shape`. Empty folders and wrapper-only abstractions do not improve the
 architecture. Root `Utilities` is not a miscellaneous core folder. It must not
 own app state, input synthesis, gesture timing, or CEC work.
@@ -40,7 +40,7 @@ own app state, input synthesis, gesture timing, or CEC work.
 ## How a button press becomes a click
 
 ```
-remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteBridge -> InputSynthesizer -> CGEvent
+remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> Remotely -> InputSynthesizer -> CGEvent
 ```
 
 **`CECLink`** owns the transport. macOS keeps the CEC bus inside the `corercd`
@@ -57,11 +57,11 @@ pure function, which is why it is the best-tested thing here.
 
 These boundaries hold through any reorganization:
 
-- `RemoteKit/CEC/CECLink.swift` owns process launch, unified-log streaming, and
+- `RemotelyKit/CEC/CECLink.swift` owns process launch, unified-log streaming, and
   transport lifecycle.
-- `RemoteKit/CEC/CECLogParser.swift` owns pure line parsing and CEC event
+- `RemotelyKit/CEC/CECLogParser.swift` owns pure line parsing and CEC event
   decoding.
-- Neither file moves to `Utilities`, `RemoteBridge`, settings code, or UI.
+- Neither file moves to `Utilities`, `Remotely`, settings code, or UI.
 - UI and settings consume decoded state. They never read `corercd`, parse log
   lines, or construct transport commands.
 
@@ -80,7 +80,7 @@ Two consequences worth knowing:
   arrow fires once on key down, or binding Show Desktop to an arrow would do
   nothing at all.
 
-**`RemoteBridge`** owns the clock, the bindings and the log, and is the only
+**`Remotely`** owns the clock, the bindings and the log, and is the only
 `@MainActor` `ObservableObject` the UI observes.
 
 **`InputSynthesizer`** posts the events. Everything it posts carries

@@ -5,7 +5,7 @@
 # in memory and never archives, so `log show` cannot recover a past session.
 # The only way to get one is to stream while somebody presses buttons.
 #
-#   zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt
+#   zsh scripts/capture-cec.sh 20 > Sources/RemotelyKitTests/Fixtures/session.txt
 set -euo pipefail
 
 seconds=${1:-20}

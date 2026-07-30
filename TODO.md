@@ -5,6 +5,10 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
+- [ ] Rename to Remotely. Bundle ID `com.anirudh.remotely`, targets `Remotely`
+      and `RemotelyKit`, core type `Remotely` becomes `Remote`. Resets stored
+      settings and the Accessibility grant.
+
 - [ ] Confirm 0x2C is Back-held and not a separate button, by holding other
       buttons and checking no other long-duration code appears.
 - [ ] Capture arrows too. This remote sends no repeats at all, so check whether
@@ -24,14 +28,13 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] Separate macOS display discovery from CEC input discovery, then test one
       display, multiple displays, reconnects, and which display owns each press.
 - [ ] Capture a real CEC session as a test fixture and replay it in the suite
-      (`zsh scripts/capture-cec.sh 20 > Sources/RemoteKitTests/Fixtures/session.txt`).
+      (`zsh scripts/capture-cec.sh 20 > Sources/RemotelyKitTests/Fixtures/session.txt`).
       Debug-level log lines are never archived, so this has to be recorded live.
 - [ ] Collapse the font scale to 11/12/13/15 and add font tokens to `Theme`,
       then enable the `hardcoded_font_size` custom lint rule (64 hits today).
 - [ ] `Row` absorbs the hand-rolled rows; one badge component; `IconTile`
       styles instead of three hand-drawn tinted squares.
 - [ ] Merge WelcomeStep and FinishStep into one BookendStep.
-- [ ] Rename the app? RemoteControl / CECControl are the candidates.
 
 ## Actions worth adding
 
