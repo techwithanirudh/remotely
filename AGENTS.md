@@ -23,6 +23,13 @@ Write one only for something the code cannot say: why a value was measured
 rather than chosen, why an obvious approach was rejected, what a private API
 does. Never restate what the next line does.
 
+## Borrowed research
+
+`NavigationMethod` reimplements Mac Mouse Fix's per-app Back and Forward table.
+Their code is under the MMF License, which requires any program derived from
+it to carry their payment system — so the app list is used as a finding and the
+code is written from scratch. Do not paste MMF source into this repo.
+
 ## Commits
 
 Conventional Commits, enforced by a hook: `feat:`, `fix:`, `refactor:`,

@@ -136,20 +136,17 @@ private extension InputSynthesizer {
         }
     }
 
-    /// No single Back works everywhere, which Mac Mouse Fix documents at
-    /// length: buttons 4 and 5 are ignored by Apple's own apps, and the swipe
-    /// gesture they respond to is ignored by VS Code and its forks. This takes
-    /// their split without the private swipe API — Command-bracket for Apple
-    /// apps, mouse buttons for everything else.
     func navigate(back: Bool) {
-        let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
-        let wantsBracket = bundleID.hasPrefix("com.apple.")
-            || ["dev.warp.Warp", "org.zotero.zotero"].contains(bundleID)
-
-        if wantsBracket {
-            press(key: back ? 33 : 30, flags: .maskCommand)
-        } else {
+        let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
+        switch NavigationMethod(frontmostApp: app) {
+        case .mouseButton:
             click(CGMouseButton(rawValue: back ? 3 : 4) ?? .center, clicks: 1)
+        case .commandBracket:
+            press(key: back ? 33 : 30, flags: .maskCommand)
+        case .optionCommandBracket:
+            press(key: back ? 33 : 30, flags: [.maskCommand, .maskAlternate])
+        case .commandArrow:
+            press(key: back ? 123 : 124, flags: .maskCommand)
         }
     }
 
@@ -198,6 +195,40 @@ private extension InputSynthesizer {
     func send(_ event: CGEvent?) {
         event?.setIntegerValueField(.eventSourceUserData, value: EventSignature.value)
         event?.post(tap: .cghidEventTap)
+    }
+}
+
+/// How the frontmost app expects to be told to go back.
+///
+/// There is no single answer. Mac Mouse Fix tested about forty apps and wrote
+/// the results up in `Universal Back and Forward.md`: buttons 4 and 5 are
+/// ignored by Apple's own apps, and the swipe gesture those respond to is
+/// ignored by VS Code and its forks. This is their table, reimplemented — the
+/// app list is their finding, the code is not theirs to copy.
+///
+/// Their fourth method, a navigation swipe, needs a private touch API we do
+/// not have, so apps that want one get Command-bracket instead.
+public enum NavigationMethod: Equatable, Sendable {
+    case mouseButton
+    case commandBracket
+    case optionCommandBracket
+    case commandArrow
+
+    public init(frontmostApp bundleID: String) {
+        switch bundleID {
+        case "com.apple.Notes", "com.apple.freeform":
+            self = .optionCommandBracket
+        case "com.adobe.Acrobat.Pro", "com.apple.iCal":
+            self = .commandArrow
+        case "org.zotero.zotero", "dev.warp.Warp",
+             "com.apple.systempreferences", "com.apple.AppStore",
+             "com.apple.Music", "com.apple.AddressBook",
+             "com.apple.TV", "com.apple.iBooksX", "com.apple.Preview":
+            self = .commandBracket
+        default:
+            // Apple apps ignore buttons 4 and 5 entirely.
+            self = bundleID.hasPrefix("com.apple.") ? .commandBracket : .mouseButton
+        }
     }
 }
 
