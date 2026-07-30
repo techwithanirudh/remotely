@@ -76,8 +76,10 @@ swiftformat . && swiftlint   # needs TOOLCHAIN_DIR set, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 ```
 
-Requires `brew install swiftlint swiftformat`. See [AGENTS.md](AGENTS.md) for
-the architecture and the conventions, and [TODO.md](TODO.md) for what is next.
+Requires `brew install swiftlint swiftformat`. See
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how it fits together,
+[AGENTS.md](AGENTS.md) for the conventions, and [TODO.md](TODO.md) for what is
+next.
 
 ## Layout
 
