@@ -5,11 +5,8 @@ import RemotelyKit
 
 /// Sparkle, wrapped so nothing else has to know about it.
 ///
-/// Sparkle owns the two automatic settings, not this app. Mirroring them into
-/// `Defaults` gave two sources of truth: ticking "Automatically download and
-/// install updates in the future" in Sparkle's own dialog left the Settings
-/// toggle showing off. These read and write through to Sparkle, and Sparkle
-/// persists them under `SUEnableAutomaticChecks` and `SUAutomaticallyUpdate`.
+/// Sparkle owns the automatic settings, so these read through to it rather than
+/// mirroring into `Defaults`, which left its own dialog and this app disagreeing.
 @MainActor
 final class Updater: NSObject, ObservableObject {
     static let shared = Updater()
@@ -36,10 +33,10 @@ final class Updater: NSObject, ObservableObject {
         set { controller.updater.automaticallyDownloadsUpdates = newValue }
     }
 
-    var wantsBeta: Bool {
-        get { Defaults[.wantsBetaUpdates] }
+    var channel: ReleaseChannel {
+        get { Defaults[.releaseChannel] }
         set {
-            Defaults[.wantsBetaUpdates] = newValue
+            Defaults[.releaseChannel] = newValue
             guard hasStarted else { return }
             controller.updater.checkForUpdatesInBackground()
         }
@@ -50,8 +47,7 @@ final class Updater: NSObject, ObservableObject {
         controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
         controller.updater.publisher(for: \.lastUpdateCheckDate).assign(to: &$lastCheck)
 
-        // Sparkle's dialog writes straight to its defaults without telling us,
-        // so the settings screen has to hear about it from there.
+        // Sparkle's dialog writes to its defaults without notifying anyone.
         NotificationCenter.default
             .publisher(for: UserDefaults.didChangeNotification)
             .receive(on: RunLoop.main)
@@ -74,9 +70,7 @@ final class Updater: NSObject, ObservableObject {
 }
 
 extension Updater: SPUUpdaterDelegate {
-    /// Beta releases are opt-in. An empty set means stable only, which is what
-    /// an appcast entry with no channel is.
     nonisolated func allowedChannels(for _: SPUUpdater) -> Set<String> {
-        MainActor.assumeIsolated { wantsBeta ? ["beta"] : [] }
+        MainActor.assumeIsolated { channel.allowedChannels }
     }
 }

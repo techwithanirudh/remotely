@@ -34,27 +34,22 @@ flowchart LR
 
 ## Cutting a release
 
-Bump both version fields, commit, then push a tag. Pushing the tag runs the
-release.
-
 ```sh
 plutil -replace CFBundleShortVersionString -string 0.7.0 Resources/Info.plist
 plutil -replace CFBundleVersion -string 12 Resources/Info.plist
 git commit -am "chore: bump to 0.7.0" && git push
 git tag -a 0.7.0 -m 0.7.0 && git push origin 0.7.0
+gh workflow run release.yml -f tag=0.7.0 -f channel=auto -f publish=true
 ```
 
 `CFBundleVersion` is the one Sparkle compares. Forget it and no existing install
 sees the release, whatever the marketing version says.
 
-For a draft, dispatch it by hand with `publish` unchecked instead:
-
-```sh
-gh workflow run release.yml -f tag=0.7.0 -f channel=auto -f publish=false
-```
-
-The appcast only reaches `gh-pages` when publishing, so a draft cannot offer an
-update to anyone.
+Pushing a tag distributes nothing on its own; only the dispatch does. That is
+what makes it safe to move a tag or point one at an older commit, and it is how
+a failed run gets retried without burning a version. Pass `publish=false` for a
+draft: the appcast only reaches `gh-pages` when publishing, so a draft cannot
+offer an update to anyone.
 
 ## What the job does
 

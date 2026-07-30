@@ -3,7 +3,7 @@ import Defaults
 public extension Defaults.Keys {
     static let enabled = Key<Bool>("enabled", default: true)
     static let pointerSensitivity = Key<Double>("pointerSensitivity", default: 1)
-    static let wantsBetaUpdates = Key<Bool>("wantsBetaUpdates", default: false)
+    static let releaseChannel = Key<ReleaseChannel>("releaseChannel", default: .stable)
 
     /// Only what the user has changed; defaults are applied on top at load.
     static let bindings = Key<Bindings>("bindings", default: Bindings())

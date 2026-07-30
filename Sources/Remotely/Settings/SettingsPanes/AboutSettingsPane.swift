@@ -5,7 +5,7 @@ import SwiftUI
 struct AboutSettingsPane: View {
     @State private var confirmingReset = false
     @ObservedObject private var updater = Updater.shared
-    @Default(.wantsBetaUpdates) private var betaUpdates
+    @Default(.releaseChannel) private var channel
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -86,13 +86,13 @@ struct AboutSettingsPane: View {
 
                     HairlineDivider()
 
-                    Row(
-                        title: "Include beta releases",
-                        symbol: "flask"
-                    ) {
-                        Toggle("", isOn: $betaUpdates)
-                            .labelsHidden()
-                            .controlSize(.small)
+                    Row(title: "Release channel", symbol: "flask") {
+                        Picker("", selection: $channel) {
+                            ForEach(ReleaseChannel.allCases) { Text($0.title).tag($0) }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                        .controlSize(.small)
                     }
                 }
 
