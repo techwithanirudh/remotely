@@ -5,6 +5,18 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
 
+- [ ] Back-held never fires on the M70D. Two "Pressed Back" lines land inside
+      one second while repeats arrive every 0.2-0.3s, well inside the 0.6s
+      repeat timeout, so a `<User Control Released>` must be interleaved between
+      repeats and clearing `heldKey`. Capture the raw log holding Back to
+      confirm, then make a release provisional for non-directional keys so an
+      immediate repeat resumes the same hold.
+- [ ] Test light, dark, and a red backdrop, focused and unfocused, for the
+      window background.
+- [ ] Test on the Shal Mac Neo and with the Samsung TV remote.
+- [ ] Test the MacBook Air with two displays, the monitor plus the TV. Work out
+      how to test two remotes on two HDMI inputs at once, and which display
+      owns each press.
 - [ ] Confirm the unfocused window background by eye. It is a solid fill under
       the material now, not `windowBackgroundColor` alone, which was white on
       Tahoe. Klack's grey measures rgb(232,235,237).
