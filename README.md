@@ -3,8 +3,7 @@
 <p align="center">
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remote-bridge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remote-bridge/ci.yml?style=flat-square&label=CI" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/checks-68-555555?style=flat-square" />
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-555555?style=flat-square" /></a>
+  <img alt="Tests" src="https://img.shields.io/badge/checks-83-555555?style=flat-square" />
 </p>
 
 <p align="center">
@@ -13,11 +12,10 @@
 </p>
 
 <p align="center">
-  <a href="#setup">Setup</a> ·
   <a href="#what-the-buttons-do">Buttons</a> ·
-  <a href="#how-it-works">How it works</a> ·
-  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
-  <a href="AGENTS.md">Contributing</a>
+  <a href="#setup">Setup</a> ·
+  <a href="#build">Build</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a>
 </p>
 
 <p align="center">
@@ -29,7 +27,6 @@
 - **Nothing to buy.** It uses the HDMI cable already carrying your picture, and the remote already in your hand.
 - **Every button is yours.** Point, scroll, click, right click, Escape, Show Desktop, Mission Control, Back, Forward, or a keyboard shortcut you record.
 - **Nothing leaves your Mac.** No account, no network, no analytics.
-- **It tells you when it cannot work.** A live status, a setup checklist per TV brand, and an event log showing exactly what arrived.
 
 ## Features
 
@@ -65,31 +62,11 @@ and keep them off the CEC bus.
 The first run walks through all of it and has you practise each gesture, so you
 find out the remote works before you rely on it.
 
-## How it works
-
-macOS keeps the CEC bus inside the `corercd` daemon. Its private CoreRC XPC
-service refuses bus enumeration to third parties, answering
-`NSOSStatusErrorDomain -6773`, so the daemon routes no HID events to this app.
-What it does do is log every button, so Remote Bridge reads the unified log:
-
-```sh
-log stream --predicate 'process == "corercd"' --debug --style compact
-```
-
-Lines carrying `<User Control Pressed> XX` give the CEC wire code, which the app
-maps to a button and posts as a `CGEvent`. Every posted event is stamped in
-`kCGEventSourceUserData`, which is how onboarding tells a remote press from your
-own mouse.
-
-```
-remote → TV → HDMI-CEC → Mac → corercd → Remote Bridge → pointer
-```
-
 ## Build
 
 ```sh
 swift build
-swift run RemoteKitTests     # 68 checks
+swift run RemoteKitTests     # 83 checks
 swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 ```
@@ -100,8 +77,7 @@ zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 | `Sources/RemoteBridge` | The app: menu bar item, settings window, onboarding |
 | `Tests/RemoteKitTests` | A plain executable, since Command Line Tools ships neither XCTest nor swift-testing |
 
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) covers how it fits together,
-[AGENTS.md](AGENTS.md) the conventions, [TODO.md](TODO.md) what is next.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture.
 
 ## License
 
