@@ -10,12 +10,9 @@ struct BrandGuide: View {
                 Text("Display").font(.system(size: 13))
                 Spacer(minLength: 8)
 
-                Picker("", selection: $brand) {
+                Select(selection: $brand) {
                     ForEach(TVBrand.allCases) { Text($0.name).tag($0) }
                 }
-                .labelsHidden()
-                .buttonStyle(.borderless)
-                .fixedSize()
             }
             .padding(.horizontal, Theme.Card.inset)
             .frame(height: Theme.Card.rowHeight)

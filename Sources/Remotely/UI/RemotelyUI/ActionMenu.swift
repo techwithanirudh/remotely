@@ -11,7 +11,7 @@ struct ActionMenu: View {
     @State private var monitor: Any?
 
     var body: some View {
-        Picker("", selection: Binding(get: { binding.action }, set: { choose($0) })) {
+        Select(selection: Binding(get: { binding.action }, set: { choose($0) })) {
             ForEach(RemoteAction.Group.allCases, id: \.self) { group in
                 Section {
                     ForEach(group.actions) { action in
@@ -20,9 +20,6 @@ struct ActionMenu: View {
                 }
             }
         }
-        .labelsHidden()
-        .buttonStyle(.borderless)
-        .fixedSize()
         .onDisappear(perform: disarm)
     }
 

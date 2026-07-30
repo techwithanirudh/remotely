@@ -40,12 +40,12 @@ final class StatusItemController {
         menu.addItem(.separator())
         menu.addItem(Self.item(
             NSMenuItem(title: "Check for Updates…", action: nil, keyEquivalent: ""),
-            symbol: "arrow.down.circle",
+            symbol: "arrow.triangle.2.circlepath",
             action: onCheckForUpdates
         ))
         menu.addItem(Self.item(
-            NSMenuItem(title: "Copy Diagnostic Log", action: nil, keyEquivalent: ""),
-            symbol: "doc.on.doc",
+            NSMenuItem(title: "Copy Diagnostics", action: nil, keyEquivalent: ""),
+            symbol: "waveform.path.ecg",
             action: onCopyLog
         ))
         menu.addItem(.separator())

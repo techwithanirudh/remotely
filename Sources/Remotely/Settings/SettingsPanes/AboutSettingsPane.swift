@@ -86,12 +86,9 @@ struct AboutSettingsPane: View {
                     HairlineDivider()
 
                     Row(title: "Release channel", symbol: "flask") {
-                        Picker("", selection: $channel) {
+                        Select(selection: $channel) {
                             ForEach(ReleaseChannel.allCases) { Text($0.title).tag($0) }
                         }
-                        .labelsHidden()
-                        .fixedSize()
-                        .controlSize(.small)
                     }
                 }
 
