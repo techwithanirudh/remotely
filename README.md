@@ -3,7 +3,7 @@
 <p align="center">
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remote-bridge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remote-bridge/ci.yml?style=flat-square&label=CI" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/checks-83-555555?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/checks-80-555555?style=flat-square" />
 </p>
 
 <p align="center">
@@ -66,7 +66,7 @@ find out the remote works before you rely on it.
 
 ```sh
 swift build
-swift run RemoteKitTests     # 83 checks
+swift run RemoteKitTests     # 80 checks
 swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remote Bridge.app
 ```

@@ -2,7 +2,6 @@ import RemoteKit
 
 func navigationTests() {
     Expect.suite("Back and Forward") {
-        targetTests()
         Expect.equal(NavigationMethod(targetApp: "com.microsoft.VSCode"), .mouseButton,
                      "VS Code takes mouse button 4 or 5")
         Expect.equal(NavigationMethod(targetApp: "at.studio.AsideBrowser"), .mouseButton,
@@ -22,35 +21,4 @@ func navigationTests() {
         Expect.equal(NavigationMethod(targetApp: ""), .mouseButton,
                      "an unknown app gets the broad non-Apple fallback")
     }
-}
-
-private func targetTests() {
-    let own = "com.anirudh.remotebridge"
-    Expect.equal(
-        NavigationTarget.resolve(
-            frontmost: "com.apple.finder",
-            own: own,
-            lastOther: "at.studio.AsideBrowser"
-        ),
-        "com.apple.finder",
-        "navigation follows the frontmost external app"
-    )
-    Expect.equal(
-        NavigationTarget.resolve(
-            frontmost: own,
-            own: own,
-            lastOther: "at.studio.AsideBrowser"
-        ),
-        "at.studio.AsideBrowser",
-        "settings fall back to the last external app"
-    )
-    Expect.equal(
-        NavigationTarget.resolve(
-            frontmost: nil,
-            own: own,
-            lastOther: "com.apple.finder"
-        ),
-        "com.apple.finder",
-        "a missing frontmost app keeps the last external app"
-    )
 }

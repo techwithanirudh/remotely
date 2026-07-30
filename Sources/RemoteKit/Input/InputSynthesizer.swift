@@ -22,9 +22,7 @@ public final class InputSynthesizer {
     /// reports which app took a posted event, so the choice has to say so.
     public private(set) var lastNavigation = ""
 
-    public init() {
-        NavigationTarget.start()
-    }
+    public init() {}
 
     public static var hasAccessibility: Bool { AXIsProcessTrusted() }
 
@@ -165,27 +163,18 @@ private extension InputSynthesizer {
         }
     }
 
+    /// A posted keystroke goes to whatever window is frontmost, so the method
+    /// has to be chosen for that app. Activating anything first would both
+    /// steal focus and land the event somewhere the user was not looking.
     func navigate(
         back: Bool,
         targetApp: String?,
         method override: NavigationMethod?
     ) {
-        let app = targetApp ?? NavigationTarget.bundleID
+        let app = targetApp ?? NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
         let method = override ?? NavigationMethod(targetApp: app)
         lastNavigation = "\(back ? "Back" : "Forward") to \(app) by \(method.title)"
-
-        if NavigationTarget.isFrontmost(app) {
-            deliverNavigation(method, back: back)
-            return
-        }
-
-        Task { @MainActor [weak self] in
-            guard await NavigationTarget.focus(app) else {
-                self?.lastNavigation = "Could not focus \(app)"
-                return
-            }
-            self?.deliverNavigation(method, back: back)
-        }
+        deliverNavigation(method, back: back)
     }
 
     func deliverNavigation(_ method: NavigationMethod, back: Bool) {
