@@ -3,7 +3,7 @@
 <p align="center">
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remotely/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remotely/ci.yml?style=flat-square&label=CI" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/checks-84-555555?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/checks-85-555555?style=flat-square" />
 </p>
 
 <p align="center">
@@ -11,10 +11,12 @@
 </p>
 
 <p align="center">
-  <a href="#what-the-buttons-do">Buttons</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#buttons">Buttons</a> ·
   <a href="#setup">Setup</a> ·
   <a href="#build">Build</a> ·
-  <a href="docs/ARCHITECTURE.md">Architecture</a>
+  <a href="#resources">Resources</a> ·
+  <a href="#license">License</a>
 </p>
 
 <p align="center">
@@ -27,7 +29,7 @@
 - **Rebind anything**: twenty actions grouped by kind, including recorded keyboard shortcuts
 - **Nothing leaves your Mac**: no account, no network, no analytics
 
-## What the buttons do
+## Buttons
 
 | Button | Default |
 | --- | --- |
@@ -53,7 +55,7 @@ find out the remote works.
 
 ```sh
 swift build
-swift run RemotelyKitTests     # 84 checks
+swift run RemotelyKitTests     # 85 checks
 swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remotely.app
 ```
@@ -64,13 +66,13 @@ zsh scripts/build-app.sh     # writes build/Remotely.app
 | `Sources/Remotely` | The app: menu bar item, settings window, onboarding |
 | `Tests/RemotelyKitTests` | A plain executable, since Command Line Tools ships neither XCTest nor swift-testing |
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture,
-[docs/RELEASING.md](docs/RELEASING.md) for how releases are cut, and
-[CONTRIBUTING.md](CONTRIBUTING.md) to get set up.
+## Resources
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Releasing](docs/RELEASING.md)
+- [Contributing](CONTRIBUTING.md)
+- [What is next](TODO.md)
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-The icon click is rendered from the `core` pack of
-[@web-kits/audio](https://github.com/raphaelsalaja/audio) by Raphael Salaja, MIT.
