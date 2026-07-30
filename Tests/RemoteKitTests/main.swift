@@ -3,6 +3,7 @@ import RemoteKit
 
 gestureRulesTests()
 gestureHoldsTests()
+gestureHoldTickTests()
 bindingsTests()
 keyCombinationsTests()
 glideCurveTests()

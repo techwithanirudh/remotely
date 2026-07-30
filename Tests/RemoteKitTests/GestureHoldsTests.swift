@@ -59,3 +59,27 @@ func gestureHoldsTests() {
         }
     }
 }
+
+/// The suite drove holds with one jump to 0.6s. The app ticks every 0.05s while
+/// CEC repeats the key, so the repeats have to not reset the hold.
+func gestureHoldTickTests() {
+    Expect.suite("Gesture holds under the real tick") {
+        var reader = GestureReader()
+        var events: [GestureReader.Event] = []
+
+        _ = reader.press(.back, at: 0)
+        var now = 0.0
+        var nextRepeat = 0.1
+        while now < 0.8 {
+            now += 0.05
+            if now >= nextRepeat {
+                events += reader.press(.back, at: now)
+                nextRepeat += 0.1
+            }
+            events += reader.elapse(to: now)
+        }
+
+        Expect.equal(events, [.trigger(.backHold)],
+                     "holding Back fires once, and the repeats do not reset it")
+    }
+}
