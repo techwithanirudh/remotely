@@ -26,8 +26,21 @@ rm -rf "$app_dir/Contents/Frameworks/Sparkle.framework"
 ditto "$binary_dir/Sparkle.framework" "$app_dir/Contents/Frameworks/Sparkle.framework"
 
 xattr -cr "$app_dir"
+
+# Accessibility is granted against the designated requirement. Ad-hoc signing
+# puts the binary's cdhash in it, so every build looks like a different app and
+# macOS drops the grant. A stable identity puts the certificate there instead,
+# measured as `identifier "com.anirudh.remotely" and certificate root = H"..."`
+# and unchanged across a version bump. Notarization is a separate matter: it
+# only silences Gatekeeper on first launch.
+identity=${CODESIGN_IDENTITY:-Remotely Self Signed}
+if ! security find-identity -v 2>/dev/null | grep -qF "$identity"; then
+    print -u2 "No '$identity' identity; falling back to ad-hoc, which resets Accessibility on every install."
+    identity="-"
+fi
+
 # Nested code is signed before its container, which --deep does not guarantee.
-codesign --force --sign - "$app_dir/Contents/Frameworks/Sparkle.framework"
-codesign --force --sign - "$app_dir"
+codesign --force --sign "$identity" "$app_dir/Contents/Frameworks/Sparkle.framework"
+codesign --force --sign "$identity" "$app_dir"
 
 echo "$app_dir"

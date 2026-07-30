@@ -38,7 +38,7 @@ jobs:
       APP_NAME: Remotely.app
       ZIP_NAME: Remotely.zip
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           ref: refs/tags/${{ inputs.tag }}
@@ -89,7 +89,7 @@ jobs:
 
       # Provenance without an Apple Developer account. Notarization needs one;
       # until then macOS will ask the user to right-click and Open.
-      - uses: sigstore/cosign-installer@v3
+      - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
       - name: Sign the archive
         env:
           COSIGN_YES: "true"
@@ -140,7 +140,7 @@ jobs:
           echo "built=true" >> "$GITHUB_OUTPUT"
 
       - name: Create the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           files: |

@@ -79,8 +79,24 @@ swift-syntax.
 Sparkle is linked by SwiftPM but not embedded by it, so `build-app.sh` copies
 `Sparkle.framework` into `Contents/Frameworks`, and the app target carries an
 `@executable_path/../Frameworks` rpath. Nested code is signed before its
-container. Automatic install stays off until releases are notarized: an update
-writes a new ad-hoc signature and macOS revokes Accessibility.
+container.
+
+Sign with a stable identity, not ad-hoc. Accessibility is granted against the
+designated requirement, and the two differ:
+
+- ad-hoc puts the binary hash in it, measured changing from
+  `cdhash H"eed024..."` to `cdhash H"e5f28c..."` across one version bump, so
+  macOS treats every build as a new app and drops the grant
+- a self-signed certificate puts the certificate in it,
+  `identifier "com.anirudh.remotely" and certificate root = H"13f1de..."`,
+  unchanged across the same bump
+
+`build-app.sh` uses `CODESIGN_IDENTITY`, defaulting to `Remotely Self Signed`,
+and warns then falls back to ad-hoc when that identity is missing. Notarization
+is unrelated: it silences Gatekeeper on first launch and needs a paid account.
+
+Every workflow action is pinned to a 40-character commit SHA with the tag in a
+trailing comment, so a moved tag cannot change what runs.
 
 Installing means replacing `/Applications/Remotely.app`. The build is
 ad-hoc signed, so macOS revokes Accessibility every time. Never write to the
