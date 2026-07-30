@@ -17,8 +17,6 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] `Row` absorbs the hand-rolled rows; one badge component; `IconTile`
       styles instead of three hand-drawn tinted squares.
 - [ ] Merge WelcomeStep and FinishStep into one BookendStep.
-- [ ] `scripts/analyze.sh` for the analyzer rules in CI (needs a clean build,
-      ~60s, so never in a hook).
 - [ ] Rename the app? RemoteControl / CECControl are the candidates.
 
 ## Actions worth adding

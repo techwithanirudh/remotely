@@ -1,5 +1,3 @@
-import Foundation
-
 /// A key as CEC reports it.
 ///
 /// Only these six ever arrive. Volume, media transport and Home never reach the

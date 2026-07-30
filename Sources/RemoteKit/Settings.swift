@@ -1,5 +1,4 @@
 import Defaults
-import Foundation
 
 public extension Defaults.Keys {
     static let enabled = Key<Bool>("enabled", default: true)

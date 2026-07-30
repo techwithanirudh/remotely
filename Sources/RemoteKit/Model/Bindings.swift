@@ -1,5 +1,3 @@
-import Foundation
-
 /// An action plus whatever payload that action needs.
 public struct ButtonBinding: Codable, Hashable, Sendable {
     public var action: RemoteAction

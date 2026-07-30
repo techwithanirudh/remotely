@@ -8,6 +8,7 @@ included:
 
 analyzer_rules:
   - unused_import
+  - unused_declaration
 
 disabled_rules:
   - todo                    # TODOs are tracked in the issue list, not the linter

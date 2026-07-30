@@ -1,5 +1,4 @@
 import CoreGraphics
-import Foundation
 
 /// What a button does once pressed.
 public enum RemoteAction: String, CaseIterable, Identifiable, Codable, Sendable {

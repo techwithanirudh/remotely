@@ -25,3 +25,11 @@ jobs:
         run: |
           brew install swiftlint swiftformat
           zsh scripts/lint.sh --check
+
+  analyze:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install swiftlint
+      # Needs a clean build, so it runs on its own rather than in the hook.
+      - run: zsh scripts/analyze.sh

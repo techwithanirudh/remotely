@@ -1,5 +1,3 @@
-import Foundation
-
 /// Minimal assertion harness.
 ///
 /// Command Line Tools ships neither swift-testing nor XCTest, and pulling

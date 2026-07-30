@@ -1,5 +1,4 @@
 import CoreGraphics
-import Foundation
 
 /// One of the shortcuts the window server owns, such as Show Desktop.
 ///

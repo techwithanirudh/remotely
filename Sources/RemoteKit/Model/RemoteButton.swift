@@ -1,5 +1,3 @@
-import Foundation
-
 /// A press or gesture the bridge can act on.
 ///
 /// CEC reports only five keys. Everything past `back` is derived from timing,

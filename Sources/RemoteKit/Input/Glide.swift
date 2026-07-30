@@ -1,4 +1,3 @@
-import CoreGraphics
 import Foundation
 
 /// Speed curve for a held direction.

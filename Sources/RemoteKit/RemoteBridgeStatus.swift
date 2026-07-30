@@ -1,5 +1,3 @@
-import Foundation
-
 /// What the user needs to know, in one value.
 ///
 /// A live CEC link is not enough on its own: without Accessibility the remote's
