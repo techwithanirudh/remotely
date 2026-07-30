@@ -73,7 +73,13 @@ Beta is opt-in through About.
 | Name | Where | Notes |
 | --- | --- | --- |
 | `SPARKLE_PRIVATE_KEY` | repo secret | EdDSA private key. The public half is `SUPublicEDKey` in `Resources/Info.plist`. |
-| `Remotely Self Signed` | login keychain | Code-signing identity. See below. |
+| `CODESIGN_CERTIFICATE` | repo secret | The `Remotely Self Signed` identity as a base64 `.p12`. |
+| `CODESIGN_CERTIFICATE_PASSWORD` | repo secret | Password for that `.p12`. |
+
+None of it goes in the working copy. The release job decodes the certificate
+into a keychain under `$RUNNER_TEMP`, signs from there, and deletes the keychain
+in an `if: always()` step, so a failed run leaves nothing behind. A build that
+comes out ad-hoc signed fails the job rather than shipping.
 
 Sign with a stable identity, never ad-hoc. Accessibility is granted against the
 designated requirement, and measured across one version bump:
@@ -85,8 +91,7 @@ designated requirement, and measured across one version bump:
 
 Losing the certificate means every existing install loses its Accessibility
 grant on the next update. Losing the EdDSA key means no existing install can be
-updated at all. Both live in the login keychain; `secrets/README.md` covers
-moving them.
+updated at all. Both live in the login keychain locally and in repo secrets for CI.
 
 Notarization is unrelated to any of this. It silences Gatekeeper on first launch
 and needs a paid Apple account, which this does not have, so a first install

@@ -3,11 +3,11 @@
 .build/
 build/
 
-# Signing material. Keep it in the working copy, never in the history.
+# Signing material never belongs in the working copy. It lives in the login
+# keychain locally and in repo secrets for CI, which imports it into a throwaway
+# keychain. These patterns are a backstop, not a place to put things.
 *.p12
 *.pem
 *.key
 *.cer
 *.mobileprovision
-secrets/*
-!secrets/README.md

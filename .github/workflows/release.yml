@@ -79,8 +79,59 @@ jobs:
 
       - run: swift run RemotelyKitTests
 
+      # A throwaway keychain, as Thaw does it: the certificate never touches the
+      # working copy, and the keychain is deleted even when the job fails.
+      # Signing with a stable identity is what lets an installed app keep its
+      # Accessibility grant across an update; ad-hoc puts the binary hash in the
+      # designated requirement, so macOS reads every build as a different app.
+      - name: Configure signing
+        env:
+          CODESIGN_CERTIFICATE: ${{ secrets.CODESIGN_CERTIFICATE }}
+          CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.CODESIGN_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${CODESIGN_CERTIFICATE:-}" ]]; then
+            echo "::error::CODESIGN_CERTIFICATE is not set; refusing to ship an ad-hoc signed build"
+            exit 1
+          fi
+
+          keychain="$RUNNER_TEMP/buildagent.keychain"
+          keychain_password=$(openssl rand -base64 24)
+          certificate="$RUNNER_TEMP/codesign.p12"
+
+          printf '%s' "$CODESIGN_CERTIFICATE" | base64 --decode > "$certificate"
+
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$certificate" -k "$keychain" \
+            -P "$CODESIGN_CERTIFICATE_PASSWORD" -A -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+
+          rm -f "$certificate"
+          security find-identity -v "$keychain"
+
       - name: Build the app
+        env:
+          CODESIGN_IDENTITY: Remotely Self Signed
         run: zsh scripts/build-app.sh release
+
+      # The whole point of signing is a stable designated requirement. A cdhash
+      # one means the identity was missed and every installed app would lose its
+      # Accessibility grant on this update.
+      - name: Verify the signature is not ad-hoc
+        run: |
+          set -euo pipefail
+          requirement=$(codesign -d --requirements - "build/$APP_NAME" 2>&1 | grep designated)
+          echo "$requirement"
+          if [[ "$requirement" == *cdhash* ]]; then
+            echo "::error::build is ad-hoc signed"
+            exit 1
+          fi
+          codesign -v --deep --strict "build/$APP_NAME"
 
       # ditto rather than zip: it is the only one that preserves the bundle's
       # symlinks and resource forks, which Sparkle needs intact.
@@ -165,6 +216,10 @@ jobs:
       # The feed URL is baked into every shipped binary, so it has to keep
       # working. Publishing to gh-pages here rather than attaching the appcast
       # to a release is what gives it a stable address.
+      - name: Cleanup keychain
+        if: always()
+        run: security delete-keychain "$RUNNER_TEMP/buildagent.keychain" || true
+
       - name: Publish the appcast to gh-pages
         if: steps.appcast.outputs.built == 'true' && inputs.publish
         env:
