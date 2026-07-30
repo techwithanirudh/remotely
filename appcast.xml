@@ -3,13 +3,13 @@
     <channel>
         <title>Remotely</title>
         <item>
-            <title>0.6.3</title>
-            <pubDate>Thu, 30 Jul 2026 10:32:01 +0000</pubDate>
-            <sparkle:version>11</sparkle:version>
-            <sparkle:shortVersionString>0.6.3</sparkle:shortVersionString>
+            <title>0.6.4</title>
+            <pubDate>Thu, 30 Jul 2026 10:44:38 +0000</pubDate>
+            <sparkle:version>12</sparkle:version>
+            <sparkle:shortVersionString>0.6.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://github.com/techwithanirudh/remotely/releases/download/0.6.3/Remotely.zip" length="2139492" type="application/octet-stream" sparkle:edSignature="ztpjBVThXnMBmv3d5gCjRwtT9dEZ8RAgZQLCStE1bJ/pDRk/1BoqCoSEmF/b7DTF5qLxsOknvsJusmhtAWQFDw=="/>
+            <enclosure url="https://github.com/techwithanirudh/remotely/releases/download/0.6.4/Remotely.zip" length="2144644" type="application/octet-stream" sparkle:edSignature="lX3OE9ywo6jbpgjKw0728Sf4LOri6GaTsWE5hleqv25ULatNh8GkcVVEePae5eTAiVYS4+23oZ2c8fNkSIOzBA=="/>
         </item>
     </channel>
 </rss>
