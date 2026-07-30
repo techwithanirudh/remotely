@@ -8,21 +8,23 @@ struct Row<Control: View>: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            if let symbol {
-                Image(systemName: symbol)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                    .frame(width: Theme.Card.glyphWidth)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13))
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 11))
+            HStack(spacing: Theme.Space.icon) {
+                if let symbol {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13))
                         .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(width: Theme.Card.glyphWidth)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(.system(size: 13))
+
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
 

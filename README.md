@@ -22,18 +22,13 @@
   <img alt="Remotely settings" src=".github/cover.png" width="800" />
 </p>
 
-## Why Remotely
-
-- **Nothing to buy.** It uses the HDMI cable already carrying your picture, and the remote already in your hand.
-- **Every button is yours.** Point, scroll, click, right click, Escape, Show Desktop, Mission Control, Back, Forward, or a keyboard shortcut you record.
-- **Nothing leaves your Mac.** No account, no network, no analytics.
-
 ## Features
 
 - **Move the pointer with the D-pad**: tap to nudge, hold to glide, accelerating the longer you hold
 - **Click without a mouse**: press Center to click, twice to double click, hold for a right click
 - **Scroll with the same arrows**: press Back twice to switch modes, with a chip beside the pointer showing which you are in
 - **Rebind anything**: twenty actions grouped by kind, including recorded keyboard shortcuts
+- **Nothing leaves your Mac**: no account, no network, no analytics
 
 ## What the buttons do
 
