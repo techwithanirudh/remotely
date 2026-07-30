@@ -4,6 +4,7 @@ Everything agreed but not yet done. One line each, ticked and deleted when it
 lands. See AGENTS.md — nothing gets worked on that is not written here first.
 
 ## Next
+
 - [ ] Find out whether volume, mute, media and Home reach the Mac over CEC.
       `RemoteKey` documents that they never do, but that claim has never been
       tested and 0x2C already proved one documented assumption wrong. The codes
@@ -37,6 +38,7 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] Merge WelcomeStep and FinishStep into one BookendStep.
 
 ## Actions worth adding
+
 - [ ] An on-screen command menu the remote drives, the way Pieoneer's pie menu
       and Remote Buddy's Menu tab work: a configurable list of actions per app,
       arrowed through with the D-pad and confirmed with Center. Reuses the
@@ -49,6 +51,7 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] App Exposé, Launchpad, Move a Space left/right.
 
 ## Later
+
 - [ ] Sparkle: embed the framework, generate an EdDSA keypair, and have
       `.github/workflows/release.yml` sign the zip and publish an appcast.
 - [ ] Apple Developer cert so releases can be notarized instead of ad-hoc
