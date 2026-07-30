@@ -15,7 +15,7 @@ public enum RemoteStatus: Equatable, Sendable {
         case .paused: "Paused"
         case .needsPermission: "Needs Permission"
         case .noDisplay: "No Display"
-        case .waitingForRemote: "Waiting for Remote"
+        case .waitingForRemote: "Ready to Receive"
         case .ready: "Ready"
         case .unsupported: "Not Supported"
         case .failed: "Something Went Wrong"
@@ -27,7 +27,7 @@ public enum RemoteStatus: Equatable, Sendable {
         case .paused: "Remote control is turned off."
         case .needsPermission: "Click to allow Accessibility, so the remote can move the pointer."
         case .noDisplay: "Connect this Mac to a display over HDMI."
-        case .waitingForRemote: "Connected. Press a button on the remote to confirm."
+        case .waitingForRemote: "Press a button on the remote to confirm it is heard."
         case .ready: "Your remote is controlling this Mac."
         case .unsupported: "This Mac has no HDMI port that carries remote buttons."
         case .failed(let message): message

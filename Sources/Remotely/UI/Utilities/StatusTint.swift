@@ -6,9 +6,10 @@ extension RemoteStatus {
     var tint: Color {
         switch self {
         case .ready: .green
-        case .waitingForRemote, .needsPermission, .noDisplay: .orange
+        case .needsPermission, .noDisplay: .orange
         case .unsupported, .failed: .red
-        case .paused: .secondary
+        // Nothing is wrong yet, so it does not get a warning colour.
+        case .waitingForRemote, .paused: .secondary
         }
     }
 
