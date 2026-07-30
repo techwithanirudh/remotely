@@ -64,7 +64,9 @@ zsh scripts/build-app.sh     # writes build/Remotely.app
 | `Sources/Remotely` | The app: menu bar item, settings window, onboarding |
 | `Tests/RemotelyKitTests` | A plain executable, since Command Line Tools ships neither XCTest nor swift-testing |
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the architecture,
+[docs/RELEASING.md](docs/RELEASING.md) for how releases are cut, and
+[docs/VERIFYING_RELEASES.md](docs/VERIFYING_RELEASES.md) to check one yourself.
 
 ## License
 

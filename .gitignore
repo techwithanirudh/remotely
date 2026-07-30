@@ -2,3 +2,12 @@
 .DS_Store
 .build/
 build/
+
+# Signing material. Keep it in the working copy, never in the history.
+*.p12
+*.pem
+*.key
+*.cer
+*.mobileprovision
+secrets/*
+!secrets/README.md

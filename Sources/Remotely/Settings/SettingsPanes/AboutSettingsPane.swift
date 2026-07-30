@@ -6,6 +6,7 @@ struct AboutSettingsPane: View {
     @State private var confirmingReset = false
     @Default(.wantsBetaUpdates) private var betaUpdates
     @Default(.checksForUpdatesAutomatically) private var checksAutomatically
+    @Default(.installsUpdatesAutomatically) private var installsAutomatically
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -63,6 +64,17 @@ struct AboutSettingsPane: View {
                         symbol: "arrow.triangle.2.circlepath"
                     ) {
                         Toggle("", isOn: $checksAutomatically)
+                            .labelsHidden()
+                            .controlSize(.small)
+                    }
+
+                    HairlineDivider()
+
+                    Row(
+                        title: "Automatically install updates",
+                        symbol: "square.and.arrow.down"
+                    ) {
+                        Toggle("", isOn: $installsAutomatically)
                             .labelsHidden()
                             .controlSize(.small)
                     }

@@ -4,11 +4,6 @@ import RemotelyKit
 @preconcurrency import Sparkle
 
 /// Sparkle, wrapped so nothing else has to know about it.
-///
-/// Automatic downloading stays off. Accessibility is granted against the app's
-/// code signature, and an ad-hoc signature changes on every build, so installing
-/// an update silently revokes it and leaves the remote dead. A stable signing
-/// identity fixes that; notarization is a separate concern.
 @MainActor
 final class Updater: NSObject, ObservableObject {
     @Published private(set) var canCheck = false
@@ -46,12 +41,16 @@ final class Updater: NSObject, ObservableObject {
     private func start() {
         guard !hasStarted else { return }
         hasStarted = true
-        controller.updater.automaticallyDownloadsUpdates = false
         controller.updater.automaticallyChecksForUpdates = Defaults[.checksForUpdatesAutomatically]
+        controller.updater.automaticallyDownloadsUpdates = Defaults[.installsUpdatesAutomatically]
         controller.startUpdater()
 
         Defaults.observe(.checksForUpdatesAutomatically) { [weak self] change in
             self?.controller.updater.automaticallyChecksForUpdates = change.newValue
+        }.tieToLifetime(of: self)
+
+        Defaults.observe(.installsUpdatesAutomatically) { [weak self] change in
+            self?.controller.updater.automaticallyDownloadsUpdates = change.newValue
         }.tieToLifetime(of: self)
     }
 }
