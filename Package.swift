@@ -60,7 +60,8 @@ let package = Package(
         .executableTarget(
             name: "RemotelyKitTests",
             dependencies: ["RemotelyKit"],
-            path: "Tests/RemotelyKitTests"
+            path: "Tests/RemotelyKitTests",
+            exclude: ["Fixtures"]
         ),
     ]
 )

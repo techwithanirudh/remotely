@@ -26,7 +26,7 @@ struct OnboardingFeature {
         }
     }
 
-    @Dependency(\.remoteClient) var remoteClient
+    @Dependency(\.remotePermissionClient) var permissionClient
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -50,7 +50,7 @@ struct OnboardingFeature {
                 return .none
 
             case .requestPermission:
-                return .run { _ in await remoteClient.requestPermission() }
+                return .run { _ in await permissionClient.request() }
 
             case .reset:
                 state.step = .welcome

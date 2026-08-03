@@ -1,6 +1,5 @@
 import AppKit
 import ComposableArchitecture
-import RemotelyKit
 import SwiftUI
 
 @MainActor

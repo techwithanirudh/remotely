@@ -134,7 +134,7 @@ and its private CoreRC XPC service refuses bus enumeration to third parties
 is the only path that works. A previous rewrite reinstated the framework
 approach and broke remote detection entirely.
 
-`CECLink` → `GestureReader` → `RemoteClient` → `RemoteFeature` →
+`CECLink` → `GestureReader` → `RemoteRuntime` → `RemoteSessionClient` → `RemoteFeature` →
 `InputSynthesizer`.
 `GestureReader` is a pure struct driven by `press`/`release`/`elapse`.
 
@@ -147,6 +147,13 @@ approach and broke remote detection entirely.
 - Show Desktop and Mission Control are window-server symbolic hot keys whose
   bindings carry the fn bit; `SymbolicHotKey` reads them live before posting.
 - Timers go on `RunLoop.main` in `.common` mode, or an open menu starves them.
+
+`AppFeature` owns launch, termination, reopen, menu intents, window requests,
+activation-policy effects, and the permission-refresh clock. `AppCoordinator`
+only translates `NSApplicationDelegate` callbacks into actions. The menu bar,
+window presentation, and scrolling overlay each render TCA state through their
+own AppKit adapter, so window lifecycle is not mixed into the application
+delegate.
 
 ## UI
 

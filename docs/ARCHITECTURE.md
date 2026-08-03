@@ -18,8 +18,8 @@ Sources/RemotelyKit          the core
   Input/                   synthesis, gesture timing, the glide curve
   Model/                   buttons, actions, bindings, key combinations
 Sources/Remotely             the app
-  App/                       lifecycle, windows, menu bar
-  Clients/                  live AppKit/CEC dependency adapters
+  App/                       AppKit lifecycle and state-rendering adapters
+  Clients/                  small dependency surfaces and live adapters
   Features/
     App/                    root composition
     Remote/                 remote state, actions, effects
@@ -41,7 +41,7 @@ work.
 ## How a button press becomes a click
 
 ```
-remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteClient -> RemoteFeature -> InputSynthesizer -> CGEvent
+remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteRuntime -> RemoteSessionClient -> RemoteFeature -> InputSynthesizer -> CGEvent
 ```
 
 **`CECLink`** owns the transport. macOS keeps the CEC bus inside the `corercd`
@@ -82,15 +82,28 @@ Two consequences worth knowing:
   nothing at all.
 
 **`RemoteFeature`** owns the app-facing state, bindings, log, lifecycle actions,
-and effects. **`RemoteClient`** is the dependency boundary around the existing
-remote runtime, so the reducer does not own processes, timers, or AppKit
-objects. This is the same State/Action/Reducer/Store shape used by Void.
+and effects. Its dependency surface is split by responsibility:
+`RemoteSessionClient` streams snapshots and owns start/stop/reconnect,
+`RemotePermissionClient` owns Accessibility checks, `RemoteSettingsClient`
+owns persisted controls, and `RemoteLogClient` owns log clearing. The reducer
+does not own processes, timers, or AppKit objects. This is the same
+State/Action/Reducer/Store shape used by Void.
 
-The dependency surface lives in `Clients/RemoteClient.swift` and its live
-runtime in `Clients/RemoteClientLive.swift`, but their CEC and
-input algorithm boundaries remain deliberately intact. Those are the parts
-that have been proven against macOS's `corercd` path; replacing them is a
-separate hardware-risky change, not a folder reorganization.
+`RemoteRuntime` remains one main-actor object because CEC state, gesture timing,
+input synthesis, preferences, and the emitted snapshot are one shared runtime;
+the smaller clients are the public dependency boundaries around it, not four
+copies of that state. It lives in `Clients/RemoteRuntime.swift`, while the
+dependency surfaces live in their responsibility-named files. Those CEC and
+input algorithm boundaries remain deliberately intact. They are the parts that
+have been proven against macOS's `corercd` path; replacing them is a separate
+hardware-risky change, not a folder reorganization.
+
+`AppFeature` owns launch, termination, reopen, menu intents, window requests,
+activation-policy effects, and the permission-refresh clock. `AppCoordinator`
+only translates `NSApplicationDelegate` callbacks into actions. The menu bar,
+window presentation, and scrolling overlay each render TCA state through their
+own AppKit adapter, which keeps unavoidable window lifecycle code out of the
+application delegate without pretending AppKit itself is declarative.
 
 **`InputSynthesizer`** posts the events. Everything it posts carries
 `EventSignature.value` in `kCGEventSourceUserData`, which is how onboarding's

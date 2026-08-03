@@ -10,7 +10,7 @@ struct RemoteFeature {
         var displayName: String?
         var pressCount: UInt64 = 0
         var isScrolling = false
-        var log: [RemoteClient.LogEntry] = []
+        var log: [RemoteLogEntry] = []
         var hasAccessibility = false
         var isEnabled = Defaults[.enabled]
         var sensitivity = Defaults[.pointerSensitivity]
@@ -31,15 +31,20 @@ struct RemoteFeature {
         case setAction(RemoteAction, RemoteButton)
         case setBinding(ButtonBinding, RemoteButton)
         case setCombo(KeyCombo, RemoteButton)
+        case copyLog
         case clearLog
-        case snapshot(RemoteClient.Snapshot)
+        case snapshot(RemoteSnapshot)
     }
 
     private enum CancelID {
         case events
     }
 
-    @Dependency(\.remoteClient) var remoteClient
+    @Dependency(\.remoteSessionClient) var sessionClient
+    @Dependency(\.remotePermissionClient) var permissionClient
+    @Dependency(\.remoteSettingsClient) var settingsClient
+    @Dependency(\.remoteLogClient) var logClient
+    @Dependency(\.clipboardClient) var clipboardClient
 
     var body: some ReducerOf<Self> {
         BindingReducer()
@@ -48,19 +53,19 @@ struct RemoteFeature {
             switch action {
             case .binding(\.isEnabled):
                 let isEnabled = state.isEnabled
-                return .run { _ in await remoteClient.setEnabled(isEnabled) }
+                return .run { _ in await settingsClient.setEnabled(isEnabled) }
 
             case .binding(\.sensitivity):
                 let sensitivity = state.sensitivity
-                return .run { _ in await remoteClient.setSensitivity(sensitivity) }
+                return .run { _ in await settingsClient.setSensitivity(sensitivity) }
 
             case .binding:
                 return .none
 
             case .start:
                 return .run { send in
-                    let events = await remoteClient.events()
-                    await remoteClient.start()
+                    let events = await sessionClient.events()
+                    await sessionClient.start()
                     for await snapshot in events {
                         await send(.snapshot(snapshot))
                     }
@@ -69,48 +74,54 @@ struct RemoteFeature {
 
             case let .setEnabled(isEnabled):
                 state.isEnabled = isEnabled
-                return .run { _ in await remoteClient.setEnabled(isEnabled) }
+                return .run { _ in await settingsClient.setEnabled(isEnabled) }
 
             case .stop:
                 return .merge(
                     .cancel(id: CancelID.events),
-                    .run { _ in await remoteClient.stop() }
+                    .run { _ in await sessionClient.stop() }
                 )
 
             case .reconnect:
-                return .run { _ in await remoteClient.reconnect() }
+                return .run { _ in await sessionClient.reconnect() }
 
             case .refreshPermission:
-                return .run { _ in await remoteClient.refreshPermission() }
+                return .run { _ in await permissionClient.refresh() }
 
             case .requestPermission:
                 return .run { send in
-                    await remoteClient.requestPermission()
+                    await permissionClient.request()
                     await send(.refreshPermission)
                 }
 
             case let .resetBinding(button):
-                return .run { _ in await remoteClient.resetBinding(button) }
+                return .run { _ in await settingsClient.resetBinding(button) }
 
             case .resetAllBindings:
-                return .run { _ in await remoteClient.resetAllBindings() }
+                return .run { _ in await settingsClient.resetAllBindings() }
 
             case .resetPreferences:
                 state = State()
-                return .run { _ in await remoteClient.resetPreferences() }
+                return .run { _ in await settingsClient.resetPreferences() }
 
             case let .setAction(action, button):
-                return .run { _ in await remoteClient.setAction(action, button) }
+                return .run { _ in await settingsClient.setAction(action, button) }
 
             case let .setBinding(binding, button):
-                return .run { _ in await remoteClient.setBinding(binding, button) }
+                return .run { _ in await settingsClient.setBinding(binding, button) }
 
             case let .setCombo(combo, button):
-                return .run { _ in await remoteClient.setCombo(combo, button) }
+                return .run { _ in await settingsClient.setCombo(combo, button) }
+
+            case .copyLog:
+                let text = state.log
+                    .map { "\($0.time)  \($0.message)" }
+                    .joined(separator: "\n")
+                return .run { _ in await clipboardClient.copy(text) }
 
             case .clearLog:
                 state.log.removeAll()
-                return .run { _ in await remoteClient.clearLog() }
+                return .run { _ in await logClient.clear() }
 
             case let .snapshot(snapshot):
                 state.status = snapshot.status

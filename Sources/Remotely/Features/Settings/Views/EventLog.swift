@@ -1,6 +1,4 @@
-import AppKit
 import ComposableArchitecture
-import RemotelyKit
 import SwiftUI
 
 struct EventLog: View {
@@ -22,12 +20,7 @@ struct EventLog: View {
                 Spacer()
 
                 Button("Clear") { remote.send(.clearLog) }
-                Button("Copy") {
-                    NSPasteboard.general.clearContents()
-                    let text = remote.log.map { "\($0.time)  \($0.message)" }
-                        .joined(separator: "\n")
-                    NSPasteboard.general.setString(text, forType: .string)
-                }
+                Button("Copy") { remote.send(.copyLog) }
             }
             .buttonStyle(.plain)
             .font(.system(size: 11, weight: .semibold))

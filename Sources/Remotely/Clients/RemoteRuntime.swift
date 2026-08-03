@@ -4,8 +4,8 @@ import Foundation
 import RemotelyKit
 
 @MainActor
-final class RemoteClientLive {
-    static let shared = RemoteClientLive()
+final class RemoteRuntime {
+    static let shared = RemoteRuntime()
 
     private let link = CECLink()
     private let input = InputSynthesizer()
@@ -14,13 +14,13 @@ final class RemoteClientLive {
     private var ticker: Timer?
     private var displayObserver: (any NSObjectProtocol)?
     private var deferred: DispatchWorkItem?
-    private var continuation: AsyncStream<RemoteClient.Snapshot>.Continuation?
+    private var continuation: AsyncStream<RemoteSnapshot>.Continuation?
 
     private var status: RemoteStatus = .paused
     private var displayName: String?
     private var pressCount: UInt64 = 0
     private var isScrolling = false
-    private var log: [RemoteClient.LogEntry] = []
+    private var log: [RemoteLogEntry] = []
     private var hasAccessibility = InputSynthesizer.hasAccessibility
     private var isEnabled = Defaults[.enabled]
     private var sensitivity = Defaults[.pointerSensitivity]
@@ -36,7 +36,7 @@ final class RemoteClientLive {
         link.onLog = { [weak self] message in self?.append(message) }
     }
 
-    func events() -> AsyncStream<RemoteClient.Snapshot> {
+    func events() -> AsyncStream<RemoteSnapshot> {
         AsyncStream { continuation in
             self.continuation = continuation
             continuation.yield(snapshot())
@@ -252,15 +252,15 @@ final class RemoteClientLive {
     }
 
     private func append(_ message: String) {
-        log.append(RemoteClient.LogEntry(date: Date(), message: message))
+        log.append(RemoteLogEntry(date: Date(), message: message))
         if log.count > 250 { log.removeFirst(log.count - 200) }
         emit()
     }
 
     private func emit() { continuation?.yield(snapshot()) }
 
-    private func snapshot() -> RemoteClient.Snapshot {
-        RemoteClient.Snapshot(
+    private func snapshot() -> RemoteSnapshot {
+        RemoteSnapshot(
             status: status,
             displayName: displayName,
             pressCount: pressCount,
