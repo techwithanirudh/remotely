@@ -1,138 +1,37 @@
 import AppKit
-import Combine
-import Defaults
-import LaunchAtLogin
-import RemotelyKit
+import ComposableArchitecture
 
 @MainActor
 final class AppCoordinator: NSObject, NSApplicationDelegate {
-    private(set) static var shared: AppCoordinator?
+    private let store: StoreOf<AppFeature>
+    private let menuBar: MenuBarCoordinator
+    private let windows: AppWindowCoordinator
+    private let overlay: RemoteOverlayCoordinator
 
-    private let remote = Remote()
-    private let overlay = ScrollModeOverlay()
-    private var statusItem: StatusItemController?
-    private var settings: SettingsWindowController?
-    private var onboarding: OnboardingWindowController?
-    private var observers = Set<AnyCancellable>()
+    override init() {
+        let appStore = Store(initialState: AppFeature.State()) {
+            AppFeature()
+        }
+        self.store = appStore
+        menuBar = MenuBarCoordinator(store: appStore)
+        windows = AppWindowCoordinator(store: appStore)
+        overlay = RemoteOverlayCoordinator(store: appStore)
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Self.shared = self
-
-        _ = Updater.shared
-        statusItem = StatusItemController(
-            onToggle: { [weak self] in self?.remote.isEnabled.toggle() },
-            onSettings: { [weak self] in self?.showSettings() },
-            onCopyLog: { [weak self] in self?.copyLog() },
-            onCheckForUpdates: { Updater.shared.checkForUpdates() },
-            onQuit: { NSApp.terminate(nil) }
-        )
-
-        statusItem?.isVisible = Defaults[.showsMenuBarIcon]
-        Defaults.observe(.showsMenuBarIcon) { [weak self] change in
-            self?.statusItem?.isVisible = change.newValue
-        }.tieToLifetime(of: self)
-
-        remote.onScrollingChange = { [weak self] isScrolling in
-            self?.overlay.setVisible(isScrolling)
-        }
-        observe()
-        remote.start()
-
-        showFirstWindow()
+        menuBar.start()
+        overlay.start()
+        store.send(.didFinishLaunching)
+        windows.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        remote.stop()
+        store.send(.willTerminate)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        showFirstWindow()
+        store.send(.reopen)
         return true
-    }
-
-    func showFirstWindow() {
-        if Defaults[.onboardingDone] {
-            showSettings()
-        } else {
-            showOnboarding()
-        }
-    }
-
-    func checkForUpdates() {
-        Updater.shared.checkForUpdates()
-    }
-
-    func replayOnboarding() {
-        Defaults[.onboardingDone] = false
-        Defaults[.onboardingStep] = 0
-        showOnboarding()
-    }
-
-    func factoryReset() {
-        LaunchAtLogin.isEnabled = false
-        remote.resetPreferences()
-        onboarding?.close()
-        onboarding = nil
-        showOnboarding()
-    }
-}
-
-private extension AppCoordinator {
-    func observe() {
-        remote.objectWillChange
-            .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.refreshStatusItem() }
-            .store(in: &observers)
-
-        // macOS sends no notification when Accessibility is granted.
-        let timer = Timer(timeInterval: 2, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.remote.refreshPermission() }
-        }
-        RunLoop.main.add(timer, forMode: .common)
-
-        refreshStatusItem()
-    }
-
-    func refreshStatusItem() {
-        statusItem?.update(
-            status: remote.status,
-            isEnabled: remote.isEnabled
-        )
-    }
-
-    func showSettings() {
-        if settings == nil {
-            let controller = SettingsWindowController(remote: remote)
-            controller.onClose = { [weak self] in
-                // The guide may have just replaced it.
-                guard self?.onboarding?.window?.isVisible != true else { return }
-                NSApp.setActivationPolicy(.accessory)
-            }
-            settings = controller
-        }
-        // .accessory cannot take proper key focus.
-        NSApp.setActivationPolicy(.regular)
-        settings?.show()
-        remote.refreshPermission()
-    }
-
-    /// Reuses the open guide; a second one left two panels on their own steps.
-    func showOnboarding() {
-        if onboarding == nil {
-            onboarding = OnboardingWindowController(remote: remote) { [weak self] in
-                Defaults[.onboardingDone] = true
-                self?.onboarding?.close()
-                self?.onboarding = nil
-                self?.showSettings()
-            }
-        }
-        NSApp.setActivationPolicy(.regular)
-        onboarding?.show()
-        settings?.close()
-    }
-
-    func copyLog() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(remote.logText(), forType: .string)
     }
 }
