@@ -1,9 +1,10 @@
+import ComposableArchitecture
 import Defaults
 import RemotelyKit
 import SwiftUI
 
 struct ConnectionSettingsPane: View {
-    @ObservedObject var remote: Remote
+    let remote: StoreOf<RemoteFeature>
     @Default(.tvBrand) private var brand
 
     private var isLinked: Bool { remote.status.isReady }
@@ -33,9 +34,9 @@ struct ConnectionSettingsPane: View {
                         Spacer(minLength: 12)
 
                         if remote.status == .needsPermission {
-                            Button("Allow…") { remote.requestPermission() }.controlSize(.small)
+                            Button("Allow…") { remote.send(.requestPermission) }.controlSize(.small)
                         } else {
-                            Button("Reconnect") { remote.reconnect() }.controlSize(.small)
+                            Button("Reconnect") { remote.send(.reconnect) }.controlSize(.small)
                         }
                     }
                     .padding(Theme.Card.inset)

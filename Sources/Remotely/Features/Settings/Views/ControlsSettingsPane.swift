@@ -1,8 +1,9 @@
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
 struct ControlsSettingsPane: View {
-    @ObservedObject var remote: Remote
+    let remote: StoreOf<RemoteFeature>
 
     var body: some View {
         SettingsPane(page: .controls) {
@@ -56,7 +57,7 @@ struct ControlsSettingsPane: View {
 
                     Spacer(minLength: 12)
 
-                    Button("Reset Defaults") { remote.resetAllBindings() }
+                    Button("Reset Defaults") { remote.send(.resetAllBindings) }
                         .controlSize(.small)
                 }
                 .padding(.horizontal, 9)

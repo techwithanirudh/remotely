@@ -1,4 +1,3 @@
-import Combine
 import Defaults
 import RemotelyKit
 @preconcurrency import Sparkle
@@ -6,11 +5,8 @@ import RemotelyKit
 /// Sparkle owns the automatic settings, so these read through to it rather than
 /// mirroring into `Defaults`, which left its dialog and this app disagreeing.
 @MainActor
-final class Updater: NSObject, ObservableObject {
+final class Updater: NSObject {
     static let shared = Updater()
-
-    @Published private(set) var canCheck = false
-    @Published private(set) var lastCheck: Date?
 
     private lazy var controller = SPUStandardUpdaterController(
         startingUpdater: false,
@@ -19,7 +15,8 @@ final class Updater: NSObject, ObservableObject {
     )
 
     private var hasStarted = false
-    private var observers = Set<AnyCancellable>()
+    var canCheck: Bool { controller.updater.canCheckForUpdates }
+    var lastCheck: Date? { controller.updater.lastUpdateCheckDate }
 
     var checksAutomatically: Bool {
         get { controller.updater.automaticallyChecksForUpdates }
@@ -42,16 +39,6 @@ final class Updater: NSObject, ObservableObject {
 
     override init() {
         super.init()
-        controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
-        controller.updater.publisher(for: \.lastUpdateCheckDate).assign(to: &$lastCheck)
-
-        // Sparkle's dialog writes to its defaults without notifying anyone.
-        NotificationCenter.default
-            .publisher(for: UserDefaults.didChangeNotification)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &observers)
-
         start()
     }
 

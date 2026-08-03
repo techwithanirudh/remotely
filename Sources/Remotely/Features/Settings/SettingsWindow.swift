@@ -1,4 +1,5 @@
 import AppKit
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
@@ -7,7 +8,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     /// The caller decides when closing should return the app to accessory mode.
     var onClose: (() -> Void)?
 
-    init(remote: Remote) {
+    init(settings: StoreOf<SettingsFeature>, remote: StoreOf<RemoteFeature>) {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 685, height: 687),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
@@ -26,7 +27,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         // Restoration overrides centering and drifts the window on each launch.
         window.isRestorable = false
         window.minSize = NSSize(width: 660, height: 600)
-        window.contentViewController = NSHostingController(rootView: SettingsView(remote: remote))
+        window.contentViewController = NSHostingController(
+            rootView: SettingsView(store: settings, remote: remote)
+        )
         window.standardWindowButton(.zoomButton)?.isEnabled = false
 
         // The transparent content layer carries the measured corner shape.

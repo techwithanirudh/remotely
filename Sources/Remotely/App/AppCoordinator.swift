@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import ComposableArchitecture
 import Defaults
 import LaunchAtLogin
 import RemotelyKit
@@ -8,7 +9,10 @@ import RemotelyKit
 final class AppCoordinator: NSObject, NSApplicationDelegate {
     private(set) static var shared: AppCoordinator?
 
-    private let remote = Remote()
+    private let store = Store(initialState: AppFeature.State()) {
+        AppFeature()
+    }
+
     private let overlay = ScrollModeOverlay()
     private var statusItem: StatusItemController?
     private var settings: SettingsWindowController?
@@ -17,13 +21,19 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.shared = self
+        RemoteClientLive.bootstrap()
 
         _ = Updater.shared
         statusItem = StatusItemController(
-            onToggle: { [weak self] in self?.remote.isEnabled.toggle() },
+            onToggle: { [weak self] in
+                guard let self else { return }
+                self.store.send(.remote(.setEnabled(!self.store.remote.isEnabled)))
+            },
             onSettings: { [weak self] in self?.showSettings() },
             onCopyLog: { [weak self] in self?.copyLog() },
-            onCheckForUpdates: { Updater.shared.checkForUpdates() },
+            onCheckForUpdates: { [weak self] in
+                self?.store.send(.settings(.checkForUpdates))
+            },
             onQuit: { NSApp.terminate(nil) }
         )
 
@@ -32,17 +42,14 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
             self?.statusItem?.isVisible = change.newValue
         }.tieToLifetime(of: self)
 
-        remote.onScrollingChange = { [weak self] isScrolling in
-            self?.overlay.setVisible(isScrolling)
-        }
         observe()
-        remote.start()
+        store.send(.didFinishLaunching)
 
         showFirstWindow()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        remote.stop()
+        store.send(.remote(.stop))
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -52,41 +59,57 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
 
     func showFirstWindow() {
         if Defaults[.onboardingDone] {
+            store.send(.showSettings)
             showSettings()
         } else {
+            store.send(.showOnboarding)
             showOnboarding()
         }
     }
 
     func checkForUpdates() {
-        Updater.shared.checkForUpdates()
+        store.send(.settings(.checkForUpdates))
     }
 
     func replayOnboarding() {
         Defaults[.onboardingDone] = false
         Defaults[.onboardingStep] = 0
-        showOnboarding()
+        store.send(.settings(.delegate(.replayOnboarding)))
     }
 
     func factoryReset() {
         LaunchAtLogin.isEnabled = false
-        remote.resetPreferences()
+        store.send(.settings(.delegate(.factoryReset)))
         onboarding?.close()
         onboarding = nil
-        showOnboarding()
     }
 }
 
 private extension AppCoordinator {
     func observe() {
-        remote.objectWillChange
+        store.publisher.remote
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.refreshStatusItem() }
+            .sink { [weak self] remote in
+                self?.overlay.setVisible(remote.isScrolling)
+                self?.refreshStatusItem()
+            }
+            .store(in: &observers)
+
+        store.publisher.window
+            .removeDuplicates()
+            .sink { [weak self] window in
+                switch window {
+                case .settings: self?.showSettings()
+                case .onboarding: self?.showOnboarding()
+                }
+            }
             .store(in: &observers)
 
         // macOS sends no notification when Accessibility is granted.
         let timer = Timer(timeInterval: 2, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.remote.refreshPermission() }
+            Task { @MainActor [weak self] in
+                self?.store.send(.remote(.refreshPermission))
+            }
         }
         RunLoop.main.add(timer, forMode: .common)
 
@@ -95,14 +118,17 @@ private extension AppCoordinator {
 
     func refreshStatusItem() {
         statusItem?.update(
-            status: remote.status,
-            isEnabled: remote.isEnabled
+            status: store.remote.status,
+            isEnabled: store.remote.isEnabled
         )
     }
 
     func showSettings() {
         if settings == nil {
-            let controller = SettingsWindowController(remote: remote)
+            let controller = SettingsWindowController(
+                settings: store.scope(state: \.settings, action: \.settings),
+                remote: store.scope(state: \.remote, action: \.remote)
+            )
             controller.onClose = { [weak self] in
                 // The guide may have just replaced it.
                 guard self?.onboarding?.window?.isVisible != true else { return }
@@ -113,14 +139,17 @@ private extension AppCoordinator {
         // .accessory cannot take proper key focus.
         NSApp.setActivationPolicy(.regular)
         settings?.show()
-        remote.refreshPermission()
+        store.send(.remote(.refreshPermission))
     }
 
     /// Reuses the open guide; a second one left two panels on their own steps.
     func showOnboarding() {
         if onboarding == nil {
-            onboarding = OnboardingWindowController(remote: remote) { [weak self] in
-                Defaults[.onboardingDone] = true
+            onboarding = OnboardingWindowController(
+                onboarding: store.scope(state: \.onboarding, action: \.onboarding),
+                remote: store.scope(state: \.remote, action: \.remote)
+            ) { [weak self] in
+                self?.store.send(.showSettings)
                 self?.onboarding?.close()
                 self?.onboarding = nil
                 self?.showSettings()
@@ -133,6 +162,9 @@ private extension AppCoordinator {
 
     func copyLog() {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(remote.logText(), forType: .string)
+        let text = store.remote.log
+            .map { "\($0.time)  \($0.message)" }
+            .joined(separator: "\n")
+        NSPasteboard.general.setString(text, forType: .string)
     }
 }

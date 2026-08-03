@@ -1,8 +1,9 @@
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
 struct PermissionStep: View {
-    @ObservedObject var remote: Remote
+    let remote: StoreOf<RemoteFeature>
 
     var body: some View {
         StepLayout(

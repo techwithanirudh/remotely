@@ -1,10 +1,15 @@
 import AppKit
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
 @MainActor
 final class OnboardingWindowController: NSWindowController {
-    init(remote: Remote, onFinish: @escaping () -> Void) {
+    init(
+        onboarding: StoreOf<OnboardingFeature>,
+        remote: StoreOf<RemoteFeature>,
+        onFinish: @escaping () -> Void
+    ) {
         let window = KeyablePanel(
             contentRect: NSRect(origin: .zero, size: Theme.Onboarding.size),
             styleMask: [.borderless, .fullSizeContentView],
@@ -19,7 +24,7 @@ final class OnboardingWindowController: NSWindowController {
         // so the dialog the step is asking for opened behind it.
         window.level = .normal
         window.contentViewController = NSHostingController(
-            rootView: OnboardingView(remote: remote, onFinish: onFinish)
+            rootView: OnboardingView(store: onboarding, remote: remote, onFinish: onFinish)
         )
         window.setContentSize(Theme.Onboarding.size)
 

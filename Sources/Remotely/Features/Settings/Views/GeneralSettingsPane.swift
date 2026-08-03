@@ -1,10 +1,11 @@
+import ComposableArchitecture
 import Defaults
 import LaunchAtLogin
 import RemotelyKit
 import SwiftUI
 
 struct GeneralSettingsPane: View {
-    @ObservedObject var remote: Remote
+    @Bindable var remote: StoreOf<RemoteFeature>
     @Default(.showsMenuBarIcon) private var showsMenuBarIcon
 
     var body: some View {
@@ -52,7 +53,7 @@ struct GeneralSettingsPane: View {
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(.green)
                         } else {
-                            Button("Grant Access") { remote.requestPermission() }
+                            Button("Grant Access") { remote.send(.requestPermission) }
                                 .controlSize(.small)
                         }
                     }

@@ -1,4 +1,5 @@
 import AppKit
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
@@ -9,7 +10,7 @@ struct EventLog: View {
         static let emptyStateLift: CGFloat = 10
     }
 
-    @ObservedObject var remote: Remote
+    let remote: StoreOf<RemoteFeature>
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,10 +21,12 @@ struct EventLog: View {
 
                 Spacer()
 
-                Button("Clear") { remote.clearLog() }
+                Button("Clear") { remote.send(.clearLog) }
                 Button("Copy") {
                     NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(remote.logText(), forType: .string)
+                    let text = remote.log.map { "\($0.time)  \($0.message)" }
+                        .joined(separator: "\n")
+                    NSPasteboard.general.setString(text, forType: .string)
                 }
             }
             .buttonStyle(.plain)

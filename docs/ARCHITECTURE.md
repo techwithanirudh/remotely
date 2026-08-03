@@ -2,11 +2,11 @@
 
 ## The shape
 
-Two targets. `RemotelyKit` is the whole behaviour of the app and imports no UI
-framework; `Remotely` is the window, the menu bar item and the guide. The
+Two targets. `RemotelyKit` is the UI-free CEC, input, and domain core;
+`Remotely` is the TCA feature layer, windows, menu bar item, and guide. The
 split is not tidiness. It is what makes the rules testable, because every
-interesting decision happens in a type that can be driven from a test without
-a screen, a remote, or a TV.
+interesting decision can be driven from a reducer or a pure type without a
+screen, a remote, or a TV.
 
 Folders group by feature rather than by type. A screen's pane, its model and
 its primitives sit together, so a file's path says what it belongs to instead
@@ -17,30 +17,31 @@ Sources/RemotelyKit          the core
   CEC/                     transport and parsing
   Input/                   synthesis, gesture timing, the glide curve
   Model/                   buttons, actions, bindings, key combinations
-Sources/Remotely       the app
-  App/                     lifecycle, windows, menu bar
-  Settings/
-    Models/                 settings state and persistence models
-    SettingsPanes/          one settings pane per file
-  UI/                      reusable presentation code
-    RemotelyUI/         product-specific UI primitives
-    Modifiers/              reusable SwiftUI modifiers
-    Utilities/              UI-only styling helpers
-    Views/                  composed and transient views
-  Utilities/               small reusable non-UI helpers
-  Onboarding/              first run
+Sources/Remotely             the app
+  App/                       lifecycle, windows, menu bar
+  Clients/                  live AppKit/CEC dependency adapters
+  Features/
+    App/                    root composition
+    Remote/                 remote state, actions, effects
+    Settings/               settings state and settings views
+    Onboarding/             first-run state and onboarding views
+  Models/                   app-facing models
+  Utilities/                small non-UI helpers and measured styling
+  Views/                    shared presentation and product UI primitives
 Tests/RemotelyKitTests       one file per behaviour
 ```
 
-`UI/RemotelyUI` holds this app's own primitives. Add `UI/Shapes` only when
-the app owns a real reusable `Shape`. Empty folders and wrapper-only abstractions do not improve the
-architecture. Root `Utilities` is not a miscellaneous core folder. It must not
-own app state, input synthesis, gesture timing, or CEC work.
+`Features` follows Void's shape: each feature owns its reducer, state, actions,
+and views. `Clients` owns side effects and translates the proven runtime into
+dependency values. `Views/RemotelyUI` holds this app's own reusable primitives.
+Empty folders and wrapper-only abstractions do not improve the architecture.
+`Utilities` must not own app state, input synthesis, gesture timing, or CEC
+work.
 
 ## How a button press becomes a click
 
 ```
-remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> Remotely -> InputSynthesizer -> CGEvent
+remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteClient -> RemoteFeature -> InputSynthesizer -> CGEvent
 ```
 
 **`CECLink`** owns the transport. macOS keeps the CEC bus inside the `corercd`
@@ -80,8 +81,15 @@ Two consequences worth knowing:
   arrow fires once on key down, or binding Show Desktop to an arrow would do
   nothing at all.
 
-**`Remotely`** owns the clock, the bindings and the log, and is the only
-`@MainActor` `ObservableObject` the UI observes.
+**`RemoteFeature`** owns the app-facing state, bindings, log, lifecycle actions,
+and effects. **`RemoteClient`** is the dependency boundary around the existing
+`Remote` runtime, so the reducer does not own processes, timers, or AppKit
+objects. This is the same State/Action/Reducer/Store shape used by Void.
+
+The live runtime now lives in `Clients/RemoteClient.swift`, but its CEC and
+input algorithm boundaries remain deliberately intact. Those are the parts
+that have been proven against macOS's `corercd` path; replacing them is a
+separate hardware-risky change, not a folder reorganization.
 
 **`InputSynthesizer`** posts the events. Everything it posts carries
 `EventSignature.value` in `kCGEventSourceUserData`, which is how onboarding's

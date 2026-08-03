@@ -1,14 +1,11 @@
-import RemotelyKit
-
-enum OnboardingStep: Int, CaseIterable {
+enum OnboardingStep: Int, CaseIterable, Equatable, Sendable {
     case welcome, connect, permission
     case move, click, doubleClick, rightClick, scroll
     case finish
 
-    @MainActor
-    func isSatisfied(by remote: Remote) -> Bool {
+    func isSatisfied(hasAccessibility: Bool) -> Bool {
         switch self {
-        case .permission: remote.hasAccessibility
+        case .permission: hasAccessibility
         default: true
         }
     }

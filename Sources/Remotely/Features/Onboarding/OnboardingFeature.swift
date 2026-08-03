@@ -1,23 +1,87 @@
+import ComposableArchitecture
 import Defaults
 import RemotelyKit
 import SwiftUI
 
+@Reducer
+struct OnboardingFeature {
+    @ObservableState
+    struct State: Equatable {
+        var step: OnboardingStep = .init(rawValue: Defaults[.onboardingStep]) ?? .welcome
+        var brand: TVBrand = Defaults[.tvBrand]
+        var connectBaseline: UInt64?
+    }
+
+    enum Action: Equatable {
+        case back
+        case bindingBrand(TVBrand)
+        case next
+        case requestPermission
+        case reset
+        case stepAppeared(pressCount: UInt64)
+        case delegate(Delegate)
+
+        enum Delegate: Equatable {
+            case finished
+        }
+    }
+
+    @Dependency(\.remoteClient) var remoteClient
+
+    var body: some ReducerOf<Self> {
+        Reduce { state, action in
+            switch action {
+            case .back:
+                state.step = OnboardingStep(rawValue: max(0, state.step.rawValue - 1)) ?? .welcome
+                Defaults[.onboardingStep] = state.step.rawValue
+                return .none
+
+            case let .bindingBrand(brand):
+                state.brand = brand
+                Defaults[.tvBrand] = brand
+                return .none
+
+            case .next:
+                guard let next = OnboardingStep(rawValue: state.step.rawValue + 1) else {
+                    return .send(.delegate(.finished))
+                }
+                state.step = next
+                Defaults[.onboardingStep] = next.rawValue
+                return .none
+
+            case .requestPermission:
+                return .run { _ in await remoteClient.requestPermission() }
+
+            case .reset:
+                state.step = .welcome
+                state.connectBaseline = nil
+                Defaults[.onboardingStep] = state.step.rawValue
+                return .none
+
+            case let .stepAppeared(pressCount):
+                state.connectBaseline = state.step == .connect ? pressCount : nil
+                return .none
+
+            case .delegate:
+                return .none
+            }
+        }
+    }
+}
+
 struct OnboardingView: View {
-    @ObservedObject var remote: Remote
+    @Bindable var store: StoreOf<OnboardingFeature>
+    let remote: StoreOf<RemoteFeature>
     let onFinish: () -> Void
 
-    @Default(.onboardingStep) private var rawStep
-    @Default(.tvBrand) private var brand
-    @State private var connectBaseline: UInt64?
-
-    private var step: OnboardingStep { OnboardingStep(rawValue: rawStep) ?? .welcome }
+    private var step: OnboardingStep { store.step }
     private var isLast: Bool { step == OnboardingStep.allCases.last }
     private var canGo: Bool {
         if step == .connect {
-            guard let connectBaseline else { return false }
-            return remote.pressCount > connectBaseline
+            guard let baseline = store.connectBaseline else { return false }
+            return remote.pressCount > baseline
         }
-        return step.isSatisfied(by: remote)
+        return step.isSatisfied(hasAccessibility: remote.hasAccessibility)
     }
 
     var body: some View {
@@ -38,15 +102,21 @@ struct OnboardingView: View {
         }
         .frame(width: Theme.Onboarding.size.width, height: Theme.Onboarding.size.height)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Panel.radius, style: .continuous))
-        .onAppear(perform: beginCurrentStep)
-        .onChange(of: step) { _, _ in beginCurrentStep() }
+        .onAppear { store.send(.stepAppeared(pressCount: remote.pressCount)) }
+        .onChange(of: step) { _, _ in
+            store.send(.stepAppeared(pressCount: remote.pressCount))
+        }
     }
 
     @ViewBuilder
     private var content: some View {
         switch step {
         case .welcome: WelcomeStep()
-        case .connect: ConnectStep(brand: $brand)
+        case .connect:
+            ConnectStep(brand: Binding(
+                get: { store.brand },
+                set: { store.send(.bindingBrand($0)) }
+            ))
         case .permission: PermissionStep(remote: remote)
         case .move: PracticeStep(.move)
         case .click: PracticeStep(.click)
@@ -71,7 +141,7 @@ struct OnboardingView: View {
 
             HStack {
                 if step != .welcome {
-                    Button(action: back) {
+                    Button { store.send(.back) } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.secondary)
@@ -103,7 +173,7 @@ struct OnboardingView: View {
             )
 
             if step.isSkippable, !canGo {
-                Button("Skip", action: advance)
+                Button("Skip") { store.send(.next) }
                     .buttonStyle(.plain)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
@@ -114,26 +184,13 @@ struct OnboardingView: View {
     }
 
     private func runPrimary() {
-        if step == .permission, !canGo {
-            remote.requestPermission()
-        } else {
-            advance()
-        }
-    }
-
-    private func advance() {
-        guard let next = OnboardingStep(rawValue: step.rawValue + 1) else {
+        if isLast {
+            store.send(.next)
             onFinish()
-            return
+        } else if step == .permission, !canGo {
+            store.send(.requestPermission)
+        } else {
+            store.send(.next)
         }
-        rawStep = next.rawValue
-    }
-
-    private func back() {
-        rawStep = max(0, step.rawValue - 1)
-    }
-
-    private func beginCurrentStep() {
-        connectBaseline = step == .connect ? remote.pressCount : nil
     }
 }

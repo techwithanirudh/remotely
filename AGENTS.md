@@ -108,20 +108,21 @@ app's live `Defaults` to shortcut into a UI state.
 
 ## Architecture
 
-`RemotelyKit` is the core and has no UI. `Remotely` is the app. Keep timing,
-bindings and event synthesis out of the views. That split is what makes the
-rules testable.
+`RemotelyKit` is the UI-free core and `Remotely` is the app. `Remotely` follows
+Void's TCA shape: `Features` own state/actions/reducers and `Clients` own live
+side effects. Keep timing, bindings, persistence, and event synthesis out of
+the views. That split is what makes the rules testable.
 
 Folders group by feature, not by type, so everything a screen needs sits
 together and a file's path says what it belongs to rather than what it is:
 
-- `Settings/Models` holds settings state and persistence models.
-- `Settings/SettingsPanes` holds one pane per file.
-- `UI/RemotelyUI` holds this app's own primitives; `UI/Modifiers`,
-  `UI/Utilities` and `UI/Views` hold the reusable pieces. Add `UI/Shapes` only
-  for an actual reusable `Shape`.
-- `Utilities` holds small non-UI helpers that own no app state, no input
-  synthesis, no gesture timing and no CEC.
+- `Features/Settings/Views` holds one settings pane per file.
+- `Features/Onboarding/Views` holds the onboarding steps and primitives.
+- `Views/RemotelyUI` holds this app's own primitives; `Views/Modifiers` holds
+  reusable SwiftUI modifiers.
+- `Clients` holds dependency clients such as the CEC/runtime and Sparkle
+  updates.
+- `Models` holds app-facing models; `Utilities` holds small non-UI helpers.
 
 Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
 stay in `RemotelyKit/CEC`. Transport process ownership, unified-log streaming,
@@ -134,7 +135,8 @@ and its private CoreRC XPC service refuses bus enumeration to third parties
 is the only path that works. A previous rewrite reinstated the framework
 approach and broke remote detection entirely.
 
-`CECLink` → `GestureReader` → `Remotely` → `InputSynthesizer`.
+`CECLink` → `GestureReader` → `RemoteClient` → `RemoteFeature` →
+`InputSynthesizer`.
 `GestureReader` is a pure struct driven by `press`/`release`/`elapse`.
 
 - CEC repeats a key while held and sends one release with no key code, so taps,

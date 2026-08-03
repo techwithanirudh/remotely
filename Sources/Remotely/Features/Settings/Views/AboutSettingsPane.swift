@@ -1,11 +1,10 @@
-import Defaults
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
 struct AboutSettingsPane: View {
+    @Bindable var store: StoreOf<SettingsFeature>
     @State private var confirmingReset = false
-    @ObservedObject private var updater = Updater.shared
-    @Default(.releaseChannel) private var channel
 
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
@@ -39,7 +38,7 @@ struct AboutSettingsPane: View {
 
                 Card {
                     Button {
-                        AppCoordinator.shared?.checkForUpdates()
+                        store.send(.checkForUpdates)
                     } label: {
                         HStack(spacing: 8) {
                             Text("Check for Updates…")
@@ -61,12 +60,9 @@ struct AboutSettingsPane: View {
                         title: "Automatically check for updates",
                         symbol: "arrow.triangle.2.circlepath"
                     ) {
-                        Toggle("", isOn: Binding(
-                            get: { updater.checksAutomatically },
-                            set: { updater.checksAutomatically = $0 }
-                        ))
-                        .labelsHidden()
-                        .controlSize(.small)
+                        Toggle("", isOn: $store.checksAutomatically)
+                            .labelsHidden()
+                            .controlSize(.small)
                     }
 
                     HairlineDivider()
@@ -75,18 +71,15 @@ struct AboutSettingsPane: View {
                         title: "Automatically install updates",
                         symbol: "square.and.arrow.down"
                     ) {
-                        Toggle("", isOn: Binding(
-                            get: { updater.installsAutomatically },
-                            set: { updater.installsAutomatically = $0 }
-                        ))
-                        .labelsHidden()
-                        .controlSize(.small)
+                        Toggle("", isOn: $store.installsAutomatically)
+                            .labelsHidden()
+                            .controlSize(.small)
                     }
 
                     HairlineDivider()
 
                     Row(title: "Release channel", symbol: "flask") {
-                        Select(selection: $channel) {
+                        Select(selection: $store.channel) {
                             ForEach(ReleaseChannel.allCases) { Text($0.title).tag($0) }
                         }
                     }
@@ -99,7 +92,7 @@ struct AboutSettingsPane: View {
                         title: "Onboarding",
                         subtitle: "Walk through connecting and practising again."
                     ) {
-                        Button("Replay") { AppCoordinator.shared?.replayOnboarding() }
+                        Button("Replay") { store.send(.delegate(.replayOnboarding)) }
                             .controlSize(.small)
                     }
                     HairlineDivider()
@@ -119,7 +112,7 @@ struct AboutSettingsPane: View {
             titleVisibility: .visible
         ) {
             Button("Reset Everything", role: .destructive) {
-                AppCoordinator.shared?.factoryReset()
+                store.send(.delegate(.factoryReset))
             }
             Button("Cancel", role: .cancel) {}
         } message: {

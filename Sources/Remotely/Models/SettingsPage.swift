@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum SettingsPage: String, CaseIterable, Identifiable {
+enum SettingsPage: String, CaseIterable, Equatable, Identifiable, Sendable {
     case general, connection, controls, diagnostics, about
 
     var id: Self { self }

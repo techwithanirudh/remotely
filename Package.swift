@@ -20,6 +20,10 @@ let package = Package(
         .executable(name: "Remotely", targets: ["Remotely"]),
     ],
     dependencies: [
+        .package(
+            url: "https://github.com/pointfreeco/swift-composable-architecture",
+            revision: "7517cc32aa083773f096dc4724a0b83215bf3c55"
+        ),
         // Type-safe UserDefaults. Alcove links the same library.
         .package(url: "https://github.com/sindresorhus/Defaults", from: "9.0.0"),
         .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
@@ -36,6 +40,7 @@ let package = Package(
             name: "Remotely",
             dependencies: [
                 "RemotelyKit",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 "ConfettiSwiftUI",
                 .product(name: "Defaults", package: "Defaults"),
                 .product(name: "LaunchAtLogin", package: "LaunchAtLogin-Modern"),

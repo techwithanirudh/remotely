@@ -11,7 +11,7 @@ public struct ButtonBinding: Codable, Hashable, Sendable {
         action != .keyboardShortcut || combo != nil
     }
 
-    var summary: String {
+    public var summary: String {
         guard action == .keyboardShortcut else { return action.title }
         return combo?.display ?? "Not set"
     }

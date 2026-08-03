@@ -1,37 +1,38 @@
+import ComposableArchitecture
 import RemotelyKit
 import SwiftUI
 
 struct Sidebar: View {
-    @Binding var page: SettingsPage
-    @ObservedObject var remote: Remote
+    @Bindable var store: StoreOf<SettingsFeature>
+    let remote: StoreOf<RemoteFeature>
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             StatusPill(status: remote.status) {
                 if remote.status == .needsPermission {
-                    remote.requestPermission()
+                    remote.send(.requestPermission)
                 } else {
-                    page = .connection
+                    store.send(.selectPage(.connection))
                 }
             }
             .padding(.horizontal, Theme.Sidebar.inset)
             .padding(.top, 44)
             .padding(.bottom, 10)
 
-            SidebarItem(page: .general, selection: $page)
+            SidebarItem(page: .general, selection: $store.page)
 
             SidebarGroup(title: "Remote") {
-                SidebarItem(page: .connection, selection: $page)
-                SidebarItem(page: .controls, selection: $page)
+                SidebarItem(page: .connection, selection: $store.page)
+                SidebarItem(page: .controls, selection: $store.page)
             }
 
             SidebarGroup(title: "Support") {
-                SidebarItem(page: .diagnostics, selection: $page)
+                SidebarItem(page: .diagnostics, selection: $store.page)
             }
 
             Spacer()
 
-            SidebarItem(page: .about, selection: $page)
+            SidebarItem(page: .about, selection: $store.page)
                 .padding(.bottom, Theme.Sidebar.inset)
         }
     }
