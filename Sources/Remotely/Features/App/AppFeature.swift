@@ -19,12 +19,13 @@ struct AppFeature {
 
     enum Action: Equatable {
         case didFinishLaunching
-        case showOnboarding
-        case showSettings
+        case window(State.Window)
         case remote(RemoteFeature.Action)
         case settings(SettingsFeature.Action)
         case onboarding(OnboardingFeature.Action)
     }
+
+    @Dependency(\.launchAtLoginClient) var launchAtLoginClient
 
     var body: some ReducerOf<Self> {
         Scope(state: \.remote, action: \.remote) {
@@ -44,12 +45,8 @@ struct AppFeature {
             case .didFinishLaunching:
                 return .send(.remote(.start))
 
-            case .showOnboarding:
-                state.window = .onboarding
-                return .none
-
-            case .showSettings:
-                state.window = .settings
+            case let .window(window):
+                state.window = window
                 return .none
 
             case .onboarding(.delegate(.finished)):
@@ -59,14 +56,20 @@ struct AppFeature {
 
             case .settings(.delegate(.replayOnboarding)):
                 Defaults[.onboardingDone] = false
+                Defaults[.onboardingStep] = 0
                 state.onboarding = .init()
                 state.window = .onboarding
                 return .none
 
             case .settings(.delegate(.factoryReset)):
+                Defaults[.onboardingDone] = false
                 state.onboarding = .init()
                 state.window = .onboarding
-                return .send(.remote(.resetPreferences))
+                return .merge(
+                    .send(.onboarding(.reset)),
+                    .run { _ in await launchAtLoginClient.disable() },
+                    .send(.remote(.resetPreferences))
+                )
 
             case .remote, .settings, .onboarding:
                 return .none

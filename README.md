@@ -3,7 +3,7 @@
 <p align="center">
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remotely/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remotely/ci.yml?style=flat-square&label=CI" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/checks-85-555555?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/checks-89-555555?style=flat-square" />
 </p>
 
 <p align="center">
@@ -55,7 +55,7 @@ find out the remote works.
 
 ```sh
 swift build
-swift run RemotelyKitTests     # 85 checks
+swift run RemotelyKitTests     # 89 checks
 swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remotely.app
 ```

@@ -7,8 +7,7 @@ import SwiftUI
 final class OnboardingWindowController: NSWindowController {
     init(
         onboarding: StoreOf<OnboardingFeature>,
-        remote: StoreOf<RemoteFeature>,
-        onFinish: @escaping () -> Void
+        remote: StoreOf<RemoteFeature>
     ) {
         let window = KeyablePanel(
             contentRect: NSRect(origin: .zero, size: Theme.Onboarding.size),
@@ -24,7 +23,7 @@ final class OnboardingWindowController: NSWindowController {
         // so the dialog the step is asking for opened behind it.
         window.level = .normal
         window.contentViewController = NSHostingController(
-            rootView: OnboardingView(store: onboarding, remote: remote, onFinish: onFinish)
+            rootView: OnboardingView(store: onboarding, remote: remote)
         )
         window.setContentSize(Theme.Onboarding.size)
 

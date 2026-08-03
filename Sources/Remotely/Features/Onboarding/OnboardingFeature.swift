@@ -54,8 +54,10 @@ struct OnboardingFeature {
 
             case .reset:
                 state.step = .welcome
+                state.brand = .samsung
                 state.connectBaseline = nil
                 Defaults[.onboardingStep] = state.step.rawValue
+                Defaults[.tvBrand] = state.brand
                 return .none
 
             case let .stepAppeared(pressCount):
@@ -72,7 +74,6 @@ struct OnboardingFeature {
 struct OnboardingView: View {
     @Bindable var store: StoreOf<OnboardingFeature>
     let remote: StoreOf<RemoteFeature>
-    let onFinish: () -> Void
 
     private var step: OnboardingStep { store.step }
     private var isLast: Bool { step == OnboardingStep.allCases.last }
@@ -186,7 +187,6 @@ struct OnboardingView: View {
     private func runPrimary() {
         if isLast {
             store.send(.next)
-            onFinish()
         } else if step == .permission, !canGo {
             store.send(.requestPermission)
         } else {

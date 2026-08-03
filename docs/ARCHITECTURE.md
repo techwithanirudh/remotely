@@ -83,10 +83,11 @@ Two consequences worth knowing:
 
 **`RemoteFeature`** owns the app-facing state, bindings, log, lifecycle actions,
 and effects. **`RemoteClient`** is the dependency boundary around the existing
-`Remote` runtime, so the reducer does not own processes, timers, or AppKit
+remote runtime, so the reducer does not own processes, timers, or AppKit
 objects. This is the same State/Action/Reducer/Store shape used by Void.
 
-The live runtime now lives in `Clients/RemoteClient.swift`, but its CEC and
+The dependency surface lives in `Clients/RemoteClient.swift` and its live
+runtime in `Clients/RemoteClientLive.swift`, but their CEC and
 input algorithm boundaries remain deliberately intact. Those are the parts
 that have been proven against macOS's `corercd` path; replacing them is a
 separate hardware-risky change, not a folder reorganization.

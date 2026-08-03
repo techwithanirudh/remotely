@@ -20,16 +20,19 @@ struct UpdateClient: Sendable {
 }
 
 extension UpdateClient: DependencyKey {
-    static let liveValue: Self = {
-        let live = UpdateClientLive.shared
-        return Self(
-            snapshot: { await live.snapshot() },
-            checkForUpdates: { await live.checkForUpdates() },
-            setChecksAutomatically: { value in await live.setChecksAutomatically(value) },
-            setInstallsAutomatically: { value in await live.setInstallsAutomatically(value) },
-            setChannel: { channel in await live.setChannel(channel) }
-        )
-    }()
+    static let liveValue = Self(
+        snapshot: { await MainActor.run { UpdateClientLive.shared.snapshot() } },
+        checkForUpdates: { await MainActor.run { UpdateClientLive.shared.checkForUpdates() } },
+        setChecksAutomatically: { value in
+            await MainActor.run { UpdateClientLive.shared.setChecksAutomatically(value) }
+        },
+        setInstallsAutomatically: { value in
+            await MainActor.run { UpdateClientLive.shared.setInstallsAutomatically(value) }
+        },
+        setChannel: { channel in
+            await MainActor.run { UpdateClientLive.shared.setChannel(channel) }
+        }
+    )
 
     static let testValue = Self()
     static let previewValue = testValue
@@ -40,26 +43,4 @@ extension DependencyValues {
         get { self[UpdateClient.self] }
         set { self[UpdateClient.self] = newValue }
     }
-}
-
-@MainActor
-private final class UpdateClientLive: @unchecked Sendable {
-    static let shared = UpdateClientLive()
-
-    private let updater = Updater.shared
-
-    func snapshot() -> UpdateClient.Snapshot {
-        UpdateClient.Snapshot(
-            canCheck: updater.canCheck,
-            lastCheck: updater.lastCheck,
-            checksAutomatically: updater.checksAutomatically,
-            installsAutomatically: updater.installsAutomatically,
-            channel: updater.channel
-        )
-    }
-
-    func checkForUpdates() { updater.checkForUpdates() }
-    func setChecksAutomatically(_ value: Bool) { updater.checksAutomatically = value }
-    func setInstallsAutomatically(_ value: Bool) { updater.installsAutomatically = value }
-    func setChannel(_ channel: ReleaseChannel) { updater.channel = channel }
 }

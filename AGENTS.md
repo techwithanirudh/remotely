@@ -98,9 +98,8 @@ is unrelated: it silences Gatekeeper on first launch and needs a paid account.
 Every workflow action is pinned to a 40-character commit SHA with the tag in a
 trailing comment, so a moved tag cannot change what runs.
 
-Releases are documented in `docs/RELEASING.md`, verification in
-`docs/VERIFYING_RELEASES.md`. Signing material lives in the login keychain
-and in repo secrets, never in the working copy.
+Releases are documented in `docs/RELEASING.md`. Signing material lives in the
+login keychain and in repo secrets, never in the working copy.
 
 Installing means replacing `/Applications/Remotely.app`. The build is
 ad-hoc signed, so macOS revokes Accessibility every time. Never write to the

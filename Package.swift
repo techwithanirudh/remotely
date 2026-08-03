@@ -24,7 +24,7 @@ let package = Package(
             url: "https://github.com/pointfreeco/swift-composable-architecture",
             revision: "7517cc32aa083773f096dc4724a0b83215bf3c55"
         ),
-        // Type-safe UserDefaults. Alcove links the same library.
+        // Type-safe UserDefaults.
         .package(url: "https://github.com/sindresorhus/Defaults", from: "9.0.0"),
         .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
         .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.4"),
