@@ -49,6 +49,11 @@ exception on this Mac and uses Command-bracket. Do not collapse the table to a
 single shortcut without repeating the live Aside, Finder, and System Settings
 tests.
 
+Loop (github.com/MrKai77/Loop) is the reference for the settings window:
+sidebar tabs, panes, sections. It is GPL-3.0 and this repo is MIT, so read it
+and rewrite, never paste. Its UI kit, Luminare, is BSD-3-Clause. What was
+compared and what is worth taking is in `docs/LOOP.md`.
+
 ## Commits
 
 Conventional Commits, enforced by a hook: `feat:`, `fix:`, `refactor:`,
