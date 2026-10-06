@@ -12,7 +12,7 @@ Folders group by feature rather than by type. A screen's pane, its model and
 its primitives sit together, so a file's path says what it belongs to instead
 of what kind of thing it is.
 
-```
+```text
 Sources/RemotelyKit          the core
   CEC/                     transport and parsing
   Input/                   synthesis, gesture timing, the glide curve
@@ -39,7 +39,7 @@ work.
 
 ## How a button press becomes a click
 
-```
+```text
 remote -> TV -> HDMI-CEC -> corercd -> CECLink -> GestureReader -> RemoteRuntime -> RemoteSessionClient -> RemoteFeature -> InputSynthesizer -> CGEvent
 ```
 

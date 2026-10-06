@@ -83,7 +83,7 @@ struct SettingsFeature {
 
             case let .availabilityChanged(version):
                 state.availableVersion = version
-                return .none
+                return .run { send in await send(.update(updateClient.snapshot())) }
 
             case let .update(snapshot):
                 state.canCheckForUpdates = snapshot.canCheck

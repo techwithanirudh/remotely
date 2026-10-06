@@ -101,7 +101,6 @@ struct RemoteFeature {
                 return .run { _ in await settingsClient.resetAllBindings() }
 
             case .resetPreferences:
-                state = State()
                 return .run { _ in await settingsClient.resetPreferences() }
 
             case let .setAction(action, button):

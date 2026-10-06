@@ -19,9 +19,10 @@ final class Updater: NSObject {
     private var watchers: [UUID: (String?) -> Void] = [:]
 
     /// The version the last check found, nil when up to date or never checked.
+    /// Every finished check reports, even an unchanged answer, so Settings can
+    /// refresh its last-checked date off the same signal.
     private(set) var availableVersion: String? {
         didSet {
-            guard availableVersion != oldValue else { return }
             for watcher in watchers.values {
                 watcher(availableVersion)
             }
