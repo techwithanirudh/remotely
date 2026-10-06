@@ -49,6 +49,11 @@ exception on this Mac and uses Command-bracket. Do not collapse the table to a
 single shortcut without repeating the live Aside, Finder, and System Settings
 tests.
 
+Loop (github.com/MrKai77/Loop) is the reference for the settings window:
+sidebar tabs, panes, sections. It is GPL-3.0 and this repo is MIT, so read it
+and rewrite, never paste. Its UI kit, Luminare, is BSD-3-Clause. What was
+compared and what is worth taking is in `docs/LOOP.md`.
+
 ## Commits
 
 Conventional Commits, enforced by a hook: `feat:`, `fix:`, `refactor:`,
@@ -98,9 +103,8 @@ is unrelated: it silences Gatekeeper on first launch and needs a paid account.
 Every workflow action is pinned to a 40-character commit SHA with the tag in a
 trailing comment, so a moved tag cannot change what runs.
 
-Releases are documented in `docs/RELEASING.md`, verification in
-`docs/VERIFYING_RELEASES.md`. Signing material lives in the login keychain
-and in repo secrets, never in the working copy.
+Releases are documented in `docs/RELEASING.md`. Signing material lives in the
+login keychain and in repo secrets, never in the working copy.
 
 Installing means replacing `/Applications/Remotely.app`. The build is
 ad-hoc signed, so macOS revokes Accessibility every time. Never write to the
@@ -108,20 +112,22 @@ app's live `Defaults` to shortcut into a UI state.
 
 ## Architecture
 
-`RemotelyKit` is the core and has no UI. `Remotely` is the app. Keep timing,
-bindings and event synthesis out of the views. That split is what makes the
-rules testable.
+`RemotelyKit` is the UI-free core and `Remotely` is the app. `Remotely` follows
+Void's TCA shape: `Features` own state/actions/reducers and `Clients` own live
+side effects. Keep timing, bindings, persistence, and event synthesis out of
+the views. That split is what makes the rules testable.
 
 Folders group by feature, not by type, so everything a screen needs sits
 together and a file's path says what it belongs to rather than what it is:
 
-- `Settings/Models` holds settings state and persistence models.
-- `Settings/SettingsPanes` holds one pane per file.
-- `UI/RemotelyUI` holds this app's own primitives; `UI/Modifiers`,
-  `UI/Utilities` and `UI/Views` hold the reusable pieces. Add `UI/Shapes` only
-  for an actual reusable `Shape`.
-- `Utilities` holds small non-UI helpers that own no app state, no input
-  synthesis, no gesture timing and no CEC.
+- `Features/Settings/Views` holds one settings pane per file.
+- `Features/Onboarding/Views` holds the onboarding steps and primitives.
+- `Views/RemotelyUI` holds this app's own primitives; `Views/Modifiers` holds
+  reusable SwiftUI modifiers.
+- `Clients` holds dependency clients such as the CEC/runtime and Sparkle
+  updates.
+- `Utilities` holds small non-UI helpers. A model belongs to the feature that
+  uses it, so `SettingsPage` sits in `Features/Settings`.
 
 Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
 stay in `RemotelyKit/CEC`. Transport process ownership, unified-log streaming,
@@ -134,7 +140,8 @@ and its private CoreRC XPC service refuses bus enumeration to third parties
 is the only path that works. A previous rewrite reinstated the framework
 approach and broke remote detection entirely.
 
-`CECLink` → `GestureReader` → `Remotely` → `InputSynthesizer`.
+`CECLink` → `GestureReader` → `RemoteRuntime` → `RemoteSessionClient` → `RemoteFeature` →
+`InputSynthesizer`.
 `GestureReader` is a pure struct driven by `press`/`release`/`elapse`.
 
 - CEC repeats a key while held and sends one release with no key code, so taps,
@@ -146,6 +153,16 @@ approach and broke remote detection entirely.
 - Show Desktop and Mission Control are window-server symbolic hot keys whose
   bindings carry the fn bit; `SymbolicHotKey` reads them live before posting.
 - Timers go on `RunLoop.main` in `.common` mode, or an open menu starves them.
+
+`AppFeature` owns launch, termination, reopen, menu intents, window requests,
+activation-policy effects, the permission-refresh clock, and the handover
+from an older running copy (`InstanceClient`; the newest launch wins, and the
+remote starts only after the old copy is gone). `AppCoordinator` only
+translates `NSApplicationDelegate` callbacks into actions, including whether
+the launch came from a login item. The menu bar,
+window presentation, and scrolling overlay each render TCA state through their
+own AppKit adapter, so window lifecycle is not mixed into the application
+delegate.
 
 ## UI
 

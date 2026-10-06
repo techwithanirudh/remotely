@@ -4,6 +4,7 @@ import Foundation
 gestureRulesTests()
 gestureHoldsTests()
 bindingsTests()
+bindingClashTests()
 keyCombinationsTests()
 glideCurveTests()
 pixelAccumulatorTests()

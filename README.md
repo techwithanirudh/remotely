@@ -3,7 +3,7 @@
 <p align="center">
   <img alt="Requirements" src="https://img.shields.io/badge/macOS-15%2B-555555?style=flat-square" />
   <a href="https://github.com/techwithanirudh/remotely/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/techwithanirudh/remotely/ci.yml?style=flat-square&label=CI" /></a>
-  <img alt="Tests" src="https://img.shields.io/badge/checks-85-555555?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/checks-96-555555?style=flat-square" />
 </p>
 
 <p align="center">
@@ -16,6 +16,7 @@
   <a href="#setup">Setup</a> ·
   <a href="#build">Build</a> ·
   <a href="#resources">Resources</a> ·
+  <a href="#acknowledgements">Acknowledgements</a> ·
   <a href="#license">License</a>
 </p>
 
@@ -55,7 +56,7 @@ find out the remote works.
 
 ```sh
 swift build
-swift run RemotelyKitTests     # 85 checks
+swift run RemotelyKitTests     # 96 checks
 swiftformat . && swiftlint   # needs TOOLCHAIN_DIR, see AGENTS.md
 zsh scripts/build-app.sh     # writes build/Remotely.app
 ```
@@ -72,6 +73,18 @@ zsh scripts/build-app.sh     # writes build/Remotely.app
 - [Releasing](docs/RELEASING.md)
 - [Contributing](CONTRIBUTING.md)
 - [What is next](TODO.md)
+
+## Acknowledgements
+
+- [Loop](https://github.com/MrKai77/Loop) by Kai Azim is the reference for the
+  settings window, and a seriously good one. Clash warnings on bindings, the
+  update badge, hiding settings that do not apply, sheets for sub-settings,
+  staying quiet at login and running one copy at a time all come from reading
+  it. Loop is GPL-3.0, so none of its code is copied; [what was taken and
+  why](docs/LOOP.md).
+- [Mac Mouse Fix](https://github.com/noah-nuebling/mac-mouse-fix) worked out
+  which apps take mouse buttons 4 and 5 for Back and Forward and which need a
+  swipe or a shortcut. Remotely ports that table.
 
 ## License
 
