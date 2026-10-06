@@ -126,7 +126,8 @@ together and a file's path says what it belongs to rather than what it is:
   reusable SwiftUI modifiers.
 - `Clients` holds dependency clients such as the CEC/runtime and Sparkle
   updates.
-- `Models` holds app-facing models; `Utilities` holds small non-UI helpers.
+- `Utilities` holds small non-UI helpers. A model belongs to the feature that
+  uses it, so `SettingsPage` sits in `Features/Settings`.
 
 Folder cleanup must not blur the core boundary. `CECLink` and `CECLogParser`
 stay in `RemotelyKit/CEC`. Transport process ownership, unified-log streaming,
@@ -154,8 +155,11 @@ approach and broke remote detection entirely.
 - Timers go on `RunLoop.main` in `.common` mode, or an open menu starves them.
 
 `AppFeature` owns launch, termination, reopen, menu intents, window requests,
-activation-policy effects, and the permission-refresh clock. `AppCoordinator`
-only translates `NSApplicationDelegate` callbacks into actions. The menu bar,
+activation-policy effects, the permission-refresh clock, and the handover
+from an older running copy (`InstanceClient`; the newest launch wins, and the
+remote starts only after the old copy is gone). `AppCoordinator` only
+translates `NSApplicationDelegate` callbacks into actions, including whether
+the launch came from a login item. The menu bar,
 window presentation, and scrolling overlay each render TCA state through their
 own AppKit adapter, so window lifecycle is not mixed into the application
 delegate.

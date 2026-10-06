@@ -25,7 +25,6 @@ Sources/Remotely             the app
     Remote/                 remote state, actions, effects
     Settings/               settings state and settings views
     Onboarding/             first-run state and onboarding views
-  Models/                   app-facing models
   Utilities/                small non-UI helpers and measured styling
   Views/                    shared presentation and product UI primitives
 Tests/RemotelyKitTests       one file per behaviour

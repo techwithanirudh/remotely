@@ -14,6 +14,7 @@ struct SettingsFeature {
         var checksAutomatically = true
         var installsAutomatically = false
         var channel: ReleaseChannel = Defaults[.releaseChannel]
+        var availableVersion: String?
     }
 
     enum Action: Equatable, BindableAction {
@@ -21,6 +22,7 @@ struct SettingsFeature {
         case checkForUpdates
         case delegate(Delegate)
         case onAppear
+        case availabilityChanged(String?)
         case selectPage(SettingsPage)
         case update(UpdateClient.Snapshot)
 
@@ -28,6 +30,10 @@ struct SettingsFeature {
             case factoryReset
             case replayOnboarding
         }
+    }
+
+    private enum CancelID {
+        case availability
     }
 
     @Dependency(\.updateClient) var updateClient
@@ -59,9 +65,25 @@ struct SettingsFeature {
                 return .none
 
             case .onAppear:
-                return .run { send in
-                    await send(.update(updateClient.snapshot()))
-                }
+                return .merge(
+                    .run { send in
+                        let snapshot = await updateClient.snapshot()
+                        await send(.update(snapshot))
+                        if snapshot.checksAutomatically, snapshot.availableVersion == nil {
+                            await updateClient.probe()
+                        }
+                    },
+                    .run { send in
+                        for await version in await updateClient.availability() {
+                            await send(.availabilityChanged(version))
+                        }
+                    }
+                    .cancellable(id: CancelID.availability, cancelInFlight: true)
+                )
+
+            case let .availabilityChanged(version):
+                state.availableVersion = version
+                return .none
 
             case let .update(snapshot):
                 state.canCheckForUpdates = snapshot.canCheck
@@ -69,6 +91,7 @@ struct SettingsFeature {
                 state.checksAutomatically = snapshot.checksAutomatically
                 state.installsAutomatically = snapshot.installsAutomatically
                 state.channel = snapshot.channel
+                state.availableVersion = snapshot.availableVersion
                 return .none
 
             case let .selectPage(page):
@@ -101,23 +124,13 @@ struct SettingsView: View {
                     .fill(Theme.Color.divider)
                     .frame(width: 1)
 
-                page(for: store.page).frame(maxWidth: .infinity, maxHeight: .infinity)
+                store.page.pane(settings: store, remote: remote)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .overlay(WindowEdgeHighlight())
         .frame(minWidth: 660, minHeight: 600)
         .ignoresSafeArea()
         .onAppear { store.send(.onAppear) }
-    }
-
-    @ViewBuilder
-    private func page(for page: SettingsPage) -> some View {
-        switch page {
-        case .general: GeneralSettingsPane(remote: remote)
-        case .connection: ConnectionSettingsPane(remote: remote)
-        case .controls: ControlsSettingsPane(remote: remote)
-        case .diagnostics: DiagnosticsSettingsPane(remote: remote)
-        case .about: AboutSettingsPane(store: store)
-        }
     }
 }

@@ -7,6 +7,7 @@ struct BindingRow: View {
     let remote: StoreOf<RemoteFeature>
 
     private var binding: ButtonBinding { remote.bindings[button] }
+    private var clashes: [RemoteButton] { remote.bindings.clashes(with: button) }
 
     var body: some View {
         HStack(spacing: Theme.Space.icon) {
@@ -18,6 +19,13 @@ struct BindingRow: View {
             Text(button.shortTitle).font(.system(size: 13))
 
             Spacer(minLength: 8)
+
+            if !clashes.isEmpty {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.orange)
+                    .help("Also bound to \(clashes.map(\.title).formatted(.list(type: .and)))")
+            }
 
             Button { remote.send(.resetBinding(button)) } label: {
                 Image(systemName: "arrow.uturn.backward")

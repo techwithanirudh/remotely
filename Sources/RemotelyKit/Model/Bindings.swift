@@ -48,6 +48,14 @@ public struct Bindings: Codable, Hashable, Sendable {
         self[button] == Self.standard[button]
     }
 
+    /// Other buttons that do exactly what this one does. Do Nothing and an
+    /// unrecorded shortcut never clash, or every fresh shortcut row would warn.
+    public func clashes(with button: RemoteButton) -> [RemoteButton] {
+        let binding = self[button]
+        guard binding.action != .none, binding.isComplete else { return [] }
+        return RemoteButton.allCases.filter { $0 != button && self[$0] == binding }
+    }
+
     public var customized: Bindings {
         Bindings(byButton.filter { Self.standard.byButton[$0.key] != $0.value })
     }

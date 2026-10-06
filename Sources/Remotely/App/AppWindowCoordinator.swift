@@ -16,11 +16,11 @@ final class AppWindowCoordinator {
     func start() {
         store.publisher.window
             .removeDuplicates()
+            .filter { $0.requestID > 0 }
             .sink { [weak self] request in
                 self?.render(request.destination)
             }
             .store(in: &observers)
-        render(store.window.destination)
     }
 }
 

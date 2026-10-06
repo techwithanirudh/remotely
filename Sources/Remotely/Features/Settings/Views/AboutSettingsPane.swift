@@ -10,6 +10,10 @@ struct AboutSettingsPane: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
     }
 
+    private var updateTitle: String {
+        store.availableVersion == nil ? "Check for Updates…" : "Update…"
+    }
+
     var body: some View {
         SettingsPane(page: .about) {
             VStack(alignment: .leading, spacing: 0) {
@@ -41,12 +45,16 @@ struct AboutSettingsPane: View {
                         store.send(.checkForUpdates)
                     } label: {
                         HStack(spacing: 8) {
-                            Text("Check for Updates…")
+                            Text(updateTitle)
                                 .font(.system(size: 13))
                             Spacer(minLength: 8)
-                            Text(version)
-                                .font(.system(size: 13))
-                                .foregroundStyle(.tertiary)
+                            if let available = store.availableVersion {
+                                StatusBadge(title: "\(available) available", tint: .red)
+                            } else {
+                                Text(version)
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
                         .padding(.horizontal, Theme.Card.inset)
                         .frame(height: Theme.Card.rowHeight)
@@ -65,15 +73,18 @@ struct AboutSettingsPane: View {
                             .controlSize(.small)
                     }
 
-                    HairlineDivider()
+                    // Sparkle only installs what a scheduled check found.
+                    if store.checksAutomatically {
+                        HairlineDivider()
 
-                    Row(
-                        title: "Automatically install updates",
-                        symbol: "square.and.arrow.down"
-                    ) {
-                        Toggle("", isOn: $store.installsAutomatically)
-                            .labelsHidden()
-                            .controlSize(.small)
+                        Row(
+                            title: "Automatically install updates",
+                            symbol: "square.and.arrow.down"
+                        ) {
+                            Toggle("", isOn: $store.installsAutomatically)
+                                .labelsHidden()
+                                .controlSize(.small)
+                        }
                     }
 
                     HairlineDivider()
@@ -84,6 +95,7 @@ struct AboutSettingsPane: View {
                         }
                     }
                 }
+                .animation(Theme.Motion.state, value: store.checksAutomatically)
 
                 Spacer().frame(height: 14)
 

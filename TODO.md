@@ -36,9 +36,9 @@ lands. See AGENTS.md — nothing gets worked on that is not written here first.
 - [ ] `Row` absorbs the hand-rolled rows; one badge component; `IconTile`
       styles instead of three hand-drawn tinted squares.
 - [ ] Merge WelcomeStep and FinishStep into one BookendStep.
-- [ ] Fold `SettingsView.page(for:)` into `SettingsPage`, the way Loop's
-      `SettingsTab.view()` does, and badge About when an update is available.
-      See `docs/LOOP.md` for the rest of what Loop's settings are worth.
+- [ ] Log out and back in with Launch at login on, and confirm Settings stays
+      closed. Then run `build/Remotely.app` while `/Applications` is running
+      and confirm the old copy quits and presses are not doubled.
 
 ## Actions worth adding
 

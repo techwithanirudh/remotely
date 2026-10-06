@@ -11,6 +11,7 @@ struct AppFeature {
             case settings
         }
 
+        /// `requestID` 0 is the window this launch would open, not yet asked for.
         struct WindowRequest: Equatable {
             var destination: Window
             var requestID: UInt = 0
@@ -25,9 +26,10 @@ struct AppFeature {
     }
 
     enum Action: Equatable {
-        case didFinishLaunching
+        case didFinishLaunching(atLogin: Bool)
         case willTerminate
         case reopen
+        case superseded
         case menu(MenuAction)
         case window(State.Window)
         case windowClosed(State.Window)
@@ -46,10 +48,12 @@ struct AppFeature {
 
     private enum CancelID {
         case permissionRefresh
+        case superseded
     }
 
     @Dependency(\.applicationClient) var applicationClient
     @Dependency(\.continuousClock) var clock
+    @Dependency(\.instanceClient) var instanceClient
     @Dependency(\.launchAtLoginClient) var launchAtLoginClient
 
     var body: some ReducerOf<Self> {
@@ -67,10 +71,21 @@ struct AppFeature {
 
         Reduce { state, action in
             switch action {
-            case .didFinishLaunching:
+            case let .didFinishLaunching(atLogin):
+                // A login launch stays in the menu bar unless setup is unfinished.
+                let opensWindow = !atLogin || state.window.destination == .onboarding
                 return .merge(
-                    .send(.window(state.window.destination)),
-                    .send(.remote(.start)),
+                    opensWindow ? .send(.window(state.window.destination)) : .none,
+                    .run { send in
+                        await instanceClient.claim()
+                        await send(.remote(.start))
+                    },
+                    .run { send in
+                        for await _ in await instanceClient.superseded() {
+                            await send(.superseded)
+                        }
+                    }
+                    .cancellable(id: CancelID.superseded),
                     .run { [clock] send in
                         for await _ in clock.timer(interval: .seconds(2)) {
                             await send(.remote(.refreshPermission))
@@ -82,8 +97,12 @@ struct AppFeature {
             case .willTerminate:
                 return .merge(
                     .cancel(id: CancelID.permissionRefresh),
+                    .cancel(id: CancelID.superseded),
                     .send(.remote(.stop))
                 )
+
+            case .superseded:
+                return .run { _ in await applicationClient.terminate() }
 
             case .reopen:
                 return .send(.window(state.window.destination))

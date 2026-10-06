@@ -22,8 +22,18 @@ final class AppCoordinator: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         menuBar.start()
         overlay.start()
-        store.send(.didFinishLaunching)
+        store.send(.didFinishLaunching(atLogin: launchedAtLogin))
         windows.start()
+    }
+
+    /// Only readable while the launch event is being handled, so it is passed
+    /// along rather than asked for later.
+    private var launchedAtLogin: Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent,
+              event.eventID == kAEOpenApplication
+        else { return false }
+        let launchKind = event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue
+        return launchKind == keyAELaunchedAsLogInItem
     }
 
     func applicationWillTerminate(_ notification: Notification) {

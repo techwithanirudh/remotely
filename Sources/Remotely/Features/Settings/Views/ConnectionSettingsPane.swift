@@ -6,6 +6,7 @@ import SwiftUI
 struct ConnectionSettingsPane: View {
     let remote: StoreOf<RemoteFeature>
     @Default(.tvBrand) private var brand
+    @State private var showsBrandGuide = false
 
     private var isLinked: Bool { remote.status.isReady }
 
@@ -53,10 +54,19 @@ struct ConnectionSettingsPane: View {
                     Checklist(title: "Switch the display to that HDMI input", isDone: isLinked)
                     HairlineDivider()
                     Checklist(title: "Turn on HDMI-CEC in the display's settings", isDone: isLinked)
+                    HairlineDivider()
+                    Row(
+                        title: "Where to find HDMI-CEC",
+                        subtitle: "Every brand calls it something else."
+                    ) {
+                        Button("Show…") { showsBrandGuide = true }
+                            .controlSize(.small)
+                    }
                 }
-
-                SectionLabel(title: "Where to find it")
-
+            }
+        }
+        .sheet(isPresented: $showsBrandGuide) {
+            SettingsSheet(title: "Where to find HDMI-CEC") {
                 Card { BrandGuide(brand: $brand) }
             }
         }

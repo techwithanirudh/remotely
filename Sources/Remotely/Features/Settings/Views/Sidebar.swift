@@ -32,8 +32,12 @@ struct Sidebar: View {
 
             Spacer()
 
-            SidebarItem(page: .about, selection: $store.page)
-                .padding(.bottom, Theme.Sidebar.inset)
+            SidebarItem(
+                page: .about,
+                selection: $store.page,
+                badge: store.availableVersion != nil
+            )
+            .padding(.bottom, Theme.Sidebar.inset)
         }
     }
 }

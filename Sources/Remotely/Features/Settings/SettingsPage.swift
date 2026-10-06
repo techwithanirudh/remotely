@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import SwiftUI
 
 enum SettingsPage: String, CaseIterable, Equatable, Identifiable, Sendable {
@@ -32,6 +33,19 @@ enum SettingsPage: String, CaseIterable, Equatable, Identifiable, Sendable {
         case .controls: .purple
         case .diagnostics: .orange
         case .about: .gray
+        }
+    }
+}
+
+extension SettingsPage {
+    @MainActor @ViewBuilder
+    func pane(settings: StoreOf<SettingsFeature>, remote: StoreOf<RemoteFeature>) -> some View {
+        switch self {
+        case .general: GeneralSettingsPane(remote: remote)
+        case .connection: ConnectionSettingsPane(remote: remote)
+        case .controls: ControlsSettingsPane(remote: remote)
+        case .diagnostics: DiagnosticsSettingsPane(remote: remote)
+        case .about: AboutSettingsPane(store: settings)
         }
     }
 }

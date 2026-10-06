@@ -57,31 +57,24 @@ struct is the cleaner design; nothing to take from there except the event tap
 threading in `Utilities/Event Monitoring`, if we ever move the tap off the
 main thread.
 
-## Worth borrowing (as ideas, rewritten)
+## Borrowed, and where it landed
 
-- **Tab enum owns its view.** `SettingsTab.view()` lives next to its title and
-  colour. We have the same enum split across `SettingsPage` and
-  `SettingsView.page(for:)`; folding them is a small, safe tidy. The catch is
-  that our panes need stores passed in, so `view()` would take them as
-  arguments.
-- **Grouped sidebar.** Loop splits tabs into `themingTabs`, `settingsTabs`,
-  `loopTabs` with a header each. Worth it once we pass about seven pages.
-- **Update badge on the About tab.** `showIndicator` returns true when an
-  update is available. Easy with `UpdateClient.Snapshot`.
-- **Conditional rows.** Dependent toggles appear only when their parent is on,
-  wrapped in `.animation(value: [parentA, parentB])` on the form. Use it when
-  a pane grows a setting that only matters under another one.
-- **Settings modals.** `luminareModal` for a sub-configuration (Padding) rather
-  than a new page. Relevant for per-app bindings in TODO.md.
-- **Duplicate binding warning.** `KeybindItemView.hasDuplicateKeybinds`
-  compares effective combos and flags clashes inline. We will want the same in
-  the Controls pane once custom combos land.
-- **Launched-as-login-item check.** `AppDelegate.launchedAsLoginItem` reads
-  `keyAELaunchedAsLogInItem` off the launch Apple event to skip opening the
-  window at login. Small, and better than a "start hidden" guess.
-- **Single instance.** Loop broadcasts a distributed notification so an older
-  running copy quits before the new one installs event taps. Two Remotely
-  copies would both read the CEC log and double-post every press.
+Every one of these is our own code written after reading Loop's, not a copy.
+
+| Loop | Remotely |
+| --- | --- |
+| `SettingsTab.view()`, the tab enum owning its pane | `SettingsPage.pane(settings:remote:)` in `Features/Settings/SettingsPage.swift`. Our panes need stores, so they come in as arguments |
+| Sidebar sections with headers | Already had it: `SidebarGroup`, "Remote" and "Support" |
+| `SettingsTab.showIndicator` on About | `SidebarItem(badge:)`, fed by `SettingsFeature.State.availableVersion`. `Updater` learns the version from Sparkle's `didFindValidUpdate` and probes silently when Settings opens, if automatic checks are on. The About row reads "Update…" with the version |
+| Dependent rows shown only under their parent | "Automatically install updates" appears only while "Automatically check" is on, since Sparkle only installs what a scheduled check found |
+| `luminareModal` for Padding | `SettingsSheet` in `Views/RemotelyUI`. The display brand guide moved off the Connection page into one. Per-app bindings will want the same |
+| `KeybindItemView.hasDuplicateKeybinds` | `Bindings.clashes(with:)` in RemotelyKit, tested, and an orange triangle in `BindingRow` naming the other buttons. Do Nothing and unrecorded shortcuts never clash |
+| `AppDelegate.launchedAsLoginItem` | `AppCoordinator.launchedAtLogin` passes `didFinishLaunching(atLogin:)`. A login launch opens no window unless onboarding is unfinished |
+| Terminate broadcast to older instances | `InstanceClient`: the newest launch posts a distributed notification, older copies quit, stragglers are killed after 3s, and only then does the remote start reading the CEC log |
+
+Still to check on a real Mac: that a login launch really carries
+`keyAELaunchedAsLogInItem` under `SMAppService` (Loop relies on it with the same
+API), and that installing over a running build hands over cleanly.
 
 ## Not worth borrowing
 

@@ -32,6 +32,40 @@ func bindingsTests() {
         )
         Expect.that(ButtonBinding(.leftClick).isComplete, "a plain action needs no payload")
 
+        Expect.that(
+            RemoteButton.allCases.allSatisfy { Bindings.standard.clashes(with: $0).isEmpty },
+            "the defaults never clash"
+        )
+        do {
+            var clashing = Bindings.standard
+            clashing[.backHold] = ButtonBinding(.leftClick)
+            Expect.equal(clashing.clashes(with: .backHold), [.center],
+                         "two buttons with the same action clash")
+            Expect.equal(clashing.clashes(with: .center), [.backHold],
+                         "a clash is reported from both sides")
+
+            clashing[.centerDouble] = ButtonBinding(.none)
+            clashing[.backHold] = ButtonBinding(.none)
+            Expect.that(clashing.clashes(with: .backHold).isEmpty,
+                        "Do Nothing on two buttons is not a clash")
+
+            let save = KeyCombo(keyCode: 1, modifiers: .maskCommand)
+            let quit = KeyCombo(keyCode: 12, modifiers: .maskCommand)
+            clashing[.backHold] = ButtonBinding(.keyboardShortcut)
+            clashing[.centerDouble] = ButtonBinding(.keyboardShortcut)
+            Expect.that(clashing.clashes(with: .backHold).isEmpty,
+                        "two unrecorded shortcuts do not clash")
+
+            clashing[.backHold] = ButtonBinding(.keyboardShortcut, combo: save)
+            clashing[.centerDouble] = ButtonBinding(.keyboardShortcut, combo: quit)
+            Expect.that(clashing.clashes(with: .backHold).isEmpty,
+                        "different shortcuts do not clash")
+
+            clashing[.centerDouble] = ButtonBinding(.keyboardShortcut, combo: save)
+            Expect.equal(clashing.clashes(with: .backHold), [.centerDouble],
+                         "the same shortcut on two buttons clashes")
+        }
+
         do {
             var withCombo = Bindings.standard
             withCombo[.back] = ButtonBinding(.keyboardShortcut,
