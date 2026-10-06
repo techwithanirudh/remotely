@@ -70,7 +70,7 @@ Every one of these is our own code written after reading Loop's, not a copy.
 | `luminareModal` for Padding | `SettingsSheet` in `Views/RemotelyUI`. The display brand guide moved off the Connection page into one. Per-app bindings will want the same |
 | `KeybindItemView.hasDuplicateKeybinds` | `Bindings.clashes(with:)` in RemotelyKit, tested, and an orange triangle in `BindingRow` naming the other buttons. Do Nothing and unrecorded shortcuts never clash |
 | `AppDelegate.launchedAsLoginItem` | `AppCoordinator.launchedAtLogin` passes `didFinishLaunching(atLogin:)`. A login launch opens no window unless onboarding is unfinished |
-| Terminate broadcast to older instances | `InstanceClient`: the newest launch posts a distributed notification, older copies quit, stragglers are killed after 3s, and only then does the remote start reading the CEC log |
+| Terminate broadcast to older instances | `InstanceClient`: the newest launch posts a distributed notification, older copies quit (only a newer sender is obeyed, so two copies launched together cannot quit each other), stragglers are killed after 3s, and only then does the remote start reading the CEC log |
 
 Still to check on a real Mac: that a login launch really carries
 `keyAELaunchedAsLogInItem` under `SMAppService` (Loop relies on it with the same

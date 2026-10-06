@@ -39,10 +39,13 @@ private enum InstanceClientLive {
     static func broadcast() -> [pid_t] {
         // A bare `swift run` binary has no bundle to compare against.
         guard let bundleID = Bundle.main.bundleIdentifier else { return [] }
-        let others = NSWorkspace.shared.runningApplications
-            .filter { $0.bundleIdentifier == bundleID && $0.processIdentifier != ownPID }
+        let current = NSRunningApplication.current
+        // Only older copies are asked, so two launched together cannot each
+        // ask the other to quit and leave nothing running.
+        let older = NSWorkspace.shared.runningApplications
+            .filter { $0.bundleIdentifier == bundleID && isNewer(current, than: $0) }
             .map(\.processIdentifier)
-        guard !others.isEmpty else { return [] }
+        guard !older.isEmpty else { return [] }
 
         // The sender rides in `object`, which arrives even where userInfo is stripped.
         DistributedNotificationCenter.default().postNotificationName(
@@ -51,7 +54,16 @@ private enum InstanceClientLive {
             userInfo: nil,
             deliverImmediately: true
         )
-        return others
+        return older
+    }
+
+    /// Launch order, with the pid breaking a tie inside the date's resolution.
+    @MainActor
+    static func isNewer(_ app: NSRunningApplication, than other: NSRunningApplication) -> Bool {
+        let launched = app.launchDate ?? .distantPast
+        let otherLaunched = other.launchDate ?? .distantPast
+        guard launched == otherLaunched else { return launched > otherLaunched }
+        return app.processIdentifier > other.processIdentifier
     }
 
     static func waitForExit(_ pids: [pid_t]) async {
@@ -76,8 +88,14 @@ private enum InstanceClientLive {
                 object: nil,
                 queue: .main
             ) { notification in
-                guard notification.object as? String != String(ownPID) else { return }
-                continuation.yield()
+                guard let sender = (notification.object as? String).flatMap({ pid_t($0) }),
+                      sender != ownPID
+                else { return }
+                let senderIsNewer = MainActor.assumeIsolated {
+                    NSRunningApplication(processIdentifier: sender)
+                        .map { isNewer($0, than: .current) } ?? false
+                }
+                if senderIsNewer { continuation.yield() }
             }
             continuation.onTermination = { _ in
                 DistributedNotificationCenter.default().removeObserver(token)
